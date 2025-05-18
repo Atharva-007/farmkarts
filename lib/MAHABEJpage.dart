@@ -27,7 +27,6 @@ class MahabejPage extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       subtitle: Text(subtitle),
       onTap: () {
-        // Handle tap to show details
       },
     );
   }

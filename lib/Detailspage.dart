@@ -7,7 +7,7 @@ class DetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the list of elements based on the category
+
     final List<Map<String, String>> elements = category == 'Mahabej'
         ? [
       {'title': 'Mahabej Element 1', 'description': 'Description for Mahabej Element 1'},

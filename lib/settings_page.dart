@@ -10,7 +10,7 @@ class SettingsPage extends StatelessWidget {
         title: const Text('Settings'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context), // Go back to Profile page
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -38,8 +38,8 @@ class SettingsPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/login');
                 },
-                child: const Text('Logout'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Logout'),
               ),
             )
           ],
