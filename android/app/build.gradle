@@ -1,77 +1,43 @@
-plugins {
-    id "com.android.application"
-    id "kotlin-android"
-    id "dev.flutter.flutter-gradle-plugin"
-    id 'com.google.gms.google-services'  // Ensure this is here
-}
-
-def localProperties = new Properties()
-def localPropertiesFile = rootProject.file('local.properties')
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.withReader('UTF-8') { reader ->
-        localProperties.load(reader)
-    }
-}
-
-def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
-if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
-}
-
-def flutterVersionName = localProperties.getProperty('flutter.versionName')
-if (flutterVersionName == null) {
-    flutterVersionName = '1.0'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace "com.example.farmkarts"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdkVersion 33
+
+    defaultConfig {
+        applicationId "com.example.farmkarts"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug  // Use proper signing config in production
+        }
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    defaultConfig {
-        applicationId "com.example.farmkarts"
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-    }
-
-    buildTypes {
-        release {
-            // Use your own signing config here. The debug key is used as a placeholder.
-            signingConfig signingConfigs.debug
-        }
-    }
-
-    // Configure packagingOptions to avoid duplicate resources
-    packagingOptions {
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE'
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 }
-
-flutter {
-    source '../..'  // Path to your Flutter project directory
-}
-
-// android/app/build.gradle
-
-apply plugin: 'com.android.application'
-
-// Add this line at the bottom of your file to apply Google services plugin
-apply plugin: 'com.google.gms.google-services' // This will enable Firebase services
 
 dependencies {
-    implementation 'com.google.firebase:firebase-analytics:21.2.0' // Add Firebase Analytics or any other Firebase SDK you are using
-    implementation 'com.google.firebase:firebase-firestore:24.0.0' // Firestore
-    implementation 'com.google.firebase:firebase-auth:22.0.0' // Firebase Auth (if you're using authentication)
+    // Firebase BoM manages versions automatically
+    implementation platform('com.google.firebase:firebase-bom:33.13.9')
 
-    // Add other Firebase dependencies as required
+    // Firebase SDKs
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // Kotlin standard library
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.10'
 }

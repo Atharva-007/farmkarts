@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Firebase core package
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart'; // FlutterFire CLI generated
 
 import 'login_page.dart';
-import 'profile_page.dart';
-import 'settings_page.dart';
-import 'buy_page.dart';
-import 'sell_page.dart';
-import 'news_page.dart';
+import 'signup_page.dart';
+import 'home_page.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -20,27 +22,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Market App',
-      theme: ThemeData(
-        primaryColor: Colors.teal,
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal)
-            .copyWith(secondary: Colors.orange),
-        scaffoldBackgroundColor: Colors.grey[100],
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: Colors.teal,
-          unselectedItemColor: Colors.grey,
-        ),
-      ),
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(),
+      title: 'FarmKarts',
+      theme: ThemeData(primarySwatch: Colors.teal),
+      initialRoute: '/login',
       routes: {
-        '/home': (context) => const MainPage(),
-        '/profile': (context) => ProfilePage(),
-        '/settings': (context) => SettingsPage(),
-        '/buy': (context) => const BuyPage(),
-        '/sell': (context) => const SellPage(),
-        '/news': (context) => NewsPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignUpPage(),
+        '/home': (context) => const HomePage(),
+
+
       },
     );
   }

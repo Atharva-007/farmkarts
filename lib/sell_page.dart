@@ -1,5 +1,6 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'add_sell_item_page.dart';
 
 class SellPage extends StatefulWidget {
   const SellPage({super.key});
@@ -9,89 +10,81 @@ class SellPage extends StatefulWidget {
 }
 
 class _SellPageState extends State<SellPage> {
-  // Reference to the Firebase Realtime Database
-  final DatabaseReference _itemsRef = FirebaseDatabase.instance.ref('itemsForSale');
+  final DatabaseReference _dbRef = FirebaseDatabase(
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com/',
+  ).ref().child('itemsForSale');
 
-  // Method to fetch items from Firebase
-  Stream<List<Map<String, dynamic>>> _getItemsForSale() {
-    return _itemsRef.onValue.map((event) {
+  final List<Map<String, dynamic>> _itemsForSale = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _listenToDatabase();
+  }
+
+  void _listenToDatabase() {
+    _dbRef.orderByChild('timestamp').onValue.listen((event) {
       final data = event.snapshot.value;
-      if (data == null) return [];
-
-      final items = <Map<String, dynamic>>[];
-      (data as Map<dynamic, dynamic>).forEach((key, value) {
-        items.add({
-          'id': key,
-          'productName': value['productName'] ?? 'No Name',
-          'description': value['description'] ?? 'No Description',
-          'price': value['price'] ?? '0.00',
+      if (data != null && data is Map) {
+        final List<Map<String, dynamic>> loadedItems = [];
+        data.forEach((key, value) {
+          loadedItems.add({
+            'key': key,
+            'productName': value['productName'],
+            'description': value['description'],
+            'price': value['price'],
+            'timestamp': value['timestamp'],
+          });
         });
-      });
-      return items;
+
+        loadedItems.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+
+        setState(() {
+          _itemsForSale
+            ..clear()
+            ..addAll(loadedItems);
+        });
+      } else {
+        setState(() => _itemsForSale.clear());
+      }
     });
   }
 
-  // Method to add item to Firebase
-  void _addItemToFirebase(String productName, String description, String price) {
-    _itemsRef.push().set({
+  void _addItemToDatabase(String productName, String description, String price) {
+    final newItem = {
       'productName': productName,
       'description': description,
       'price': price,
-    });
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+
+    _dbRef.push().set(newItem);
   }
 
-  // Dialog to add a new item
-  void _showAddItemDialog() {
-    final productNameController = TextEditingController();
-    final descriptionController = TextEditingController();
-    final priceController = TextEditingController();
+  void _navigateToAddSellItemPage() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddSellItemPage(
+          onAddItem: _addItemToDatabase,
+        ),
+      ),
+    );
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Item'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: productNameController,
-                decoration: const InputDecoration(labelText: 'Product Name'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              TextField(
-                controller: priceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Price'),
-              ),
-            ],
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey),
+          SizedBox(height: 20),
+          Text(
+            'No items added yet!',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (productNameController.text.isNotEmpty &&
-                    descriptionController.text.isNotEmpty &&
-                    priceController.text.isNotEmpty) {
-                  _addItemToFirebase(
-                    productNameController.text,
-                    descriptionController.text,
-                    priceController.text,
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -107,71 +100,65 @@ class _SellPageState extends State<SellPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Text(
+              'Your Items for Sale',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
             Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: _getItemsForSale(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No items added yet!'));
-                  }
-
-                  final items = snapshot.data!;
-                  return ListView.builder(
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+              child: _itemsForSale.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                itemCount: _itemsForSale.length,
+                itemBuilder: (context, index) {
+                  final item = _itemsForSale[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      title: Text(
+                        item['productName'] ?? 'No Name',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          title: Text(
-                            item['productName'],
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            item['description'] ?? 'No Description',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Price: ₹${item['price'] ?? '0.00'}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                              color: Colors.teal,
                             ),
                           ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 8),
-                              Text(
-                                item['description'],
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Price: ₹${item['price']}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal,
-                                ),
-                              ),
-                            ],
-                          ),
-                          isThreeLine: true,
-                        ),
-                      );
-                    },
+                        ],
+                      ),
+                      isThreeLine: true,
+                    ),
                   );
                 },
               ),
             ),
-            ElevatedButton(
-              onPressed: _showAddItemDialog,
-              child: const Text('Add New Item'),
-            ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddSellItemPage,
+        tooltip: 'Add New Item',
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.add),
       ),
     );
   }

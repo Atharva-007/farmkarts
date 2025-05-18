@@ -6,11 +6,13 @@ class NewsPage extends StatefulWidget {
   _NewsPageState createState() => _NewsPageState();
 }
 
-class _NewsPageState extends State<NewsPage> {
+class _NewsPageState extends State<NewsPage> with SingleTickerProviderStateMixin {
   final ScrollController _scrollController = ScrollController();
   late Timer _scrollTimer;
 
-  final List<Map<String, String>> newsArticles = [
+  late AnimationController _animationController;
+
+  final List<Map<String, String?>> newsArticles = [
     {
       'title': 'Government Introduces Subsidy for Organic Farmers',
       'description': 'A new scheme provides financial support for organic farming.',
@@ -35,12 +37,39 @@ class _NewsPageState extends State<NewsPage> {
       'image': 'https://via.placeholder.com/300x200',
       'details': 'Precision farming tools like GPS trackers and drones are helping farmers improve yield while minimizing costs and environmental impact.'
     },
+    // Text-only news (no image)
+    {
+      'title': 'Monsoon Forecast: Above Normal Rainfall Expected',
+      'description': 'Meteorologists predict above average monsoon rainfall this year.',
+      'image': null,
+      'details': 'This year’s monsoon is expected to be stronger than previous years, potentially benefiting farmers in rain-dependent regions.'
+    },
+    {
+      'title': 'New Crop Insurance Policy Launched',
+      'description': 'A new insurance scheme covers more crops and reduces premiums.',
+      'image': null,
+      'details': 'Farmers can now insure a wider variety of crops under the updated scheme, making protection more affordable.'
+    },
+    {
+      'title': 'Rise in Organic Farming Awareness',
+      'description': 'More farmers are adopting organic farming methods for sustainability.',
+      'image': null,
+      'details': 'The awareness campaigns have led to a significant increase in organic farming, improving soil health and crop quality.'
+    },
   ];
 
   @override
   void initState() {
     super.initState();
     _startScrolling();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    // Start the fade-in animation when page loads
+    _animationController.forward();
   }
 
   void _startScrolling() {
@@ -60,11 +89,25 @@ class _NewsPageState extends State<NewsPage> {
   void dispose() {
     _scrollTimer.cancel();
     _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final textStyleTitle = const TextStyle(
+      fontWeight: FontWeight.bold,
+      color: Colors.white,
+      fontSize: 18,
+      shadows: [
+        Shadow(
+          blurRadius: 5,
+          color: Colors.black54,
+          offset: Offset(1, 1),
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('News'),
@@ -77,14 +120,15 @@ class _NewsPageState extends State<NewsPage> {
               image: DecorationImage(
                 image: AssetImage('assets/background.jpg'),
                 fit: BoxFit.cover,
+                opacity: 0.7,
               ),
             ),
           ),
           Column(
             children: [
-              // Scrolling Headlines
+              // Scrolling Headlines with fade animation
               Container(
-                height: 30,
+                height: 40,
                 color: Colors.black.withOpacity(0.7),
                 child: SingleChildScrollView(
                   controller: _scrollController,
@@ -92,13 +136,17 @@ class _NewsPageState extends State<NewsPage> {
                   child: Row(
                     children: newsArticles.map((news) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          news['title']!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: FadeTransition(
+                          opacity: _animationController,
+                          child: Text(
+                            news['title']!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
                           ),
                         ),
                       );
@@ -109,49 +157,112 @@ class _NewsPageState extends State<NewsPage> {
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: newsArticles.length,
                   itemBuilder: (context, index) {
                     final news = newsArticles[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => NewsDetailPage(news: news),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16.0),
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12.0),
-                              child: Image.network(
-                                news['image']!,
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.cover,
-                              ),
+                    final hasImage = news['image'] != null && news['image']!.isNotEmpty;
+
+                    return FadeTransition(
+                      opacity: CurvedAnimation(
+                        parent: _animationController,
+                        curve: Interval(
+                          index / newsArticles.length,
+                          1.0,
+                          curve: Curves.easeIn,
+                        ),
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NewsDetailPage(news: news),
                             ),
-                            Positioned(
-                              bottom: 16,
-                              left: 16,
-                              right: 16,
-                              child: Container(
-                                color: Colors.black.withOpacity(0.6),
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  news['title']!,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 20.0),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
+                          ),
+                          child: hasImage
+                              ? Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  news['image']!,
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, progress) {
+                                    if (progress == null) return child;
+                                    return SizedBox(
+                                      height: 200,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: progress.expectedTotalBytes != null
+                                              ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes ?? 1)
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 200,
+                                      color: Colors.grey[700],
+                                      child: const Center(
+                                        child: Icon(Icons.broken_image, size: 40, color: Colors.white),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 16,
+                                left: 16,
+                                right: 16,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    news['title']!,
+                                    style: textStyleTitle,
                                   ),
                                 ),
                               ),
+                            ],
+                          )
+                              : Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  news['title']!,
+                                  style: textStyleTitle.copyWith(fontSize: 20),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  news['description'] ?? '',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     );
@@ -167,15 +278,17 @@ class _NewsPageState extends State<NewsPage> {
 }
 
 class NewsDetailPage extends StatelessWidget {
-  final Map<String, String> news;
+  final Map<String, String?> news;
 
   const NewsDetailPage({required this.news, super.key});
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = news['image'] != null && news['image']!.isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(news['title']!),
+        title: Text(news['title'] ?? 'News Detail'),
         backgroundColor: Colors.black.withOpacity(0.7),
       ),
       body: Container(
@@ -183,30 +296,69 @@ class NewsDetailPage extends StatelessWidget {
           image: DecorationImage(
             image: AssetImage('assets/background.jpg'),
             fit: BoxFit.cover,
+            opacity: 0.7,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                news['title']!,
+                news['title'] ?? '',
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 4,
+                      color: Colors.black54,
+                      offset: Offset(1, 1),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
-                child: Image.network(news['image']!),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+              if (hasImage)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(
+                    news['image']!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: progress.expectedTotalBytes != null
+                                ? progress.cumulativeBytesLoaded / (progress.expectedTotalBytes ?? 1)
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey[700],
+                        child: const Center(
+                          child: Icon(Icons.broken_image, size: 40, color: Colors.white),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              if (hasImage) const SizedBox(height: 20),
               Text(
-                news['details']!,
-                style: const TextStyle(fontSize: 18, color: Colors.white),
+                news['details'] ?? '',
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.white70,
+                  height: 1.4,
+                ),
               ),
             ],
           ),

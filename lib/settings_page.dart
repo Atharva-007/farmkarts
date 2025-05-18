@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // Import the LoginPage
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -9,40 +8,40 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context), // Go back to Profile page
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              title: const Text('Account Settings'),
               leading: const Icon(Icons.account_circle),
+              title: const Text('Account Settings'),
               onTap: () {
-                // Handle account settings
+                // TODO: Add logic here
               },
             ),
             ListTile(
-              title: const Text('Notification Settings'),
               leading: const Icon(Icons.notifications),
+              title: const Text('Notification Settings'),
               onTap: () {
-                // Handle notification settings
+                // TODO: Add logic here
               },
             ),
             const Spacer(),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle logout logic
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                        (route) => false, // Remove all previous routes
-                  );
+                  Navigator.pushReplacementNamed(context, '/login');
                 },
                 child: const Text('Logout'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               ),
-            ),
+            )
           ],
         ),
       ),
