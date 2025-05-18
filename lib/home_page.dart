@@ -8,6 +8,7 @@ import 'news_page.dart';
 import 'settings_page.dart';
 import 'APMCpage.dart';
 import 'MAHABEJpage.dart';
+import 'mandi_page.dart';  // New import for MandiPage
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -54,10 +55,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final quickAccessButtons = [
       _QuickAccessData(Icons.shopping_cart, 'Buy', Colors.teal, Colors.orange, const BuyPage()),
       _QuickAccessData(Icons.sell, 'Sell', Colors.teal, Colors.orange, const SellPage()),
-      _QuickAccessData(Icons.article, 'News', Colors.teal, Colors.orange, NewsPage()),
+      _QuickAccessData(Icons.article, 'News', Colors.teal, Colors.orange, const NewsPage()),
       _QuickAccessData(Icons.settings, 'Settings', Colors.teal, Colors.orange, const SettingsPage()),
       _QuickAccessData(Icons.store, 'APMC', AppColors.deepBlue, AppColors.lightBlue, const APMCPage()),
       _QuickAccessData(Icons.grass, 'Mahabej', AppColors.darkGreen, AppColors.lightGreen, const MahabejPage()),
+      _QuickAccessData(Icons.currency_rupee, 'Mandi', Colors.deepPurple, Colors.deepOrangeAccent, MandiPricesPage()),
     ];
 
     return Scaffold(
@@ -111,9 +113,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ),
           ],
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.agriculture, color: Colors.white, size: 48),
             SizedBox(width: 16),
             Text(
@@ -315,86 +317,90 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget _buildTestimonials() {
     return FadeTransition(
       opacity: _bannerFadeAnimation,
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('What Our Farmers Say', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
+          Text('What Our Farmers Say', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          SizedBox(height: 16),
           Card(
             elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             child: ListTile(
-              leading: const Icon(Icons.person, size: 48, color: Colors.green),
-              title: const Text('Ramesh Kumar'),
-              subtitle: const Text('"This app helped me sell my crops directly to buyers, no middlemen! Highly recommended."'),
+              leading: Icon(Icons.person, size: 48, color: Colors.green),
+              title: Text('Ramesh Kumar'),
+              subtitle: Text('"This app helped me sell my crops directly to buyers, no middlemen! Highly recommended."'),
             ),
           ),
           Card(
             elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            margin: EdgeInsets.symmetric(vertical: 8),
             child: ListTile(
-              leading: const Icon(Icons.person, size: 48, color: Colors.green),
-              title: const Text('Sunita Devi'),
-              subtitle: const Text('"The weather updates and crop tips have been invaluable for my farming."'),
+              leading: Icon(Icons.person, size: 48, color: Colors.green),
+              title: Text('Sunita Devi'),
+              subtitle: Text('"The weather updates and crop tips have been invaluable for my farming."'),
             ),
           ),
         ],
       ),
     );
+
+
+
+
   }
 
   Widget _buildPopularCategories() {
-    final categories = ['Vegetables', 'Fruits', 'Grains', 'Seeds', 'Fertilizers'];
     return FadeTransition(
       opacity: _bannerFadeAnimation,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
         children: [
-          const Text('Popular Categories', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: categories.map((cat) {
-              return Chip(
-                label: Text(cat),
-                backgroundColor: Colors.lightGreen.shade200,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              );
-            }).toList(),
-          ),
+          _buildCategoryChip('Vegetables', Icons.grass),
+          _buildCategoryChip('Fruits', Icons.local_florist),
+          _buildCategoryChip('Grains', Icons.agriculture),
+          _buildCategoryChip('Dairy', Icons.egg),
+          _buildCategoryChip('Pulses', Icons.eco),
         ],
       ),
+    );
+  }
+
+  Widget _buildCategoryChip(String label, IconData icon) {
+    return Chip(
+      avatar: Icon(icon, color: Colors.white, size: 20),
+      label: Text(label),
+      backgroundColor: AppColors.darkGreen,
+      labelStyle: const TextStyle(color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 
   Widget _buildWeatherWidget() {
+// Placeholder for weather info; you can expand with actual API integration
     return FadeTransition(
       opacity: _bannerFadeAnimation,
       child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(vertical: 24),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.blue.shade100,
+          color: Colors.blue.shade50,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withOpacity(0.2),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Icon(Icons.wb_sunny, size: 48, color: Colors.orange),
+        child: const Row(
+          children: [
+            Icon(Icons.cloud, size: 48, color: Colors.blue),
+            SizedBox(width: 16),
             Text(
-              'Weather Today: 32°C, Sunny',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              'Current Weather: Sunny, 32°C',
+              style: TextStyle(fontSize: 20),
             ),
-            Icon(Icons.cloud_queue, size: 48, color: Colors.grey),
           ],
         ),
       ),
@@ -403,41 +409,60 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Widget _buildCallToActionBanner() {
     return FadeTransition(
-        opacity: _bannerFadeAnimation,
-        child: Container(
-        width: double.infinity,
+      opacity: _bannerFadeAnimation,
+      child: Container(
         padding: const EdgeInsets.all(24),
-    decoration: BoxDecoration(
-    color: Colors.orange.shade300,
-    borderRadius: BorderRadius.circular(16),
-    boxShadow: [
-    BoxShadow(
-    color: Colors.orange.withOpacity(0.4),
-    blurRadius: 12,
-    offset: const Offset(0, 4),
-    ),
-    ],
-    ),
-    child: Column(
-    children: const [
-    Text(
-    'Join the Farming Revolution!',
-    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors
-        .white),
-    ),
-      SizedBox(height: 12),
-      Text(
-        'Download our app now and connect directly with buyers.',
-        style: TextStyle(fontSize: 20, color: Colors.white70),
-        textAlign: TextAlign.center,
-      ),
-    ],
-    ),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.orangeAccent, Colors.deepOrange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.deepOrange.withOpacity(0.4),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Expanded(
+              child: Text(
+                'Join the community of farmers and buyers today! Get started now!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+// For example, navigate to signup or sell page
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SellPage()));
+
+
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.deepOrange,
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
+// Helper data class for quick access buttons
 class _QuickAccessData {
   final IconData icon;
   final String label;
@@ -447,5 +472,3 @@ class _QuickAccessData {
 
   _QuickAccessData(this.icon, this.label, this.primaryColor, this.secondaryColor, this.page);
 }
-
-
