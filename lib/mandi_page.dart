@@ -10,6 +10,8 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 
 class MandiPricesPage extends StatefulWidget {
+  const MandiPricesPage({super.key});
+
   @override
   _MandiPricesPageState createState() => _MandiPricesPageState();
 }
@@ -29,7 +31,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
     fetchMandiPrices();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 800),
     );
   }
 
@@ -46,7 +48,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
       error = '';
     });
 
-    final apiUrl =
+    const apiUrl =
         'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001fa4f4f2800bf436b7fe56897564b6555&format=json&limit=1000';
 
     try {
@@ -97,7 +99,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
   void onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
-    _debounce = Timer(Duration(milliseconds: 400), () {
+    _debounce = Timer(const Duration(milliseconds: 400), () {
       setState(() {
         searchQuery = query;
       });
@@ -122,7 +124,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
       opacity: animation,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: Offset(0, 0.2),
+          begin: const Offset(0, 0.2),
           end: Offset.zero,
         ).animate(animation),
         child: child,
@@ -144,7 +146,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
     final unit = item['unit'] ?? '';
 
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       shadowColor: Colors.green.withOpacity(0.3),
@@ -155,7 +157,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
           children: [
             Text(commodity,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green[800])),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Wrap(
               spacing: 12,
               runSpacing: 6,
@@ -197,7 +199,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
         children: [
           Text('Top Grossing Commodities',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green[900])),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           ...topFive.map((item) => buildCommodityCard(item)),
         ],
       ),
@@ -220,7 +222,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
         children: [
           Text('Low Grossing Commodities',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green[900])),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           ...lowFive.map((item) => buildCommodityCard(item)),
         ],
       ),
@@ -231,12 +233,12 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
     return buildAnimatedCard(
       index: index,
       child: Card(
-        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         elevation: 6,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         shadowColor: Colors.green.withOpacity(0.4),
         child: ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           title: Text(state, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.green[800])),
           trailing: Icon(Icons.arrow_forward_ios, color: Colors.green[700]),
           onTap: () {
@@ -245,7 +247,7 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
               PageRouteBuilder(
                 pageBuilder: (_, animation, __) =>
                     FadeTransition(opacity: animation, child: StateDetailPage(state: state, districts: districts)),
-                transitionDuration: Duration(milliseconds: 500),
+                transitionDuration: const Duration(milliseconds: 500),
               ),
             );
           },
@@ -296,9 +298,6 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
       await file.writeAsBytes(await pdf.save());
       Share.shareFiles([file.path], text: 'Mandi Prices PDF Report');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Storage permission is required to save PDF')),
-      );
     }
   }
 
@@ -310,33 +309,33 @@ class _MandiPricesPageState extends State<MandiPricesPage> with SingleTickerProv
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Live Mandi Prices'),
+        title: const Text('Live Mandi Prices'),
         backgroundColor: Colors.green[700],
         actions: [
           IconButton(
-            icon: Icon(Icons.picture_as_pdf),
+            icon: const Icon(Icons.picture_as_pdf),
             onPressed: exportToPdf,
             tooltip: 'Export PDF',
           )
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : error.isNotEmpty
           ? Center(child: Text(error))
           : mandiDataGrouped.isEmpty
-          ? Center(child: Text('No data for today'))
+          ? const Center(child: Text('No data for today'))
           : RefreshIndicator(
         onRefresh: fetchMandiPrices,
         child: ListView(
-          padding: EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.only(bottom: 16),
           children: [
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Search by State',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -363,7 +362,7 @@ class InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const InfoChip({required this.icon, required this.label});
+  const InfoChip({super.key, required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +370,7 @@ class InfoChip extends StatelessWidget {
       backgroundColor: Colors.green[50],
       avatar: Icon(icon, size: 16, color: Colors.green[700]),
       label: Text(label, style: TextStyle(color: Colors.green[900], fontSize: 12)),
-      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
     );
   }
 }
@@ -383,14 +382,14 @@ class PriceInfo extends StatelessWidget {
   final String unit;
   final Color color;
 
-  const PriceInfo({required this.title, required this.price, required this.unit, required this.color});
+  const PriceInfo({super.key, required this.title, required this.price, required this.unit, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Text(title, style: TextStyle(fontSize: 14, color: color, fontWeight: FontWeight.w600)),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text('₹$price $unit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
       ],
     );
@@ -402,7 +401,7 @@ class StateDetailPage extends StatelessWidget {
   final String state;
   final Map<String, List<dynamic>> districts;
 
-  StateDetailPage({required this.state, required this.districts});
+  const StateDetailPage({super.key, required this.state, required this.districts});
 
   @override
   Widget build(BuildContext context) {
@@ -416,12 +415,12 @@ class StateDetailPage extends StatelessWidget {
           final district = entry.key;
           final items = entry.value;
           return ExpansionTile(
-            title: Text(district, style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(district, style: const TextStyle(fontWeight: FontWeight.bold)),
             children: items.map((item) {
               return ListTile(
                 title: Text(item['commodity'] ?? 'Unknown'),
                 subtitle: Text('Market: ${item['market']}, Variety: ${item['variety'] ?? 'N/A'}'),
-                trailing: Text('₹${item['modal_price'] ?? '0'}', style: TextStyle(fontWeight: FontWeight.bold)),
+                trailing: Text('₹${item['modal_price'] ?? '0'}', style: const TextStyle(fontWeight: FontWeight.bold)),
               );
             }).toList(),
           );
