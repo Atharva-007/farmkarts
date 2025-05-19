@@ -74,7 +74,7 @@ class APMCPage extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: Hero(
-                tag: market['name']! + '_icon',
+                tag: '${market['name']!}_icon',
                 child: CircleAvatar(
                   backgroundColor: Colors.green[700],
                   child: const Icon(Icons.local_grocery_store, color: Colors.white),
@@ -203,7 +203,7 @@ class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProvid
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Hero(
-                  tag: market['name']! + '_icon',
+                  tag: '${market['name']!}_icon',
                   child: Icon(Icons.local_grocery_store, size: 80, color: Colors.green[700]),
                 ),
                 const SizedBox(height: 20),

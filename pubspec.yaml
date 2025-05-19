@@ -17,14 +17,22 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_auth: ^4.0.0
   firebase_database: ^10.4.0
+  path_provider: ^2.0.15
+  share_plus: ^7.2.1
+  permission_handler: ^11.0.0
+
   # Additional Firebase services (uncomment as needed)
   # cloud_firestore: ^4.0.0
   # firebase_analytics: ^10.0.0
-  http: 1.1.0
 
+  http: 1.1.0
+  intl: ^0.18.1
+  shimmer: ^3.0.0
+  printing: ^5.11.0
   # Other dependencies
   cupertino_icons: ^1.0.2
   dart_format: ^0.0.4
+  pdf: ^3.10.0
 
 dev_dependencies:
   flutter_test:

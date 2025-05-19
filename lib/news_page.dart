@@ -50,7 +50,7 @@ class _NewsPageState extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final textStyleTitle = const TextStyle(
+    const textStyleTitle = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 18,
     );
