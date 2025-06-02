@@ -9,14 +9,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
-
-// For map integration
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-// For push notifications (simple local notifications simulation)
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class MandiPricesPage extends StatefulWidget {
+  const MandiPricesPage({super.key});
+
   @override
   _MandiPricesPageState createState() => _MandiPricesPageState();
 }
@@ -51,7 +49,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 900),
     );
     _initNotifications();
     fetchMandiPrices();
@@ -95,7 +93,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
       error = '';
     });
 
-    final apiUrl =
+    const apiUrl =
         'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001fa4f4f2800bf436b7fe56897564b6555&format=json&limit=1000';
 
     try {
@@ -177,20 +175,20 @@ class _MandiPricesPageState extends State<MandiPricesPage>
 
     // Simple mock lat/lng for demonstration (randomly assigned)
     Map<String, LatLng> fakeCoordinates = {
-      "Delhi": LatLng(28.7041, 77.1025),
-      "Mumbai": LatLng(19.0760, 72.8777),
-      "Kolkata": LatLng(22.5726, 88.3639),
-      "Chennai": LatLng(13.0827, 80.2707),
-      "Bangalore": LatLng(12.9716, 77.5946),
-      "Hyderabad": LatLng(17.3850, 78.4867),
-      "Ahmedabad": LatLng(23.0225, 72.5714),
-      "Pune": LatLng(18.5204, 73.8567),
+      "Delhi": const LatLng(28.7041, 77.1025),
+      "Mumbai": const LatLng(19.0760, 72.8777),
+      "Kolkata": const LatLng(22.5726, 88.3639),
+      "Chennai": const LatLng(13.0827, 80.2707),
+      "Bangalore": const LatLng(12.9716, 77.5946),
+      "Hyderabad": const LatLng(17.3850, 78.4867),
+      "Ahmedabad": const LatLng(23.0225, 72.5714),
+      "Pune": const LatLng(18.5204, 73.8567),
     };
 
     for (var item in items) {
       final marketName = item['market'] ?? '';
       final latLng = fakeCoordinates[marketName] ??
-          LatLng(20.5937, 78.9629); // Default India center coords
+          const LatLng(20.5937, 78.9629); // Default India center coords
 
       markers.add(
         Marker(
@@ -315,9 +313,6 @@ class _MandiPricesPageState extends State<MandiPricesPage>
       await file.writeAsBytes(await pdf.save());
       Share.shareFiles([file.path], text: 'Mandi Prices PDF Report');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Storage permission is required to save PDF')),
-      );
     }
   }
 
@@ -333,11 +328,11 @@ class _MandiPricesPageState extends State<MandiPricesPage>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Live Mandi Prices'),
+        title: const Text('Live Mandi Prices'),
         backgroundColor: Colors.green[700],
         actions: [
           IconButton(
-            icon: Icon(Icons.picture_as_pdf),
+            icon: const Icon(Icons.picture_as_pdf),
             onPressed: exportToPdf,
             tooltip: 'Export PDF',
           )
@@ -367,7 +362,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
           : RefreshIndicator(
         onRefresh: fetchMandiPrices,
         child: ListView(
-          padding: EdgeInsets.only(top: 12),
+          padding: const EdgeInsets.only(top: 12),
           children: [
             // Existing Top and Low grossing chips
             buildGrossingChips('Top Grossing', Icons.trending_up,
@@ -393,12 +388,12 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.green[800])),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Commodity',
                             border: OutlineInputBorder(),
                             contentPadding: EdgeInsets.symmetric(
@@ -418,10 +413,10 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                           },
                         ),
                       ),
-                      SizedBox(width: 16),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Market',
                             border: OutlineInputBorder(),
                             contentPadding: EdgeInsets.symmetric(
@@ -443,9 +438,9 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                       ),
                     ],
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   TextField(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Search by State',
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
@@ -464,7 +459,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
             Container(
               height: 250,
               margin:
-              EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.green),
@@ -473,7 +468,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                 onMapCreated: (controller) {
                   mapController = controller;
                 },
-                initialCameraPosition: CameraPosition(
+                initialCameraPosition: const CameraPosition(
                   target: LatLng(20.5937, 78.9629), // Center of India
                   zoom: 4.5,
                 ),
@@ -505,7 +500,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                 return anyMatch;
               });
 
-              if (filteredDistricts.isEmpty) return SizedBox.shrink();
+              if (filteredDistricts.isEmpty) return const SizedBox.shrink();
 
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -518,7 +513,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.green[900])),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     ...filteredDistricts.map((districtEntry) {
                       return Card(
                         shape: RoundedRectangleBorder(
@@ -528,7 +523,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                         const EdgeInsets.symmetric(vertical: 6),
                         child: ExpansionTile(
                           title: Text(districtEntry.key,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w600)),
                           children: districtEntry.value
                               .where((item) {
@@ -588,13 +583,13 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   color: Colors.green[800])),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           SizedBox(
             height: 40,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: items.length,
-              separatorBuilder: (_, __) => SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
               itemBuilder: (context, index) {
                 final item = items[index];
                 return Chip(
@@ -602,7 +597,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                   backgroundColor: Colors.green,
                   label: Text(
                     '${item['commodity']} ₹${item['modal_price']}',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 );
               },
