@@ -5,9 +5,7 @@ publish_to: 'none' # Remove this line if you intend to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-
-    sdk: ">=3.1.5 <3.3.4"
-
+  sdk: '>=3.1.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -17,30 +15,42 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_auth: ^4.0.0
   firebase_database: ^10.4.0
+  google_maps_flutter: ^2.5.0
+
+  # Firebase Firestore
+  cloud_firestore: ^4.9.1
+
+  # Utilities
   path_provider: ^2.0.15
   share_plus: ^7.2.1
   permission_handler: ^11.0.0
 
-  # Additional Firebase services (uncomment as needed)
-  # cloud_firestore: ^4.0.0
-  # firebase_analytics: ^10.0.0
-
-  http: 1.1.0
+  # HTTP and formatting
+  http: ^1.1.0
   intl: ^0.18.1
+
+  # UI and animations
   shimmer: ^3.0.0
-  printing: ^5.11.0
-  # Other dependencies
-  cupertino_icons: ^1.0.2
-  dart_format: ^0.0.4
-  pdf: ^3.10.0
-  google_maps_flutter: ^2.5.0
-  geolocation: ^10.1.0
-  geocoding: ^2.1.0
-  cloud_firestorm: ^4.9.1
-  flutter_spin kit: ^5.2.0
-  flutter_local_notifications: ^16.3.1
+  flutter_spinkit: ^5.2.0
   google_fonts: ^6.1.0
   carousel_slider: ^4.2.1
+  geolocator: ^10.1.0
+  # PDF and printing
+  printing: ^5.11.0
+  pdf: ^3.10.0
+
+  # Maps and location (replaced geolocation with safe packages)
+  # google_maps_flutter: ^2.5.0
+  geocoding: ^2.1.0
+  # If you need current location, use a null-safe package like:
+  location: ^5.0.3
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  # Local notifications
+  flutter_local_notifications: ^16.3.1
+
+  # Icons
+  cupertino_icons: ^1.0.2
 
 dev_dependencies:
   flutter_test:
@@ -53,3 +63,36 @@ dependency_overrides:
 
 flutter:
   uses-material-design: true
+
+on:
+  workflow_dispatch: # Allows manual triggering
+  push: # Runs when code is pushed
+    branches: [ main ]
+
+jobs:
+  run-app:
+    runs-on: self-hosted # This targets your runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run your application
+        run: |
+          # Replace with your actual run commands
+          echo "Running the application..."
+          cd src
+          python app.py  # Example for Python app
+          # Or for Node.js: npm start
+          # Or for .NET: dotnet run
+          - name: Run in Debug
+            run: flutter run -d windows
+          
+          - name: Build Release
+            run: flutter build windows
+          
+          - name: Run in headless mode
+            run: |
+              flutter drive \
+                --driver=test_driver/integration_test.dart \
+                --target=integration_test/app_test.dart
