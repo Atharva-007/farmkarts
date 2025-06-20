@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709785957438",
+    "project_id": "farmkart-9f4f3",
+    "storage_bucket": "farmkart-9f4f3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709785957438:android:2f747a5a153a33b0134d6f",
+        "android_client_info": {
+          "package_name": "com.example.farmkarts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAYGPfM-kQ5jIZzRNN059ASTo2Wiy-CHd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
