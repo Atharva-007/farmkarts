@@ -4,14 +4,18 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
     namespace "com.example.farmkarts"
-    compileSdkVersion 33
+    compileSdkVersion 36
+    ndkVersion "25.1.8937393"
 
     defaultConfig {
         applicationId "com.example.farmkarts"
         minSdkVersion 21
-        targetSdkVersion 33
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0.0"
+        multiDexEnabled true
+
     }
 
     buildTypes {
@@ -32,12 +36,13 @@ android {
 
 dependencies {
     // Firebase BoM manages versions automatically
-    implementation platform('com.google.firebase:firebase-bom:33.13.9')
+    implementation platform('com.google.firebase:firebase-bom:33.16.0')
 
     // Firebase SDKs
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-analytics'
 
     // Kotlin standard library
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.10'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+    implementation "androidx.multidex:multidex:2.0.1"
 }
