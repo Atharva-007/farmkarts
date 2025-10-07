@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../features/marketplace/marketplace_home.dart';
+import '../sell_page.dart';
 
 class QuickActionGrid extends StatelessWidget {
   const QuickActionGrid({super.key});
@@ -133,44 +135,184 @@ class QuickActionGrid extends StatelessWidget {
   }
 
   void _navigateToMarketplace(BuildContext context) {
-    // Navigate to marketplace
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Marketplace...')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MarketplaceHome()),
     );
   }
 
   void _navigateToSell(BuildContext context) {
-    // Navigate to sell page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Sell Products...')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SellPage()),
     );
   }
 
   void _navigateToAnalytics(BuildContext context) {
-    // Navigate to analytics
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Analytics...')),
-    );
+    _showAnalytics(context);
   }
 
   void _navigateToEducation(BuildContext context) {
-    // Navigate to education
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigating to Learning Center...')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EducationPage()),
     );
   }
 
   void _navigateToExpertChat(BuildContext context) {
-    // Navigate to expert chat
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connecting to Expert Chat...')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ExpertChatPage()),
     );
   }
 
   void _navigateToCropDoctor(BuildContext context) {
-    // Navigate to crop doctor
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening Crop Doctor...')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CropDoctorPage()),
+    );
+  }
+
+  static void _showAnalytics(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: AppTheme.borderGrey,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Farm Analytics',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildAnalyticsCard('Total Revenue', '₹1,25,000', Icons.account_balance_wallet, AppTheme.success),
+            const SizedBox(height: 12),
+            _buildAnalyticsCard('Active Crops', '15 acres', Icons.agriculture, AppTheme.primaryGreen),
+            const SizedBox(height: 12),
+            _buildAnalyticsCard('Market Price Avg', '₹45/kg', Icons.trending_up, AppTheme.accentOrange),
+            const SizedBox(height: 12),
+            _buildAnalyticsCard('Profit Margin', '25%', Icons.percent, AppTheme.skyBlue),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildAnalyticsCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: AppConstants.defaultPadding,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: AppTheme.textGrey,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Placeholder pages for quick actions
+class EducationPage extends StatelessWidget {
+  const EducationPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Agricultural Education'),
+        backgroundColor: AppTheme.harvest,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Education content coming soon!'),
+      ),
+    );
+  }
+}
+
+class ExpertChatPage extends StatelessWidget {
+  const ExpertChatPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Expert Chat'),
+        backgroundColor: AppTheme.freshMint,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Expert chat coming soon!'),
+      ),
+    );
+  }
+}
+
+class CropDoctorPage extends StatelessWidget {
+  const CropDoctorPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Crop Doctor'),
+        backgroundColor: AppTheme.earthBrown,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Crop doctor coming soon!'),
+      ),
     );
   }
 }

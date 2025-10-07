@@ -147,6 +147,13 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     );
   }
 
+  void _editItem(Map<String, dynamic> item) {
+    // Navigate to edit page (can reuse AddSellItemPage with edit mode)
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Edit feature coming soon!')),
+    );
+  }
+
   void _deleteItem(Map<String, dynamic> item) {
     showDialog(
       context: context,
@@ -183,6 +190,11 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
         ],
       ),
     );
+  }
+
+  void _toggleStatus(Map<String, dynamic> item) {
+    final newStatus = item['status'] == 'active' ? 'inactive' : 'active';
+    _dbRef.child(item['key']).update({'status': newStatus});
   }
 
   @override
@@ -445,131 +457,149 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
             width: 2,
           ),
         ),
-        child: ListTile(
-          contentPadding: AppConstants.defaultPadding,
-          leading: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.lightGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.agriculture,
-              size: 30,
-              color: AppTheme.primaryGreen,
-            ),
-          ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  item['productName'] ?? 'No Name',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
+          children: [
+            ListTile(
+              contentPadding: AppConstants.defaultPadding,
+              leading: Container(
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  color: isActive ? AppTheme.success : AppTheme.textGrey,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.lightGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  isActive ? 'Active' : 'Inactive',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Icon(
+                  Icons.agriculture,
+                  size: 30,
+                  color: AppTheme.primaryGreen,
                 ),
               ),
-            ],
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Text(
-                item['description'] ?? 'No Description',
-                style: TextStyle(color: AppTheme.textGrey),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Row(
+              title: Row(
                 children: [
-                  Text(
-                    '₹${item['price'] ?? '0'} / ${item['unit'] ?? 'kg'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGreen,
-                      fontSize: 16,
+                  Expanded(
+                    child: Text(
+                      item['productName'] ?? 'No Name',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    'Qty: ${item['quantity'] ?? 0} ${item['unit'] ?? 'kg'}',
-                    style: TextStyle(
-                      color: AppTheme.textGrey,
-                      fontSize: 12,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: isActive ? AppTheme.success : AppTheme.textGrey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isActive ? 'Active' : 'Inactive',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.visibility, size: 16, color: AppTheme.textGrey),
-                  const SizedBox(width: 4),
-                  Text('${item['views']} views', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
-                  const SizedBox(width: 16),
-                  Icon(Icons.message, size: 16, color: AppTheme.textGrey),
-                  const SizedBox(width: 4),
-                  Text('${item['inquiries']} inquiries', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                  const SizedBox(height: 8),
+                  Text(
+                    item['description'] ?? 'No Description',
+                    style: TextStyle(color: AppTheme.textGrey),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        '₹${item['price'] ?? '0'} / ${item['unit'] ?? 'kg'}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryGreen,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        'Qty: ${item['quantity'] ?? 0} ${item['unit'] ?? 'kg'}',
+                        style: TextStyle(
+                          color: AppTheme.textGrey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.visibility, size: 16, color: AppTheme.textGrey),
+                      const SizedBox(width: 4),
+                      Text('${item['views']} views', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                      const SizedBox(width: 16),
+                      Icon(Icons.message, size: 16, color: AppTheme.textGrey),
+                      const SizedBox(width: 4),
+                      Text('${item['inquiries']} inquiries', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-          trailing: PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: AppTheme.primaryGreen),
-                    const SizedBox(width: 8),
-                    const Text('Edit'),
-                  ],
-                ),
+              isThreeLine: true,
+              trailing: PopupMenuButton(
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, color: AppTheme.primaryGreen),
+                        const SizedBox(width: 8),
+                        const Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'toggle_status',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isActive ? Icons.pause : Icons.play_arrow,
+                          color: isActive ? AppTheme.warning : AppTheme.success,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(isActive ? 'Deactivate' : 'Activate'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: AppTheme.error),
+                        const SizedBox(width: 8),
+                        const Text('Delete'),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (value) {
+                  switch (value) {
+                    case 'edit':
+                      _editItem(item);
+                      break;
+                    case 'toggle_status':
+                      _toggleStatus(item);
+                      break;
+                    case 'delete':
+                      _deleteItem(item);
+                      break;
+                  }
+                },
               ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: AppTheme.error),
-                    const SizedBox(width: 8),
-                    const Text('Delete'),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) {
-              switch (value) {
-                case 'edit':
-                  // Edit functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit feature coming soon!')),
-                  );
-                  break;
-                case 'delete':
-                  _deleteItem(item);
-                  break;
-              }
-            },
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -607,8 +637,175 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
             ),
             const SizedBox(height: 20),
             const Text('Detailed analytics coming soon!'),
+            const SizedBox(height: 20),
+            _buildAnalyticsCard('Total Revenue', '₹12,500', Icons.account_balance_wallet, AppTheme.success),
+            const SizedBox(height: 12),
+            _buildAnalyticsCard('Total Orders', '25', Icons.shopping_bag, AppTheme.accentOrange),
+            const SizedBox(height: 12),
+            _buildAnalyticsCard('Average Rating', '4.6 ⭐', Icons.star, AppTheme.sunshine),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildAnalyticsCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: AppConstants.defaultPadding,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: AppTheme.textGrey,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+      }
+    });
+  }
+
+  void _addItemToDatabase(String productName, String description, String price) {
+    final newItem = {
+      'productName': productName,
+      'description': description,
+      'price': price,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    };
+
+    _dbRef.push().set(newItem);
+  }
+
+  void _navigateToAddSellItemPage() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddSellItemPage(
+          onAddItem: _addItemToDatabase,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey),
+          SizedBox(height: 20),
+          Text(
+            'No items added yet!',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sell Items'),
+        backgroundColor: Colors.teal,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your Items for Sale',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: _itemsForSale.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                itemCount: _itemsForSale.length,
+                itemBuilder: (context, index) {
+                  final item = _itemsForSale[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(16),
+                      title: Text(
+                        item['productName'] ?? 'No Name',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            item['description'] ?? 'No Description',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Price: ₹${item['price'] ?? '0.00'}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal,
+                            ),
+                          ),
+                        ],
+                      ),
+                      isThreeLine: true,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddSellItemPage,
+        tooltip: 'Add New Item',
+        backgroundColor: Colors.teal,
+        child: const Icon(Icons.add),
       ),
     );
   }

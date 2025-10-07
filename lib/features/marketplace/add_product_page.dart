@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import '../../theme/app_theme.dart';
 
-class AddSellItemPage extends StatefulWidget {
-  final Function(String, String, String, String, String, int) onAddItem;
+class AddProductPage extends StatefulWidget {
+  final Function? onProductAdded;
+  final Map<String, dynamic>? product;
 
-  const AddSellItemPage({super.key, required this.onAddItem});
+  const AddProductPage({super.key, this.onProductAdded, this.product});
 
   @override
-  _AddSellItemPageState createState() => _AddSellItemPageState();
+  State<AddProductPage> createState() => _AddProductPageState();
 }
 
-class _AddSellItemPageState extends State<AddSellItemPage>
+class _AddProductPageState extends State<AddProductPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _productNameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
@@ -64,51 +67,114 @@ class _AddSellItemPageState extends State<AddSellItemPage>
       curve: Curves.easeIn,
     ));
     
+    if (widget.product != null) {
+      _populateFields();
+    }
+    
     _animationController.forward();
+  }
+
+  void _populateFields() {
+    final product = widget.product!;
+    _nameController.text = product['productName'] ?? '';
+    _descriptionController.text = product['description'] ?? '';
+    _priceController.text = product['price'] ?? '';
+    _quantityController.text = product['quantity']?.toString() ?? '';
+    _selectedCategory = product['category'] ?? 'Vegetables';
+    _selectedUnit = product['unit'] ?? 'kg';
+    _isOrganic = product['isOrganic'] ?? false;
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _productNameController.dispose();
+    _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
     _quantityController.dispose();
     super.dispose();
   }
 
-  void _submitItem() async {
+  Future<void> _submitProduct() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login to add products')),
+      );
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final productName = _productNameController.text.trim();
-      final description = _descriptionController.text.trim();
-      final price = _priceController.text.trim();
-      final quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
+      final productData = {
+        'productName': _nameController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'price': _priceController.text.trim(),
+        'category': _selectedCategory,
+        'unit': _selectedUnit,
+        'quantity': int.tryParse(_quantityController.text.trim()) ?? 0,
+        'isOrganic': _isOrganic,
+        'sellerId': user.uid,
+        'sellerName': user.displayName ?? user.email?.split('@')[0] ?? 'Seller',
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'status': 'active',
+        'views': 0,
+        'inquiries': 0,
+      };
 
-      widget.onAddItem(
-        productName,
-        description,
-        price,
-        _selectedCategory,
-        _selectedUnit,
-        quantity,
-      );
+      if (widget.product != null) {
+        // Update existing product
+        await FirebaseDatabase.instance
+            .ref('marketplace/products')
+            .child(widget.product!['key'])
+            .update(productData);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Product updated successfully!'),
+              backgroundColor: AppTheme.success,
+            ),
+          );
+        }
+      } else {
+        // Add new product
+        await FirebaseDatabase.instance
+            .ref('marketplace/products')
+            .push()
+            .set(productData);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Product added successfully!'),
+              backgroundColor: AppTheme.success,
+            ),
+          );
+        }
+      }
+
+      if (widget.onProductAdded != null) {
+        widget.onProductAdded!();
+      }
 
       if (mounted) {
         Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error adding product: $e'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -121,7 +187,7 @@ class _AddSellItemPageState extends State<AddSellItemPage>
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Add Product for Sale'),
+        title: Text(widget.product == null ? 'Add Product' : 'Edit Product'),
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -174,8 +240,8 @@ class _AddSellItemPageState extends State<AddSellItemPage>
                 color: AppTheme.primaryGreen,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.add_box,
+              child: Icon(
+                widget.product == null ? Icons.add_box : Icons.edit,
                 color: Colors.white,
                 size: 24,
               ),
@@ -186,14 +252,16 @@ class _AddSellItemPageState extends State<AddSellItemPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'List Your Product',
+                    widget.product == null ? 'Add New Product' : 'Edit Product',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryGreen,
                     ),
                   ),
                   Text(
-                    'Fill in the details to sell your agricultural products',
+                    widget.product == null 
+                        ? 'Fill in the details to list your product'
+                        : 'Update your product information',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppTheme.textGrey,
                     ),
@@ -222,7 +290,7 @@ class _AddSellItemPageState extends State<AddSellItemPage>
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _productNameController,
+              controller: _nameController,
               decoration: const InputDecoration(
                 labelText: 'Product Name *',
                 hintText: 'e.g., Fresh Tomatoes, Organic Wheat',
@@ -402,47 +470,6 @@ class _AddSellItemPageState extends State<AddSellItemPage>
                 color: _isOrganic ? AppTheme.success : AppTheme.textGrey,
               ),
             ),
-            const Divider(),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppTheme.info.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.info.withOpacity(0.3)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info, color: AppTheme.info, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tips for better sales:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.info,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          '• Use clear, descriptive product names\n'
-                          '• Set competitive prices\n'
-                          '• Provide detailed descriptions\n'
-                          '• Keep quantity information updated',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.textGrey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -454,7 +481,7 @@ class _AddSellItemPageState extends State<AddSellItemPage>
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: _isSubmitting ? null : _submitItem,
+        onPressed: _isSubmitting ? null : _submitProduct,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.primaryGreen,
           foregroundColor: Colors.white,
@@ -473,10 +500,13 @@ class _AddSellItemPageState extends State<AddSellItemPage>
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.add_shopping_cart, size: 20),
+                  Icon(
+                    widget.product == null ? Icons.add_shopping_cart : Icons.update,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
-                    'List Product for Sale',
+                    widget.product == null ? 'Add Product' : 'Update Product',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -484,6 +514,46 @@ class _AddSellItemPageState extends State<AddSellItemPage>
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+class ProductDetailPage extends StatelessWidget {
+  final dynamic product;
+
+  const ProductDetailPage({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Product Details'),
+        backgroundColor: AppTheme.primaryGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Product details coming soon!'),
+      ),
+    );
+  }
+}
+
+class BuyRequestPage extends StatelessWidget {
+  final dynamic product;
+
+  const BuyRequestPage({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Buy Request'),
+        backgroundColor: AppTheme.primaryGreen,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Buy request feature coming soon!'),
       ),
     );
   }
