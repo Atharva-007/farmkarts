@@ -1,17 +1,22 @@
 {
   "name": "farmkart-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for FarmKart application",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": ["farmkart", "agriculture", "backend", "api"],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.3",
     "express": "^4.21.1",
     "firebase-admin": "^13.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   }
 }

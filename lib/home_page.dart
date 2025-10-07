@@ -1,3 +1,7 @@
+
+
+
+
 import 'package:flutter/material.dart';
 import 'colors.dart';
 
@@ -8,7 +12,7 @@ import 'news_page.dart';
 import 'settings_page.dart';
 import 'APMCpage.dart';
 import 'MAHABEJpage.dart';
-import 'mandi_page.dart';  // New import for MandiPage
+import 'mandi_page.dart'; // New import for MandiPage
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +21,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _bannerFadeAnimation;
   late Animation<double> _buttonScaleAnimation;
@@ -53,13 +58,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final quickAccessButtons = [
-      _QuickAccessData(Icons.shopping_cart, 'Buy', Colors.teal, Colors.orange, const BuyPage()),
-      _QuickAccessData(Icons.sell, 'Sell', Colors.teal, Colors.orange, const SellPage()),
-      _QuickAccessData(Icons.article, 'News', Colors.teal, Colors.orange, const NewsPage()),
-      _QuickAccessData(Icons.settings, 'Settings', Colors.teal, Colors.orange, const SettingsPage()),
-      _QuickAccessData(Icons.store, 'APMC', AppColors.deepBlue, AppColors.lightBlue, const APMCPage()),
-      _QuickAccessData(Icons.grass, 'Mahabej', AppColors.darkGreen, AppColors.lightGreen, const MahabejPage()),
-      _QuickAccessData(Icons.currency_rupee, 'Mandi', Colors.deepPurple, Colors.deepOrangeAccent, MandiPricesPage()),
+      const _QuickAccessData(Icons.shopping_cart, 'Buy', Colors.teal,
+          Colors.orange, BuyPage()),
+      const _QuickAccessData(
+          Icons.sell, 'Sell', Colors.teal, Colors.orange, SellPage()),
+      const _QuickAccessData(
+          Icons.article, 'News', Colors.teal, Colors.orange, NewsPage()),
+      const _QuickAccessData(Icons.settings, 'Settings', Colors.teal,
+          Colors.orange, SettingsPage()),
+      const _QuickAccessData(Icons.store, 'APMC', AppColors.deepBlue,
+          AppColors.lightBlue, APMCPage()),
+      const _QuickAccessData(Icons.grass, 'Mahabej', AppColors.darkGreen,
+          AppColors.lightGreen, MahabejPage()),
+      const _QuickAccessData(Icons.currency_rupee, 'Mandi', Colors.deepPurple,
+          Colors.deepOrangeAccent, MandiPricesPage()),
     ];
 
     return Scaffold(
@@ -107,7 +119,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withAlpha(51),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -133,7 +145,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildQuickAccessGrid(List<_QuickAccessData> buttons, ThemeData theme) {
+  Widget _buildQuickAccessGrid(
+      List<_QuickAccessData> buttons, ThemeData theme) {
     return LayoutBuilder(
       builder: (context, constraints) {
         int crossAxisCount = 4;
@@ -170,24 +183,26 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                     duration: const Duration(milliseconds: 300),
                     decoration: BoxDecoration(
                       color: isHover
-                          ? button.secondaryColor.withOpacity(0.3)
+                          ? button.secondaryColor.withAlpha(77)
                           : button.primaryColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
                           color: isHover
-                              ? button.secondaryColor.withOpacity(0.6)
-                              : Colors.black.withOpacity(0.1),
+                              ? button.secondaryColor.withAlpha(153)
+                              : Colors.black.withAlpha(26),
                           blurRadius: isHover ? 15 : 6,
                           offset: Offset(0, isHover ? 6 : 3),
                         )
                       ],
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 20),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(button.icon, size: 36, color: button.secondaryColor),
+                        Icon(button.icon,
+                            size: 36, color: button.secondaryColor),
                         const SizedBox(height: 12),
                         Text(
                           button.label,
@@ -214,16 +229,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Featured Products', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Featured Products',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           SizedBox(
             height: 180,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _buildFeaturedProductCard('Fresh Tomatoes', 40, 'assets/tomatoes.jpg'),
-                _buildFeaturedProductCard('Organic Wheat', 30, 'assets/wheat.jpg'),
-                _buildFeaturedProductCard('Green Capsicum', 50, 'assets/capsicum.jpg'),
+                _buildFeaturedProductCard(
+                    'Fresh Tomatoes', 40, 'assets/tomatoes.jpg'),
+                _buildFeaturedProductCard(
+                    'Organic Wheat', 30, 'assets/wheat.jpg'),
+                _buildFeaturedProductCard(
+                    'Green Capsicum', 50, 'assets/capsicum.jpg'),
                 _buildFeaturedProductCard('Mangoes', 100, 'assets/mangoes.jpg'),
               ],
             ),
@@ -240,7 +259,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 2)],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 8, spreadRadius: 2)
+        ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -250,9 +271,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: Image.asset(imagePath, height: 80, fit: BoxFit.cover),
           ),
           const SizedBox(height: 12),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18), textAlign: TextAlign.center),
+          Text(name,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              textAlign: TextAlign.center),
           const SizedBox(height: 6),
-          Text('₹$price/kg', style: const TextStyle(fontSize: 16, color: Colors.grey)),
+          Text('₹$price/kg',
+              style: const TextStyle(fontSize: 16, color: Colors.grey)),
           const SizedBox(height: 12),
         ],
       ),
@@ -265,11 +289,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Latest News', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          const Text('Latest News',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          _buildNewsTile('Govt announces subsidies for organic farming', 'New scheme to support organic farmers was unveiled.'),
-          _buildNewsTile('APMC prices hit record high', 'Wheat prices see a significant rise due to increased demand.'),
-          _buildNewsTile('New irrigation techniques improve yield', 'Farmers benefit from drip irrigation technology.'),
+          _buildNewsTile(
+              'Govt announces subsidies for organic farming',
+              'New scheme to support organic farmers was unveiled.'),
+          _buildNewsTile('APMC prices hit record high',
+              'Wheat prices see a significant rise due to increased demand.'),
+          _buildNewsTile('New irrigation techniques improve yield',
+              'Farmers benefit from drip irrigation technology.'),
         ],
       ),
     );
@@ -300,7 +329,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.green.withOpacity(0.2),
+              color: Colors.green.withAlpha(51),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -320,7 +349,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('What Our Farmers Say', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+          Text('What Our Farmers Say',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           SizedBox(height: 16),
           Card(
             elevation: 4,
@@ -328,7 +358,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: ListTile(
               leading: Icon(Icons.person, size: 48, color: Colors.green),
               title: Text('Ramesh Kumar'),
-              subtitle: Text('"This app helped me sell my crops directly to buyers, no middlemen! Highly recommended."'),
+              subtitle: Text(
+                  '"This app helped me sell my crops directly to buyers, no middlemen! Highly recommended."'),
             ),
           ),
           Card(
@@ -337,16 +368,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: ListTile(
               leading: Icon(Icons.person, size: 48, color: Colors.green),
               title: Text('Sunita Devi'),
-              subtitle: Text('"The weather updates and crop tips have been invaluable for my farming."'),
+              subtitle: Text(
+                  '"The weather updates and crop tips have been invaluable for my farming."'),
             ),
           ),
         ],
       ),
     );
-
-
-
-
   }
 
   Widget _buildPopularCategories() {
@@ -387,7 +415,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.2),
+              color: Colors.blue.withAlpha(51),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -421,7 +449,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.deepOrange.withOpacity(0.4),
+              color: Colors.deepOrange.withAlpha(102),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -443,17 +471,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             ElevatedButton(
               onPressed: () {
 // For example, navigate to signup or sell page
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SellPage()));
-
-
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const SellPage()));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.deepOrange,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              child: const Text('Get Started',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -470,5 +500,6 @@ class _QuickAccessData {
   final Color secondaryColor;
   final Widget page;
 
-  _QuickAccessData(this.icon, this.label, this.primaryColor, this.secondaryColor, this.page);
+  const _QuickAccessData(
+      this.icon, this.label, this.primaryColor, this.secondaryColor, this.page);
 }

@@ -1,0 +1,45 @@
+{
+  "name": "farmkarts-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack agricultural marketplace application with Flutter frontend and Node.js backend",
+  "scripts": {
+    "install:backend": "cd farmkart-backend && npm install",
+    "install:all": "flutter pub get && npm run install:backend",
+    "start:backend": "cd farmkart-backend && npm start",
+    "start:web": "flutter run -d chrome --web-hostname localhost --web-port 8080",
+    "start:android": "flutter run",
+    "build:web": "flutter build web",
+    "build:android-debug": "flutter build apk --debug",
+    "build:android-release": "flutter build apk --release",
+    "build:android-bundle": "flutter build appbundle --release",
+    "test": "flutter test",
+    "analyze": "flutter analyze",
+    "clean": "flutter clean && cd farmkart-backend && npm run clean || echo 'Backend clean script not available'",
+    "dev:backend": "cd farmkart-backend && npm run dev || npm start",
+    "health": "curl http://localhost:3000/api/health || echo 'Backend not running'",
+    "setup": "npm run install:all && echo 'Setup complete! Run npm start to launch the application.'"
+  },
+  "dependencies": {
+    "firebase": "^12.3.0"
+  },
+  "keywords": [
+    "flutter", 
+    "nodejs", 
+    "firebase", 
+    "agriculture", 
+    "marketplace",
+    "fullstack",
+    "mobile",
+    "web"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "farmkarts_new"
+  }
+}

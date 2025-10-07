@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -64,7 +65,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       );
       if (userCredential.user != null) {
         // Successful login
-        Navigator.pushReplacementNamed(context, '/home');
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       } else {
         setState(() => _errorMessage = 'Login failed. Please try again.');
       }

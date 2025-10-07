@@ -3,8 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
-import 'home_page.dart';
-
+import 'theme/app_theme.dart';
+import 'features/dashboard/main_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,15 +21,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'FarmKarts',
-      theme: ThemeData(primarySwatch: Colors.teal),
+      title: 'FarmKarts - Smart Agriculture Platform',
+      theme: AppTheme.lightTheme,
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignUpPage(),
-        '/home': (context) => const HomePage(),
-
-
+        '/home': (context) => const MainDashboard(),
       },
     );
   }

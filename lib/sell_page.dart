@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'add_sell_item_page.dart'; // Make sure this path is correct
 
@@ -10,7 +11,8 @@ class SellPage extends StatefulWidget {
 }
 
 class _SellPageState extends State<SellPage> {
-  final DatabaseReference _dbRef = FirebaseDatabase(
+  final DatabaseReference _dbRef = FirebaseDatabase.instanceFor(
+    app: Firebase.app(),
     databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com/',
   ).ref().child('itemsForSale');
 

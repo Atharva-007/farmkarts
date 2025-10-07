@@ -17,6 +17,7 @@ class MahabejPage extends StatelessWidget {
           _buildElementTile('Mahabej Element 3', 'Description for Element 3'),
           // Add more elements as needed
         ],
+
       ),
     );
   }

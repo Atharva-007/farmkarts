@@ -10,7 +10,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+// import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Temporarily disabled
 
 class MandiPricesPage extends StatefulWidget {
   const MandiPricesPage({super.key});
@@ -39,8 +39,8 @@ class _MandiPricesPageState extends State<MandiPricesPage>
   GoogleMapController? mapController;
   Set<Marker> mapMarkers = {};
 
-  // Notification plugin
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  // Notification plugin - temporarily disabled
+  // late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   late AnimationController _animationController;
 
@@ -56,13 +56,18 @@ class _MandiPricesPageState extends State<MandiPricesPage>
   }
 
   void _initNotifications() {
+    // Temporarily disabled
+    /*
     flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const settings = InitializationSettings(android: android);
     flutterLocalNotificationsPlugin.initialize(settings);
+    */
   }
 
   Future<void> showNotification(String title, String body) async {
+    // Temporarily disabled
+    /*
     const androidDetails = AndroidNotificationDetails(
       'mandi_price_channel',
       'Mandi Price Alerts',
@@ -78,6 +83,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
       body,
       notificationDetails,
     );
+    */
   }
 
   @override
@@ -311,7 +317,8 @@ class _MandiPricesPageState extends State<MandiPricesPage>
           '${directory!.path}/mandi_prices_${DateTime.now().millisecondsSinceEpoch}.pdf';
       final file = File(path);
       await file.writeAsBytes(await pdf.save());
-      Share.shareFiles([file.path], text: 'Mandi Prices PDF Report');
+      final xFile = XFile(file.path);
+      Share.shareXFiles([xFile], text: 'Mandi Prices PDF Report');
     } else {
     }
   }
@@ -485,9 +492,13 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                   final commodity = item['commodity'] ?? '';
                   final market = item['market'] ?? '';
                   if (selectedCommodity != 'All' &&
-                      commodity != selectedCommodity) return false;
+                      commodity != selectedCommodity) {
+                    return false;
+                  }
                   if (selectedMarket != 'All' &&
-                      market != selectedMarket) return false;
+                      market != selectedMarket) {
+                    return false;
+                  }
                   if (searchQuery.isNotEmpty &&
                       !(item['state'] ?? '')
                           .toString()
