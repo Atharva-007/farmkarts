@@ -8,8 +8,10 @@ class AnalyticsSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: AppConstants.defaultPadding,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -18,7 +20,7 @@ class AnalyticsSummary extends StatelessWidget {
               children: [
                 Text(
                   'Farm Analytics',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -30,7 +32,7 @@ class AnalyticsSummary extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(

@@ -68,12 +68,12 @@ class AppTheme {
       // Card Theme
       cardTheme: CardThemeData(
         color: surfaceWhite,
-        elevation: 4,
-        shadowColor: Colors.black26,
+        elevation: 2,
+        shadowColor: Colors.black12,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
       ),
 
       // Input Decoration Theme
@@ -134,6 +134,11 @@ class AppTheme {
         ),
         titleMedium: TextStyle(
           fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: textDark,
+        ),
+        titleSmall: TextStyle(
+          fontSize: 14,
           fontWeight: FontWeight.w500,
           color: textDark,
         ),
@@ -209,6 +214,14 @@ class AppTheme {
       offset: Offset(0, 6),
     ),
   ];
+
+  static List<BoxShadow> get subtleShadow => [
+    const BoxShadow(
+      color: Colors.black12,
+      blurRadius: 4,
+      offset: Offset(0, 2),
+    ),
+  ];
 }
 
 // Animation Durations
@@ -222,8 +235,52 @@ class AppAnimations {
 // App Constants
 class AppConstants {
   static const double borderRadius = 12.0;
-  static const double cardElevation = 4.0;
+  static const double cardElevation = 2.0;
   static const EdgeInsets defaultPadding = EdgeInsets.all(16.0);
   static const EdgeInsets smallPadding = EdgeInsets.all(8.0);
   static const EdgeInsets largePadding = EdgeInsets.all(24.0);
+  
+  // Responsive spacing helpers
+  static EdgeInsets getResponsivePadding(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return largePadding;
+    if (width >= 768) return defaultPadding;
+    return defaultPadding;
+  }
+  
+  static double getResponsiveSpacing(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return 24.0;
+    if (width >= 768) return 20.0;
+    return 16.0;
+  }
+  
+  // Additional responsive helpers
+  static double getResponsiveFontSize(BuildContext context, double baseSize) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return baseSize * 1.1;
+    if (width >= 768) return baseSize * 1.05;
+    return baseSize;
+  }
+  
+  static EdgeInsets getScreenPadding(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return const EdgeInsets.symmetric(horizontal: 64, vertical: 32);
+    if (width >= 768) return const EdgeInsets.symmetric(horizontal: 32, vertical: 24);
+    return const EdgeInsets.symmetric(horizontal: 16, vertical: 16);
+  }
+  
+  static int getGridColumns(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return 4;
+    if (width >= 768) return 3;
+    return 2;
+  }
+  
+  static double getCardAspectRatio(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1200) return 0.85;
+    if (width >= 768) return 0.9;
+    return 1.0;
+  }
 }

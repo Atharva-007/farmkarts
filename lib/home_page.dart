@@ -3,7 +3,8 @@
 
 
 import 'package:flutter/material.dart';
-import 'colors.dart';
+import 'theme/app_theme.dart';
+import 'utils/responsive_helper.dart';
 
 // Import your separate page files here:
 import 'buy_page.dart';
@@ -12,7 +13,8 @@ import 'news_page.dart';
 import 'settings_page.dart';
 import 'APMCpage.dart';
 import 'MAHABEJpage.dart';
-import 'mandi_page.dart'; // New import for MandiPage
+import 'mandi_page.dart';
+import 'features/marketplace/marketplace_home.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,85 +60,136 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final quickAccessButtons = [
-      const _QuickAccessData(Icons.shopping_cart, 'Buy', Colors.teal,
-          Colors.orange, BuyPage()),
       const _QuickAccessData(
-          Icons.sell, 'Sell', Colors.teal, Colors.orange, SellPage()),
+        Icons.shopping_cart, 
+        'Buy', 
+        AppTheme.primaryGreen,
+        AppTheme.lightGreen, 
+        BuyPage()
+      ),
       const _QuickAccessData(
-          Icons.article, 'News', Colors.teal, Colors.orange, NewsPage()),
-      const _QuickAccessData(Icons.settings, 'Settings', Colors.teal,
-          Colors.orange, SettingsPage()),
-      const _QuickAccessData(Icons.store, 'APMC', AppColors.deepBlue,
-          AppColors.lightBlue, APMCPage()),
-      const _QuickAccessData(Icons.grass, 'Mahabej', AppColors.darkGreen,
-          AppColors.lightGreen, MahabejPage()),
-      const _QuickAccessData(Icons.currency_rupee, 'Mandi', Colors.deepPurple,
-          Colors.deepOrangeAccent, MandiPricesPage()),
+        Icons.sell, 
+        'Sell', 
+        AppTheme.accentOrange,
+        AppTheme.lightOrange, 
+        SellPage()
+      ),
+      const _QuickAccessData(
+        Icons.storefront, 
+        'Marketplace', 
+        AppTheme.primaryGreen,
+        AppTheme.lightGreen, 
+        MarketplaceHome()
+      ),
+      const _QuickAccessData(
+        Icons.article, 
+        'News', 
+        AppTheme.skyBlue,
+        AppTheme.info, 
+        NewsPage()
+      ),
+      const _QuickAccessData(
+        Icons.store, 
+        'APMC', 
+        AppTheme.earthBrown,
+        AppTheme.textGrey, 
+        APMCPage()
+      ),
+      const _QuickAccessData(
+        Icons.grass, 
+        'Mahabej', 
+        AppTheme.freshMint,
+        AppTheme.success, 
+        MahabejPage()
+      ),
+      const _QuickAccessData(
+        Icons.currency_rupee, 
+        'Mandi', 
+        AppTheme.harvest,
+        AppTheme.warning, 
+        MandiPricesPage()
+      ),
+      const _QuickAccessData(
+        Icons.settings, 
+        'Settings', 
+        AppTheme.textGrey,
+        AppTheme.borderGrey, 
+        SettingsPage()
+      ),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Farmkart Home'),
-        backgroundColor: AppColors.deepBlue,
-        elevation: 4,
+        title: const Text('FarmKarts Home'),
+        backgroundColor: AppTheme.primaryGreen,
+        elevation: 2,
+        foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAnimatedBanner(),
-            const SizedBox(height: 40),
-            _buildQuickAccessGrid(quickAccessButtons, theme),
-            const SizedBox(height: 40),
-            _buildFeaturedProducts(),
-            const SizedBox(height: 40),
-            _buildLatestNews(),
-            const SizedBox(height: 40),
-            _buildTipsAndInsights(),
-            const SizedBox(height: 40),
-            _buildTestimonials(),
-            const SizedBox(height: 40),
-            _buildPopularCategories(),
-            const SizedBox(height: 40),
-            _buildWeatherWidget(),
-            const SizedBox(height: 40),
-            _buildCallToActionBanner(),
-            const SizedBox(height: 60),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 80), // Prevent overlap with navigation
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildAnimatedBanner(),
+              const SizedBox(height: 24),
+              _buildQuickAccessGrid(quickAccessButtons, theme),
+              const SizedBox(height: 24),
+              _buildFeaturedProducts(),
+              const SizedBox(height: 24),
+              _buildLatestNews(),
+              const SizedBox(height: 24),
+              _buildTipsAndInsights(),
+              const SizedBox(height: 24),
+              _buildTestimonials(),
+              const SizedBox(height: 24),
+              _buildPopularCategories(),
+              const SizedBox(height: 24),
+              _buildWeatherWidget(),
+              const SizedBox(height: 24),
+              _buildCallToActionBanner(),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildAnimatedBanner() {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    final isMobile = ResponsiveHelper.isMobile(context);
+    
     return FadeTransition(
       opacity: _bannerFadeAnimation,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        margin: ResponsiveHelper.getScreenPadding(context).copyWith(top: 0, bottom: 0),
+        padding: EdgeInsets.all(isDesktop ? 24 : 20),
         decoration: BoxDecoration(
-          color: AppColors.deepBlue,
+          gradient: AppTheme.primaryGradient,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(51),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: AppTheme.defaultShadow,
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.agriculture, color: Colors.white, size: 48),
-            SizedBox(width: 16),
-            Text(
-              "Welcome to Farmer's Market App!",
-              style: TextStyle(
-                fontSize: 28,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
+            Icon(
+              Icons.agriculture, 
+              color: Colors.white, 
+              size: isDesktop ? 48 : 40,
+            ),
+            SizedBox(width: isMobile ? 8 : 12),
+            Expanded(
+              child: Text(
+                "Welcome to FarmKarts!",
+                style: TextStyle(
+                  fontSize: isDesktop ? 26 : 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
           ],
@@ -147,79 +200,100 @@ class _HomePageState extends State<HomePage>
 
   Widget _buildQuickAccessGrid(
       List<_QuickAccessData> buttons, ThemeData theme) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int crossAxisCount = 4;
-        if (constraints.maxWidth < 600) crossAxisCount = 2;
-        if (constraints.maxWidth < 400) crossAxisCount = 1;
+    return Container(
+      margin: ResponsiveHelper.getScreenPadding(context).copyWith(top: 0, bottom: 0),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = ResponsiveHelper.isDesktop(context);
+          final isTablet = ResponsiveHelper.isTablet(context);
+          
+          int crossAxisCount = 2;
+          double childAspectRatio = 1.1;
+          
+          if (isDesktop) {
+            crossAxisCount = 4;
+            childAspectRatio = 0.95;
+          } else if (isTablet) {
+            crossAxisCount = 3;
+            childAspectRatio = 1.0;
+          } else {
+            crossAxisCount = 2;
+            childAspectRatio = 1.1;
+          }
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 24,
-            mainAxisSpacing: 24,
-            childAspectRatio: 1,
-          ),
-          itemCount: buttons.length,
-          itemBuilder: (context, index) {
-            final button = buttons[index];
-            final isHover = _hovering[button.label] ?? false;
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: isDesktop ? 16 : 12,
+              mainAxisSpacing: isDesktop ? 16 : 12,
+              childAspectRatio: childAspectRatio,
+            ),
+            itemCount: buttons.length,
+            itemBuilder: (context, index) {
+              final button = buttons[index];
+              final isHover = _hovering[button.label] ?? false;
 
-            return MouseRegion(
-              onEnter: (_) => setState(() => _hovering[button.label] = true),
-              onExit: (_) => setState(() => _hovering[button.label] = false),
-              child: ScaleTransition(
-                scale: _buttonScaleAnimation,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => button.page),
-                    );
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    decoration: BoxDecoration(
-                      color: isHover
-                          ? button.secondaryColor.withAlpha(77)
-                          : button.primaryColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isHover
-                              ? button.secondaryColor.withAlpha(153)
-                              : Colors.black.withAlpha(26),
-                          blurRadius: isHover ? 15 : 6,
-                          offset: Offset(0, isHover ? 6 : 3),
-                        )
-                      ],
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 20),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(button.icon,
-                            size: 36, color: button.secondaryColor),
-                        const SizedBox(height: 12),
-                        Text(
-                          button.label,
-                          style: theme.textTheme.titleMedium?.copyWith(
+              return MouseRegion(
+                onEnter: (_) => setState(() => _hovering[button.label] = true),
+                onExit: (_) => setState(() => _hovering[button.label] = false),
+                child: ScaleTransition(
+                  scale: _buttonScaleAnimation,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => button.page),
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        color: isHover
+                            ? button.secondaryColor.withOpacity(0.1)
+                            : button.primaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isHover
+                                ? button.secondaryColor.withOpacity(0.3)
+                                : Colors.black.withOpacity(0.1),
+                            blurRadius: isHover ? 8 : 4,
+                            offset: Offset(0, isHover ? 4 : 2),
+                          )
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            button.icon,
+                            size: 28,
                             color: button.secondaryColor,
-                            fontWeight: FontWeight.bold,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            button.label,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: button.secondaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -398,7 +472,7 @@ class _HomePageState extends State<HomePage>
     return Chip(
       avatar: Icon(icon, color: Colors.white, size: 20),
       label: Text(label),
-      backgroundColor: AppColors.darkGreen,
+      backgroundColor: AppTheme.primaryGreen,
       labelStyle: const TextStyle(color: Colors.white),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );

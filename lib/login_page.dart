@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'services/auth_service.dart';
+import 'services/user_state_service.dart';
 import 'theme/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,7 +12,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -33,7 +35,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     Future.delayed(const Duration(milliseconds: 200), () {
-      setState(() => _showLogo = true);
+      if (mounted) {
+        setState(() => _showLogo = true);
+      }
     });
   }
 
@@ -43,6 +47,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  // Helper methods for responsive design
+  bool get _isMobile => MediaQuery.of(context).size.width < 768;
+  bool get _isDesktop => MediaQuery.of(context).size.width >= 1200;
+  
+  double _getFontSize(double baseSize) {
+    if (_isDesktop) return baseSize * 1.1;
+    return baseSize;
   }
 
   Future<void> _signIn() async {
@@ -59,22 +72,28 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     });
 
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      final userCredential = await _authService.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-      if (userCredential.user != null) {
-        // Successful login
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home');
+      
+      if (userCredential?.user != null) {
+        // Set user in state service
+        final userStateService = Provider.of<UserStateService>(context, listen: false);
+        await userStateService.setCurrentUser(userCredential!.user!.uid);
+        
+        if (userStateService.currentUser != null) {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } else {
+          setState(() => _errorMessage = 'User profile not found. Please contact support.');
         }
       } else {
         setState(() => _errorMessage = 'Login failed. Please try again.');
       }
-    } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = e.message ?? 'An error occurred.');
     } catch (e) {
-      setState(() => _errorMessage = 'Something went wrong. Please try again.');
+      setState(() => _errorMessage = e.toString());
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -85,124 +104,218 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 12,
-                      offset: Offset(0, 6),
-                    ),
-                  ],
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: _isDesktop ? 64 : (_isMobile ? 16 : 32),
+                vertical: _isDesktop ? 32 : 24,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: _isDesktop ? 500 : double.infinity,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Animated Logo & Title
-                    AnimatedOpacity(
-                      duration: const Duration(milliseconds: 800),
-                      opacity: _showLogo ? 1 : 0,
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 600),
-                        scale: _showLogo ? 1.0 : 0.7,
-                        child: Column(
-                          children: [
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Card(
+                    elevation: _isDesktop ? 8 : 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(_isDesktop ? 32 : 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Animated Logo & Title
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 800),
+                            opacity: _showLogo ? 1 : 0,
+                            child: AnimatedScale(
+                              duration: const Duration(milliseconds: 600),
+                              scale: _showLogo ? 1.0 : 0.7,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(_isDesktop ? 20 : 16),
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFFE8F5E8),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.agriculture,
+                                      size: _isDesktop ? 56 : 48,
+                                      color: AppTheme.primaryGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'FarmKarts',
+                                    style: TextStyle(
+                                      fontSize: _getFontSize(28),
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.primaryGreen,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Smart Agriculture Platform',
+                                    style: TextStyle(
+                                      fontSize: _getFontSize(14),
+                                      color: AppTheme.textGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // Email Field
+                          TextField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined),
+                              hintText: 'Enter your email',
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password Field
+                          TextField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock_outlined),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              hintText: 'Enter your password',
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Forgot Password
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {
+                                // Navigate to forgot password
+                              },
+                              child: const Text('Forgot Password?'),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Error Message
+                          if (_errorMessage != null)
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.green.shade100,
-                                shape: BoxShape.circle,
+                                color: AppTheme.error.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppTheme.error.withOpacity(0.3)),
                               ),
-                              child: Icon(
-                                Icons.agriculture,
-                                size: 48,
-                                color: Colors.green.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Farmkart',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                                letterSpacing: 1.2,
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline, color: AppTheme.error, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: const TextStyle(color: AppTheme.error),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          if (_errorMessage != null) const SizedBox(height: 16),
+
+                          // Login Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: _isDesktop ? 56 : 48,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _signIn,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text('Login'),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Divider
+                          Row(
+                            children: [
+                              const Expanded(child: Divider()),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'or',
+                                  style: TextStyle(color: AppTheme.textGrey),
+                                ),
+                              ),
+                              const Expanded(child: Divider()),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Sign Up Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: _isDesktop ? 56 : 48,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/signup');
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppTheme.primaryGreen),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Create Account',
+                                style: TextStyle(color: AppTheme.primaryGreen),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Additional Info
+                          Text(
+                            'By continuing, you agree to our Terms of Service\nand Privacy Policy',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: _getFontSize(12),
+                              color: AppTheme.textGrey,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Email
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Password
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Error message
-                    if (_errorMessage != null)
-                      Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-                    const SizedBox(height: 16),
-
-                    // Login button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _signIn,
-                        child: _isLoading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                            : const Text('Login'),
-                      ),
-                    ),
-
-                    // Signup link — here’s the new added part
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signup'); // Navigate to signup page
-                      },
-                      child: const Text("Don't have an account? Sign up"),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

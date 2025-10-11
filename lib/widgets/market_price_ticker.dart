@@ -57,30 +57,35 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      height: 70, // Reduced height
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: AppConstants.defaultPadding.copyWith(bottom: 8),
-            child: Text(
-              'Live Market Prices (₹/quintal)',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            'Live Market Prices (₹/quintal)',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 8),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
                 color: AppTheme.surfaceWhite,
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: AppTheme.defaultShadow,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(), // Prevent manual scroll
                 itemCount: _prices.length * 100, // Infinite scroll effect
                 itemBuilder: (context, index) {
                   final price = _prices[index % _prices.length];
@@ -96,18 +101,19 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
 
   Widget _buildPriceCard(_MarketPrice price) {
     return Container(
-      width: 140,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      width: 120, // Reduced width
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: price.isPositive
             ? AppTheme.success.withOpacity(0.1)
             : AppTheme.error.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: price.isPositive
               ? AppTheme.success.withOpacity(0.3)
               : AppTheme.error.withOpacity(0.3),
+          width: 1,
         ),
       ),
       child: Column(
@@ -116,32 +122,36 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
         children: [
           Text(
             price.commodity,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.bold,
+              fontSize: 11,
             ),
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
           Text(
             '₹${price.currentPrice}',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: AppTheme.textDark,
+              fontSize: 13,
             ),
           ),
           Row(
             children: [
               Icon(
                 price.isPositive ? Icons.trending_up : Icons.trending_down,
-                size: 16,
+                size: 12,
                 color: price.isPositive ? AppTheme.success : AppTheme.error,
               ),
               const SizedBox(width: 2),
-              Text(
-                '${price.isPositive ? '+' : ''}${price.changePercentage.toStringAsFixed(1)}%',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: price.isPositive ? AppTheme.success : AppTheme.error,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  '${price.isPositive ? '+' : ''}${price.changePercentage.toStringAsFixed(1)}%',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: price.isPositive ? AppTheme.success : AppTheme.error,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
+                  ),
                 ),
               ),
             ],

@@ -7,8 +7,10 @@ class WeatherWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
       child: Container(
-        padding: AppConstants.defaultPadding,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           gradient: AppTheme.skyGradient,
@@ -39,6 +41,7 @@ class WeatherWidget extends StatelessWidget {
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                fontSize: 32,
               ),
             ),
             Text(
@@ -48,14 +51,17 @@ class WeatherWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildWeatherDetail(Icons.water_drop, '65%', 'Humidity'),
-                const SizedBox(width: 16),
-                _buildWeatherDetail(Icons.air, '12 km/h', 'Wind'),
-                const SizedBox(width: 16),
-                _buildWeatherDetail(Icons.visibility, '10 km', 'Visibility'),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Wrap(
+                  spacing: 16,
+                  children: [
+                    _buildWeatherDetail(Icons.water_drop, '65%', 'Humidity'),
+                    _buildWeatherDetail(Icons.air, '12 km/h', 'Wind'),
+                    _buildWeatherDetail(Icons.visibility, '10 km', 'Visibility'),
+                  ],
+                );
+              },
             ),
           ],
         ),

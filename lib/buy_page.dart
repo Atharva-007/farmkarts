@@ -753,6 +753,3 @@ class _BuyPageState extends State<BuyPage> with SingleTickerProviderStateMixin {
     );
   }
 }
-    );
-  }
-}

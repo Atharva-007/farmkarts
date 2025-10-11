@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Firebase Storage Rules for FarmKarts App
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload profile pictures
+    match /users/{userId}/profile/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId
+        && resource.size < 5 * 1024 * 1024 // 5MB limit
+        && resource.contentType.matches('image/.*');
+    }
+    
+    // Allow product images upload by authenticated sellers
+    match /products/{productId}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+        && resource.size < 10 * 1024 * 1024 // 10MB limit
+        && resource.contentType.matches('image/.*');
+    }
+    
+    // Allow order/delivery proof images
+    match /orders/{orderId}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+        && resource.size < 5 * 1024 * 1024 // 5MB limit
+        && resource.contentType.matches('image/.*');
+    }
+    
+    // Allow chat/message attachments
+    match /messages/{messageId}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null 
+        && resource.size < 20 * 1024 * 1024 // 20MB limit
+        && (resource.contentType.matches('image/.*') || 
+            resource.contentType.matches('application/pdf') ||
+            resource.contentType.matches('text/.*'));
+    }
+  }
+}

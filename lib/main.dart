@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'auth_wrapper.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
 import 'theme/app_theme.dart';
-import 'features/dashboard/main_dashboard.dart';
+import 'main_app_layout.dart';
+import 'services/user_state_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,16 +22,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'FarmKarts - Smart Agriculture Platform',
-      theme: AppTheme.lightTheme,
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(),
-        '/home': (context) => const MainDashboard(),
-      },
+    return ChangeNotifierProvider(
+      create: (context) => UserStateService(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'FarmKarts - Smart Agriculture Platform',
+        theme: AppTheme.lightTheme,
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(1.0),
+            ),
+            child: child!,
+          );
+        },
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const AuthWrapper(),
+          '/login': (context) => const LoginPage(),
+          '/signup': (context) => const SignUpPage(),
+          '/home': (context) => const MainAppLayout(),
+        },
+      ),
     );
   }
 }

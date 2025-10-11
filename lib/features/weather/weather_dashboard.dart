@@ -4,10 +4,9 @@ import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/responsive_helper.dart';
 import '../../models/product_model.dart';
 import '../../widgets/weather_forecast_card.dart';
-// import '../../widgets/farming_advice_card.dart';
-// import '../../widgets/weather_alerts_card.dart';
 
 class WeatherDashboard extends StatefulWidget {
   const WeatherDashboard({super.key});
@@ -124,16 +123,6 @@ class _WeatherDashboardState extends State<WeatherDashboard>
         _currentWeather = _sampleWeather;
         _isLoading = false;
       });
-      
-      // In a real app, you would fetch from weather API:
-      // final response = await http.get(Uri.parse('https://api.openweathermap.org/data/2.5/weather?lat=${_currentPosition?.latitude}&lon=${_currentPosition?.longitude}&appid=YOUR_API_KEY'));
-      // if (response.statusCode == 200) {
-      //   final data = json.decode(response.body);
-      //   setState(() {
-      //     _currentWeather = WeatherData.fromMap(data);
-      //     _isLoading = false;
-      //   });
-      // }
     } catch (e) {
       setState(() {
         _currentWeather = _sampleWeather;
@@ -152,16 +141,20 @@ class _WeatherDashboardState extends State<WeatherDashboard>
           child: RefreshIndicator(
             onRefresh: _refreshWeatherData,
             color: AppTheme.primaryGreen,
-            child: CustomScrollView(
-              slivers: [
-                _buildAppBar(),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: AppConstants.defaultPadding,
-                    child: Column(
-                      children: [
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: ResponsiveHelper.getMaxWidth(context),
+              ),
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  _buildAppBar(),
+                  SliverPadding(
+                    padding: ResponsiveHelper.getScreenPadding(context),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
                         if (_isLoading) ...[
-                          const SizedBox(height: 100),
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
                           const Center(
                             child: CircularProgressIndicator(
                               color: AppTheme.primaryGreen,
@@ -169,22 +162,19 @@ class _WeatherDashboardState extends State<WeatherDashboard>
                           ),
                         ] else if (_currentWeather != null) ...[
                           _buildCurrentWeatherCard(),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
                           _buildWeatherMetrics(),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
                           _buildForecastSection(),
-                          const SizedBox(height: 20),
-                          // const WeatherAlertsCard(),
-                          // const SizedBox(height: 20),
-                          // const FarmingAdviceCard(),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
                           _buildWeatherHistory(),
+                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
                         ],
-                      ],
+                      ]),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -194,7 +184,7 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildAppBar() {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: ResponsiveHelper.isDesktop(context) ? 140 : 120,
       floating: false,
       pinned: true,
       automaticallyImplyLeading: false,
@@ -205,35 +195,38 @@ class _WeatherDashboardState extends State<WeatherDashboard>
           ),
           child: SafeArea(
             child: Padding(
-              padding: AppConstants.defaultPadding,
+              padding: ResponsiveHelper.getScreenPadding(context),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.cloud,
                         color: Colors.white,
-                        size: 28,
+                        size: ResponsiveHelper.isDesktop(context) ? 32 : 28,
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Weather',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          'Weather Dashboard',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.location_on, color: Colors.white),
-                        onPressed: _showLocationDialog,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.white),
-                        onPressed: _showWeatherSettings,
-                      ),
+                      if (!ResponsiveHelper.isMobile(context)) ...[
+                        IconButton(
+                          icon: const Icon(Icons.location_on, color: Colors.white),
+                          onPressed: _showLocationDialog,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.settings, color: Colors.white),
+                          onPressed: _showWeatherSettings,
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -260,12 +253,12 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildCurrentWeatherCard() {
     return Card(
-      elevation: 8,
+      elevation: ResponsiveHelper.isDesktop(context) ? 12 : 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
-        padding: AppConstants.largePadding,
+        padding: AppConstants.getResponsivePadding(context),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: _getWeatherGradient(_currentWeather!.condition),
@@ -275,34 +268,41 @@ class _WeatherDashboardState extends State<WeatherDashboard>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_currentWeather!.temperature.round()}°C',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_currentWeather!.temperature.round()}°C',
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveHelper.getFontSize(context, 48),
+                        ),
                       ),
-                    ),
-                    Text(
-                      _currentWeather!.condition,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white70,
+                      Text(
+                        _currentWeather!.condition,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
-                    Text(
-                      _currentWeather!.description,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
+                      if (!ResponsiveHelper.isSmallScreen(context))
+                        Text(
+                          _currentWeather!.description,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                _getWeatherIcon(_currentWeather!.condition, 80),
+                _getWeatherIcon(
+                  _currentWeather!.condition, 
+                  ResponsiveHelper.isDesktop(context) ? 100 : 80,
+                ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: ResponsiveHelper.isDesktop(context) ? 24 : 20),
             Text(
               'Updated ${_formatTime(_currentWeather!.timestamp)}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -317,8 +317,9 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildWeatherMetrics() {
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: AppConstants.defaultPadding,
+        padding: AppConstants.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -328,47 +329,99 @@ class _WeatherDashboardState extends State<WeatherDashboard>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricItem(
-                    Icons.water_drop,
-                    'Humidity',
-                    '${_currentWeather!.humidity.round()}%',
-                    AppTheme.skyBlue,
-                  ),
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    Icons.air,
-                    'Wind Speed',
-                    '${_currentWeather!.windSpeed.round()} km/h',
-                    AppTheme.lightGreen,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricItem(
-                    Icons.visibility,
-                    'Visibility',
-                    '${_currentWeather!.visibility.round()} km',
-                    AppTheme.accentOrange,
-                  ),
-                ),
-                Expanded(
-                  child: _buildMetricItem(
-                    Icons.speed,
-                    'Pressure',
-                    '${_currentWeather!.pressure.round()} hPa',
-                    AppTheme.earthBrown,
-                  ),
-                ),
-              ],
+            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                if (ResponsiveHelper.isMobile(context)) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricItem(
+                              Icons.water_drop,
+                              'Humidity',
+                              '${_currentWeather!.humidity.round()}%',
+                              AppTheme.skyBlue,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildMetricItem(
+                              Icons.air,
+                              'Wind Speed',
+                              '${_currentWeather!.windSpeed.round()} km/h',
+                              AppTheme.lightGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildMetricItem(
+                              Icons.visibility,
+                              'Visibility',
+                              '${_currentWeather!.visibility.round()} km',
+                              AppTheme.accentOrange,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildMetricItem(
+                              Icons.speed,
+                              'Pressure',
+                              '${_currentWeather!.pressure.round()} hPa',
+                              AppTheme.earthBrown,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                } else {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _buildMetricItem(
+                          Icons.water_drop,
+                          'Humidity',
+                          '${_currentWeather!.humidity.round()}%',
+                          AppTheme.skyBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildMetricItem(
+                          Icons.air,
+                          'Wind Speed',
+                          '${_currentWeather!.windSpeed.round()} km/h',
+                          AppTheme.lightGreen,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildMetricItem(
+                          Icons.visibility,
+                          'Visibility',
+                          '${_currentWeather!.visibility.round()} km',
+                          AppTheme.accentOrange,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildMetricItem(
+                          Icons.speed,
+                          'Pressure',
+                          '${_currentWeather!.pressure.round()} hPa',
+                          AppTheme.earthBrown,
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ],
         ),
@@ -378,29 +431,34 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildMetricItem(IconData icon, String label, String value, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Icon(
+            icon, 
+            color: color, 
+            size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
+          ),
+          SizedBox(height: ResponsiveHelper.isDesktop(context) ? 12 : 8),
           Text(
             value,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: ResponsiveHelper.getFontSize(context, 16),
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: ResponsiveHelper.getFontSize(context, 12),
               color: AppTheme.textGrey,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -409,8 +467,9 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildForecastSection() {
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: AppConstants.defaultPadding,
+        padding: AppConstants.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -429,11 +488,12 @@ class _WeatherDashboardState extends State<WeatherDashboard>
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             SizedBox(
-              height: 120,
+              height: ResponsiveHelper.isDesktop(context) ? 140 : 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 itemCount: _currentWeather!.forecast.length,
                 itemBuilder: (context, index) {
                   final forecast = _currentWeather!.forecast[index];
@@ -449,8 +509,9 @@ class _WeatherDashboardState extends State<WeatherDashboard>
 
   Widget _buildWeatherHistory() {
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: AppConstants.defaultPadding,
+        padding: AppConstants.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -460,7 +521,7 @@ class _WeatherDashboardState extends State<WeatherDashboard>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             _buildHistoryItem('Yesterday', '26°C', 'Partly Cloudy', Icons.wb_cloudy),
             _buildHistoryItem('2 days ago', '24°C', 'Light Rain', Icons.grain),
             _buildHistoryItem('3 days ago', '29°C', 'Sunny', Icons.wb_sunny),
@@ -475,7 +536,11 @@ class _WeatherDashboardState extends State<WeatherDashboard>
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryGreen),
+          Icon(
+            icon, 
+            color: AppTheme.primaryGreen,
+            size: ResponsiveHelper.isDesktop(context) ? 24 : 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

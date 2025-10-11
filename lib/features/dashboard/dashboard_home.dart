@@ -87,30 +87,30 @@ class _DashboardHomeState extends State<DashboardHome>
               onRefresh: _refreshData,
               color: AppTheme.primaryGreen,
               child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
                 slivers: [
                   _buildAppBar(userName),
-                  SliverToBoxAdapter(
-                    child: Column(
-                      children: [
+                  SliverPadding(
+                    padding: const EdgeInsets.only(bottom: 100), // Bottom navigation padding
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
                         _buildHeroBanner(),
-                        const SizedBox(height: 16),
-                        _buildWeatherAndAlerts(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildQuickActions(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildMarketPriceTicker(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildCropStatusOverview(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildAnalyticsSummary(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildLatestNews(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildEducationalContent(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _buildCommunityHighlights(),
-                        const SizedBox(height: 32),
-                      ],
+                        const SizedBox(height: 24),
+                      ]),
                     ),
                   ),
                 ],
@@ -192,11 +192,11 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildHeroBanner() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           SizedBox(
-            height: 200,
+            height: 180, // Reduced height to prevent overlap
             child: PageView.builder(
               controller: _bannerPageController,
               onPageChanged: (index) {
@@ -210,7 +210,13 @@ class _DashboardHomeState extends State<DashboardHome>
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                    boxShadow: AppTheme.defaultShadow,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -220,6 +226,21 @@ class _DashboardHomeState extends State<DashboardHome>
                         Image.network(
                           _bannerImages[index],
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: AppTheme.cardGrey,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  color: AppTheme.primaryGreen,
+                                ),
+                              ),
+                            );
+                          },
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
                               color: AppTheme.cardGrey,
@@ -238,26 +259,26 @@ class _DashboardHomeState extends State<DashboardHome>
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.7),
+                                Colors.black.withOpacity(0.6),
                               ],
                             ),
                           ),
                         ),
                         Positioned(
-                          bottom: 16,
-                          left: 16,
-                          right: 16,
+                          bottom: 12,
+                          left: 12,
+                          right: 12,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Smart Farming Solutions',
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
                                 'Grow better with technology',
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -281,8 +302,9 @@ class _DashboardHomeState extends State<DashboardHome>
             effect: WormEffect(
               dotColor: AppTheme.borderGrey,
               activeDotColor: AppTheme.primaryGreen,
-              dotHeight: 8,
-              dotWidth: 8,
+              dotHeight: 6,
+              dotWidth: 6,
+              spacing: 8,
             ),
           ),
         ],
@@ -292,14 +314,14 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildWeatherAndAlerts() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: const WeatherWidget(),
     );
   }
 
   Widget _buildQuickActions() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: const QuickActionGrid(),
     );
   }
@@ -310,7 +332,7 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildCropStatusOverview() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -320,7 +342,7 @@ class _DashboardHomeState extends State<DashboardHome>
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           const CropStatusCard(),
         ],
       ),
@@ -329,14 +351,14 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildAnalyticsSummary() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: const AnalyticsSummary(),
     );
   }
 
   Widget _buildLatestNews() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -357,7 +379,7 @@ class _DashboardHomeState extends State<DashboardHome>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           const NewsCarousel(),
         ],
       ),
@@ -366,10 +388,11 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildEducationalContent() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
+        elevation: 2,
         child: Padding(
-          padding: AppConstants.defaultPadding,
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -425,10 +448,11 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildCommunityHighlights() {
     return Container(
-      margin: AppConstants.defaultPadding,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
+        elevation: 2,
         child: Padding(
-          padding: AppConstants.defaultPadding,
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

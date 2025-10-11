@@ -7,8 +7,10 @@ class CropStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      elevation: 2,
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: AppConstants.defaultPadding,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -37,7 +39,7 @@ class CropStatusCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             _buildCropItem(
               context,
               'Wheat (Field A)',
@@ -46,7 +48,7 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.lightGreen,
               85,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             _buildCropItem(
               context,
               'Corn (Field B)',
@@ -55,7 +57,7 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.sunshine,
               65,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             _buildCropItem(
               context,
               'Tomatoes (Greenhouse)',

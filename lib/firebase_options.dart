@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '709785957438',
     projectId: 'farmkart-9f4f3',
     authDomain: 'farmkart-9f4f3.firebaseapp.com',
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com',
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
     measurementId: 'G-EZMC38TXE2',
   );
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:709785957438:android:2f747a5a153a33b0134d6f',
     messagingSenderId: '709785957438',
     projectId: 'farmkart-9f4f3',
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com',
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
   );
 
@@ -63,6 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:709785957438:ios:47337aadcc9007e7134d6f',
     messagingSenderId: '709785957438',
     projectId: 'farmkart-9f4f3',
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com',
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
     iosBundleId: 'com.example.farmkarts',
   );
@@ -72,6 +75,7 @@ class DefaultFirebaseOptions {
     appId: '1:709785957438:ios:47337aadcc9007e7134d6f',
     messagingSenderId: '709785957438',
     projectId: 'farmkart-9f4f3',
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com',
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
     iosBundleId: 'com.example.farmkarts',
   );
@@ -82,6 +86,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '709785957438',
     projectId: 'farmkart-9f4f3',
     authDomain: 'farmkart-9f4f3.firebaseapp.com',
+    databaseURL: 'https://farmkart-9f4f3-default-rtdb.firebaseio.com',
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
     measurementId: 'G-RFF4TNMLJ2',
   );

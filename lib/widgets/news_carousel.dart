@@ -28,9 +28,10 @@ class NewsCarousel extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 200,
+      height: 180, // Reduced height to prevent overlap
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: news.length,
         itemBuilder: (context, index) {
           final newsItem = news[index];
@@ -42,7 +43,7 @@ class NewsCarousel extends StatelessWidget {
 
   Widget _buildNewsCard(BuildContext context, _NewsItem newsItem) {
     return Container(
-      width: 280,
+      width: 260, // Reduced width for better spacing
       margin: const EdgeInsets.only(right: 12),
       child: Material(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -58,7 +59,13 @@ class NewsCarousel extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppTheme.surfaceWhite,
               borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-              boxShadow: AppTheme.defaultShadow,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,16 +76,26 @@ class NewsCarousel extends StatelessWidget {
                   ),
                   child: Image.network(
                     newsItem.imageUrl,
-                    height: 100,
+                    height: 80, // Reduced height
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        height: 80,
+                        color: AppTheme.cardGrey,
+                        child: const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        height: 100,
+                        height: 80,
                         color: AppTheme.cardGrey,
                         child: const Icon(
                           Icons.image_not_supported,
-                          size: 40,
+                          size: 30,
                           color: AppTheme.textGrey,
                         ),
                       );
@@ -93,7 +110,7 @@ class NewsCarousel extends StatelessWidget {
                       children: [
                         Text(
                           newsItem.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                           maxLines: 2,
@@ -105,17 +122,17 @@ class NewsCarousel extends StatelessWidget {
                             newsItem.summary,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.textGrey,
+                              fontSize: 11,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(height: 8),
                         Row(
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: 14,
+                              size: 12,
                               color: AppTheme.textGrey,
                             ),
                             const SizedBox(width: 4),
@@ -123,6 +140,7 @@ class NewsCarousel extends StatelessWidget {
                               newsItem.timeAgo,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppTheme.textGrey,
+                                fontSize: 10,
                               ),
                             ),
                           ],
