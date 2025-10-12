@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_constants.dart';
 
 class AddProductPage extends StatefulWidget {
   final Function? onProductAdded;

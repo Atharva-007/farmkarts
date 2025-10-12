@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
 import 'buy_request_page.dart';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive_helper.dart';
 
 class NewsCarousel extends StatelessWidget {
   const NewsCarousel({super.key});
@@ -28,7 +29,7 @@ class NewsCarousel extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 180, // Reduced height to prevent overlap
+      height: ResponsiveHelper.isMobile(context) ? 160 : 180,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -42,11 +43,14 @@ class NewsCarousel extends StatelessWidget {
   }
 
   Widget _buildNewsCard(BuildContext context, _NewsItem newsItem) {
+    final cardWidth = ResponsiveHelper.isMobile(context) ? 240.0 : 260.0;
+    final imageHeight = ResponsiveHelper.isMobile(context) ? 70.0 : 80.0;
+    
     return Container(
-      width: 260, // Reduced width for better spacing
-      margin: const EdgeInsets.only(right: 12),
+      width: cardWidth,
+      margin: EdgeInsets.only(right: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
       child: Material(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
         child: InkWell(
           onTap: () {
             // Navigate to full news article
@@ -54,14 +58,14 @@ class NewsCarousel extends StatelessWidget {
               SnackBar(content: Text('Opening: ${newsItem.title}')),
             );
           },
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
           child: Container(
             decoration: BoxDecoration(
               color: AppTheme.surfaceWhite,
-              borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+              borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -71,18 +75,20 @@ class NewsCarousel extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppConstants.borderRadius),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(
+                      ResponsiveHelper.getResponsiveBorderRadius(context).topLeft.x,
+                    ),
                   ),
                   child: Image.network(
                     newsItem.imageUrl,
-                    height: 80, // Reduced height
+                    height: imageHeight,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Container(
-                        height: 80,
+                        height: imageHeight,
                         color: AppTheme.cardGrey,
                         child: const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
@@ -91,11 +97,11 @@ class NewsCarousel extends StatelessWidget {
                     },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
-                        height: 80,
+                        height: imageHeight,
                         color: AppTheme.cardGrey,
-                        child: const Icon(
+                        child: Icon(
                           Icons.image_not_supported,
-                          size: 30,
+                          size: ResponsiveHelper.isMobile(context) ? 25 : 30,
                           color: AppTheme.textGrey,
                         ),
                       );
@@ -104,43 +110,48 @@ class NewsCarousel extends StatelessWidget {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: ResponsiveHelper.getResponsivePadding(context).copyWith(
+                      top: 12,
+                      bottom: 12,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        ResponsiveHelper.autoSizeText(
                           newsItem.title,
+                          context: context,
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.bold,
+                            fontSize: ResponsiveHelper.getFontSize(context, 14),
                           ),
                           maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Expanded(
-                          child: Text(
+                          child: ResponsiveHelper.autoSizeText(
                             newsItem.summary,
+                            context: context,
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.textGrey,
-                              fontSize: 11,
+                              fontSize: ResponsiveHelper.getFontSize(context, 11),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            maxLines: ResponsiveHelper.isMobile(context) ? 2 : 3,
                           ),
                         ),
                         Row(
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: 12,
+                              size: ResponsiveHelper.isMobile(context) ? 10 : 12,
                               color: AppTheme.textGrey,
                             ),
                             const SizedBox(width: 4),
-                            Text(
+                            ResponsiveHelper.autoSizeText(
                               newsItem.timeAgo,
+                              context: context,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppTheme.textGrey,
-                                fontSize: 10,
+                                fontSize: ResponsiveHelper.getFontSize(context, 10),
                               ),
                             ),
                           ],

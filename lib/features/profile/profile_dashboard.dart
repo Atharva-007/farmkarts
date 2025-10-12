@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
 import '../../services/user_state_service.dart';
 
@@ -46,9 +47,9 @@ class _ProfileDashboardState extends State<ProfileDashboard>
       builder: (context, userState, child) {
         final user = userState.currentUser;
         
-        return Scaffold(
-          backgroundColor: AppTheme.backgroundLight,
-          body: SafeArea(
+        return Container(
+          color: AppTheme.backgroundLight,
+          child: SafeArea(
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: RefreshIndicator(

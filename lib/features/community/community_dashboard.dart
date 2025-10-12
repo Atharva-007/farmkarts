@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
+import '../../utils/app_constants.dart';
 
 class CommunityDashboard extends StatefulWidget {
   const CommunityDashboard({super.key});
@@ -38,9 +39,9 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
+    return Container(
+      color: AppTheme.backgroundLight,
+      child: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ConstrainedBox(
@@ -50,20 +51,20 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                _buildAppBar(),
+                _buildAppBar(context),
                 SliverPadding(
                   padding: ResponsiveHelper.getScreenPadding(context),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildCommunityStats(),
+                      _buildCommunityStats(context),
                       SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildQuickActions(),
+                      _buildQuickActions(context),
                       SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildRecentDiscussions(),
+                      _buildRecentDiscussions(context),
                       SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildExpertAdvice(),
+                      _buildExpertAdvice(context),
                       SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildSuccessStories(),
+                      _buildSuccessStories(context),
                       SizedBox(height: AppConstants.getResponsiveSpacing(context)),
                     ]),
                   ),
@@ -76,7 +77,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: ResponsiveHelper.isDesktop(context) ? 140 : 120,
       floating: false,
@@ -147,7 +148,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildCommunityStats() {
+  Widget _buildCommunityStats(BuildContext context) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -169,17 +170,17 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
                     children: [
                       Row(
                         children: [
-                          Expanded(child: _buildStatCard('Members', '12,543', Icons.group, AppTheme.primaryGreen)),
+                          Expanded(child: _buildStatCard(context, 'Members', '12,543', Icons.group, AppTheme.primaryGreen)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildStatCard('Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
+                          Expanded(child: _buildStatCard(context, 'Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: _buildStatCard('Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
+                          Expanded(child: _buildStatCard(context, 'Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildStatCard('Experts', '156', Icons.verified, AppTheme.success)),
+                          Expanded(child: _buildStatCard(context, 'Experts', '156', Icons.verified, AppTheme.success)),
                         ],
                       ),
                     ],
@@ -187,13 +188,13 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
                 } else {
                   return Row(
                     children: [
-                      Expanded(child: _buildStatCard('Members', '12,543', Icons.group, AppTheme.primaryGreen)),
+                      Expanded(child: _buildStatCard(context, 'Members', '12,543', Icons.group, AppTheme.primaryGreen)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard('Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
+                      Expanded(child: _buildStatCard(context, 'Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard('Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
+                      Expanded(child: _buildStatCard(context, 'Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard('Experts', '156', Icons.verified, AppTheme.success)),
+                      Expanded(child: _buildStatCard(context, 'Experts', '156', Icons.verified, AppTheme.success)),
                     ],
                   );
                 }
@@ -205,13 +206,13 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
     return Container(
       padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -242,7 +243,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     final actions = [
       {'title': 'Ask Question', 'icon': Icons.help_outline, 'color': AppTheme.skyBlue},
       {'title': 'Share Experience', 'icon': Icons.share, 'color': AppTheme.primaryGreen},
@@ -282,6 +283,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
               itemBuilder: (context, index) {
                 final action = actions[index];
                 return _buildActionCard(
+                  context,
                   action['title'] as String,
                   action['icon'] as IconData,
                   action['color'] as Color,
@@ -294,7 +296,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color color) {
+  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color) {
     return Card(
       elevation: 1,
       child: InkWell(
@@ -312,7 +314,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -338,7 +340,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildRecentDiscussions() {
+  Widget _buildRecentDiscussions(BuildContext context) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -363,6 +365,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             _buildDiscussionItem(
+              context,
               'Best practices for organic farming?',
               'Rajesh Kumar',
               '23 replies',
@@ -371,6 +374,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
             const SizedBox(height: 12),
             _buildDiscussionItem(
+              context,
               'Dealing with pest issues in monsoon',
               'Priya Sharma',
               '15 replies',
@@ -379,6 +383,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
             const SizedBox(height: 12),
             _buildDiscussionItem(
+              context,
               'Crop insurance claim process help',
               'Mukesh Singh',
               '8 replies',
@@ -391,13 +396,13 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildDiscussionItem(String title, String author, String replies, String time, Color color) {
+  Widget _buildDiscussionItem(BuildContext context, String title, String author, String replies, String time, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +416,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
           const SizedBox(height: 8),
           Row(
             children: [
-              Icon(Icons.person, size: 16, color: AppTheme.textGrey),
+              const Icon(Icons.person, size: 16, color: AppTheme.textGrey),
               const SizedBox(width: 4),
               Text(
                 author,
@@ -443,7 +448,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildExpertAdvice() {
+  Widget _buildExpertAdvice(BuildContext context) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -453,7 +458,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
           children: [
             Row(
               children: [
-                Icon(Icons.verified, color: AppTheme.success),
+                const Icon(Icons.verified, color: AppTheme.success),
                 const SizedBox(width: 8),
                 Text(
                   'Expert Advice',
@@ -467,18 +472,18 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.success.withOpacity(0.1),
+                color: AppTheme.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.success.withOpacity(0.3)),
+                border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         backgroundColor: AppTheme.success,
-                        child: const Icon(Icons.person, color: Colors.white),
+                        child: Icon(Icons.person, color: Colors.white),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -516,7 +521,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildSuccessStories() {
+  Widget _buildSuccessStories(BuildContext context) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -541,6 +546,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             _buildSuccessStoryItem(
+              context,
               '40% Increase in Yield with Organic Methods',
               'Farmer from Punjab shares how switching to organic farming increased crop yield and reduced costs.',
               Icons.trending_up,
@@ -548,6 +554,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
             const SizedBox(height: 12),
             _buildSuccessStoryItem(
+              context,
               'Water Conservation Success Story',
               'Drip irrigation system helped save 60% water while maintaining high crop quality.',
               Icons.water_drop,
@@ -559,13 +566,13 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
     );
   }
 
-  Widget _buildSuccessStoryItem(String title, String description, IconData icon, Color color) {
+  Widget _buildSuccessStoryItem(BuildContext context, String title, String description, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -591,7 +598,7 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: AppTheme.textGrey),
+          const Icon(Icons.chevron_right, color: AppTheme.textGrey),
         ],
       ),
     );

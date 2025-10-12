@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
+import 'utils/responsive_helper.dart';
 import 'features/dashboard/dashboard_home.dart';
 import 'features/marketplace/marketplace_home.dart';
 import 'features/community/community_dashboard.dart';
+import 'features/crops/crops_dashboard.dart';
+import 'features/weather/weather_dashboard.dart';
+import 'features/apmc/apmc_market_page.dart';
 import 'features/profile/profile_dashboard.dart';
-import 'news_page.dart';
-import 'settings_page.dart';
 import 'services/user_state_service.dart';
 import 'models/user_model.dart';
 
@@ -20,11 +22,22 @@ class MainAppLayout extends StatefulWidget {
 class _MainAppLayoutState extends State<MainAppLayout> {
   int _currentIndex = 0;
   late PageController _pageController;
+  late List<Widget> _pages;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _pages = [
+      DashboardHome(onNavigate: _navigateToPage),
+      const MarketplaceHome(),
+      const CommunityDashboard(),
+      const CropsDashboard(),
+      const WeatherDashboard(),
+      const APMCMarketPage(),
+      const ProfileDashboard(),
+    ];
   }
 
   @override
@@ -33,71 +46,223 @@ class _MainAppLayoutState extends State<MainAppLayout> {
     super.dispose();
   }
 
-  final List<Widget> _pages = [
-    const DashboardHome(),
-    const MarketplaceHome(),
-    const CommunityDashboard(),
-    const ProfileDashboard(),
-    const NewsPage(),
+  final List<String> _pageTitles = [
+    'Dashboard',
+    'Marketplace',
+    'Community',
+    'Crops',
+    'Weather',
+    'APMC Market',
+    'Profile',
   ];
+
+  Widget? _getFloatingActionButton() {
+    if (_currentIndex == 1) { // Marketplace page
+      return FloatingActionButton.extended(
+        onPressed: () {
+          // Navigate to add product page or show add product dialog
+          _showAddProductDialog();
+        },
+        backgroundColor: AppTheme.accentOrange,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Add Product', style: TextStyle(color: Colors.white)),
+      );
+    }
+    return null;
+  }
+
+  void _showAddProductDialog() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Add Product feature coming soon!'),
+        backgroundColor: AppTheme.primaryGreen,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        children: _pages,
+      key: _scaffoldKey,
+      body: Stack(
+        children: [
+          // Main content
+          Column(
+            children: [
+              _buildAppBar(),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                  },
+                  children: _pages,
+                ),
+              ),
+            ],
+          ),
+          
+          // Floating menu button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 16,
+            child: _buildFloatingMenuButton(),
+          ),
+        ],
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
       drawer: _buildDrawer(),
+      floatingActionButton: _getFloatingActionButton(),
+    );
+  }
+
+  Widget _buildFloatingMenuButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _scaffoldKey.currentState?.openDrawer(),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Icon(
+              Icons.menu,
+              color: AppTheme.primaryGreen,
+              size: 24,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Container(
+      height: 80 + MediaQuery.of(context).padding.top,
+      decoration: const BoxDecoration(
+        gradient: AppTheme.primaryGradient,
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // Space for floating menu button
+              const SizedBox(width: 48),
+              
+              Expanded(
+                child: Text(
+                  _pageTitles[_currentIndex],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    onPressed: () => _showComingSoon('Notifications'),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.search, color: Colors.white),
+                    onPressed: () => _showComingSoon('Search'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      },
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: AppTheme.primaryGreen,
-      unselectedItemColor: AppTheme.textGrey,
-      elevation: 8,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.dashboard),
-          label: 'Dashboard',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.storefront),
-          label: 'Marketplace',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.people),
-          label: 'Community',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.article),
-          label: 'News',
-        ),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Colors.white,
+        selectedItemColor: AppTheme.primaryGreen,
+        unselectedItemColor: Colors.grey[600],
+        selectedFontSize: 11,
+        unselectedFontSize: 9,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.storefront_outlined),
+            activeIcon: Icon(Icons.storefront),
+            label: 'Marketplace',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            activeIcon: Icon(Icons.people),
+            label: 'Community',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.agriculture_outlined),
+            activeIcon: Icon(Icons.agriculture),
+            label: 'Crops',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.wb_sunny_outlined),
+            activeIcon: Icon(Icons.wb_sunny),
+            label: 'Weather',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business_outlined),
+            activeIcon: Icon(Icons.business),
+            label: 'APMC',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 
@@ -117,31 +282,12 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                 decoration: const BoxDecoration(
                   gradient: AppTheme.primaryGradient,
                 ),
-                accountName: Row(
-                  children: [
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        userRole,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
+                accountName: Text(
+                  userName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
                 accountEmail: Text(userEmail),
                 currentAccountPicture: CircleAvatar(
@@ -149,9 +295,26 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                   child: Icon(
                     roleIcon,
                     color: AppTheme.primaryGreen,
-                    size: 40,
+                    size: 35,
                   ),
                 ),
+                otherAccountsPictures: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      userRole,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               Expanded(
                 child: ListView(
@@ -159,115 +322,71 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                     _buildDrawerItem(
                       icon: Icons.dashboard,
                       title: 'Dashboard',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(0);
-                      },
+                      isSelected: _currentIndex == 0,
+                      onTap: () => _navigateToPage(0),
                     ),
                     _buildDrawerItem(
                       icon: Icons.storefront,
                       title: 'Marketplace',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(1);
-                      },
+                      isSelected: _currentIndex == 1,
+                      onTap: () => _navigateToPage(1),
                     ),
                     _buildDrawerItem(
                       icon: Icons.people,
                       title: 'Community',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(2);
-                      },
+                      isSelected: _currentIndex == 2,
+                      onTap: () => _navigateToPage(2),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.agriculture,
+                      title: 'Crops',
+                      isSelected: _currentIndex == 3,
+                      onTap: () => _navigateToPage(3),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.wb_sunny,
+                      title: 'Weather',
+                      isSelected: _currentIndex == 4,
+                      onTap: () => _navigateToPage(4),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.business,
+                      title: 'APMC Market',
+                      isSelected: _currentIndex == 5,
+                      onTap: () => _navigateToPage(5),
                     ),
                     _buildDrawerItem(
                       icon: Icons.person,
                       title: 'Profile',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(3);
-                      },
+                      isSelected: _currentIndex == 6,
+                      onTap: () => _navigateToPage(6),
                     ),
-                    _buildDrawerItem(
-                      icon: Icons.article,
-                      title: 'Agriculture News',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(4);
-                      },
-                    ),
-                    
-                    // Role-specific menu items
-                    if (user?.role == UserRole.farmer) ...[
-                      const Divider(),
-                      _buildDrawerItem(
-                        icon: Icons.landscape,
-                        title: 'My Farm',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon('My Farm Management');
-                        },
-                      ),
-                      _buildDrawerItem(
-                        icon: Icons.schedule,
-                        title: 'Crop Calendar',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon('Crop Calendar');
-                        },
-                      ),
-                    ] else if (user?.role == UserRole.addat) ...[
-                      const Divider(),
-                      _buildDrawerItem(
-                        icon: Icons.inventory,
-                        title: 'My Inventory',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon('Inventory Management');
-                        },
-                      ),
-                      _buildDrawerItem(
-                        icon: Icons.verified,
-                        title: 'License Status',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showLicenseStatus(user);
-                        },
-                      ),
-                    ],
                     
                     const Divider(),
+                    
+                    // Additional features
                     _buildDrawerItem(
-                      icon: Icons.settings,
-                      title: 'Settings',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SettingsPage()),
-                        );
-                      },
+                      icon: Icons.analytics,
+                      title: 'Analytics',
+                      onTap: () => _showComingSoon('Analytics Dashboard'),
                     ),
                     _buildDrawerItem(
                       icon: Icons.help_outline,
                       title: 'Help & Support',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _showComingSoon('Help & Support');
-                      },
+                      onTap: () => _showComingSoon('Help & Support'),
                     ),
                     _buildDrawerItem(
-                      icon: Icons.info_outline,
-                      title: 'About',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _showAboutDialog();
-                      },
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      onTap: () => _showComingSoon('Settings'),
                     ),
+                    
                     const Divider(),
+                    
                     _buildDrawerItem(
                       icon: Icons.logout,
                       title: 'Logout',
+                      textColor: AppTheme.error,
                       onTap: () => _showLogoutDialog(),
                     ),
                   ],
@@ -284,12 +403,32 @@ class _MainAppLayoutState extends State<MainAppLayout> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    bool isSelected = false,
+    Color? textColor,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: AppTheme.primaryGreen),
-      title: Text(title),
-      onTap: onTap,
-      hoverColor: AppTheme.primaryGreen.withOpacity(0.1),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isSelected ? AppTheme.primaryGreen.withValues(alpha: 0.1) : null,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: isSelected ? AppTheme.primaryGreen : (textColor ?? Colors.grey[700]),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? AppTheme.primaryGreen : (textColor ?? Colors.grey[800]),
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          onTap();
+        },
+      ),
     );
   }
 
@@ -307,83 +446,10 @@ class _MainAppLayoutState extends State<MainAppLayout> {
   void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature is coming soon!'),
-        backgroundColor: AppTheme.info,
+        content: Text('$feature coming soon!'),
+        backgroundColor: AppTheme.primaryGreen,
       ),
     );
-  }
-
-  void _showAboutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('About FarmKarts'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('FarmKarts - Smart Agriculture Platform'),
-            SizedBox(height: 8),
-            Text('Version: 1.0.0'),
-            SizedBox(height: 8),
-            Text('Connecting farmers with buyers directly, eliminating middlemen and ensuring fair prices for everyone.'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLicenseStatus(UserModel? user) {
-    if (user is AddatModel) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('License Status'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    user.isLicenseVerified ? Icons.verified : Icons.pending,
-                    color: user.isLicenseVerified ? AppTheme.success : AppTheme.warning,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    user.isLicenseVerified ? 'Verified' : 'Pending Verification',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: user.isLicenseVerified ? AppTheme.success : AppTheme.warning,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text('Shop Name: ${user.dukanName}'),
-              const SizedBox(height: 8),
-              if (!user.isLicenseVerified)
-                const Text(
-                  'Your license is under review. You will be notified once it\'s verified.',
-                  style: TextStyle(color: AppTheme.textGrey),
-                ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-    }
   }
 
   void _showLogoutDialog() {
@@ -398,18 +464,20 @@ class _MainAppLayoutState extends State<MainAppLayout> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              final userStateService = Provider.of<UserStateService>(context, listen: false);
-              await userStateService.clearUser();
-              if (mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-              }
+              // Implement logout logic
+              _performLogout();
             },
-            child: const Text('Logout'),
+            child: const Text('Logout', style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
     );
+  }
+
+  void _performLogout() {
+    // Implement logout logic here
+    Navigator.pushReplacementNamed(context, '/login');
   }
 }

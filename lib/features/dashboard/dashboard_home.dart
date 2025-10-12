@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/responsive_helper.dart';
 import '../../widgets/weather_widget.dart';
 import '../../widgets/crop_status_card.dart';
 import '../../widgets/market_price_ticker.dart';
@@ -10,7 +11,9 @@ import '../../widgets/analytics_summary.dart';
 import '../../widgets/news_carousel.dart';
 
 class DashboardHome extends StatefulWidget {
-  const DashboardHome({super.key});
+  final Function(int)? onNavigate;
+  
+  const DashboardHome({super.key, this.onNavigate});
 
   @override
   State<DashboardHome> createState() => _DashboardHomeState();
@@ -71,14 +74,27 @@ class _DashboardHomeState extends State<DashboardHome>
     super.dispose();
   }
 
+  Future<void> _refreshData() async {
+    await Future.delayed(const Duration(seconds: 1));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Dashboard refreshed!'),
+          backgroundColor: AppTheme.primaryGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userName = user?.displayName ?? user?.email?.split('@')[0] ?? 'Farmer';
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
+    return Container(
+      color: AppTheme.backgroundLight,
+      child: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SlideTransition(
@@ -91,25 +107,27 @@ class _DashboardHomeState extends State<DashboardHome>
                 slivers: [
                   _buildAppBar(userName),
                   SliverPadding(
-                    padding: const EdgeInsets.only(bottom: 100), // Bottom navigation padding
+                    padding: EdgeInsets.only(
+                      bottom: ResponsiveHelper.isMobile(context) ? 100 : 120
+                    ), // Bottom navigation padding
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
                         _buildHeroBanner(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildQuickActions(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildMarketPriceTicker(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildCropStatusOverview(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildAnalyticsSummary(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildLatestNews(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildEducationalContent(),
-                        const SizedBox(height: 12),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                         _buildCommunityHighlights(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 1.5),
                       ]),
                     ),
                   ),
@@ -124,7 +142,7 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildAppBar(String userName) {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: ResponsiveHelper.isMobile(context) ? 100 : 120,
       floating: false,
       pinned: true,
       elevation: 0,
@@ -136,7 +154,7 @@ class _DashboardHomeState extends State<DashboardHome>
           ),
           child: SafeArea(
             child: Padding(
-              padding: AppConstants.defaultPadding,
+              padding: ResponsiveHelper.getResponsivePadding(context),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,36 +163,45 @@ class _DashboardHomeState extends State<DashboardHome>
                     children: [
                       CircleAvatar(
                         backgroundColor: Colors.white,
-                        radius: 25,
+                        radius: ResponsiveHelper.isMobile(context) ? 20 : 25,
                         child: Icon(
                           Icons.person,
                           color: AppTheme.primaryGreen,
-                          size: 30,
+                          size: ResponsiveHelper.isMobile(context) ? 24 : 30,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            ResponsiveHelper.autoSizeText(
                               'Good Morning,',
+                              context: context,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Colors.white70,
+                                fontSize: ResponsiveHelper.getFontSize(context, 14),
                               ),
                             ),
-                            Text(
+                            ResponsiveHelper.autoSizeText(
                               userName,
+                              context: context,
                               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
+                                fontSize: ResponsiveHelper.getFontSize(context, 20),
                               ),
+                              maxLines: 1,
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                        icon: Icon(
+                          Icons.notifications_outlined, 
+                          color: Colors.white,
+                          size: ResponsiveHelper.isMobile(context) ? 22 : 24,
+                        ),
                         onPressed: () {
                           // Navigate to notifications
                         },
@@ -192,11 +219,11 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildHeroBanner() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: ResponsiveHelper.getResponsiveHorizontalPadding(context),
       child: Column(
         children: [
           SizedBox(
-            height: 180, // Reduced height to prevent overlap
+            height: ResponsiveHelper.isMobile(context) ? 160 : 180,
             child: PageView.builder(
               controller: _bannerPageController,
               onPageChanged: (index) {
@@ -207,19 +234,21 @@ class _DashboardHomeState extends State<DashboardHome>
               itemCount: _bannerImages.length,
               itemBuilder: (context, index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  margin: EdgeInsets.symmetric(
+                    horizontal: ResponsiveHelper.getResponsiveSpacing(context) * 0.25,
+                  ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                    borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                    borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -259,31 +288,37 @@ class _DashboardHomeState extends State<DashboardHome>
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.transparent,
-                                Colors.black.withOpacity(0.6),
+                                Colors.black.withValues(alpha: 0.6),
                               ],
                             ),
                           ),
                         ),
                         Positioned(
-                          bottom: 12,
-                          left: 12,
-                          right: 12,
+                          bottom: ResponsiveHelper.getResponsiveSpacing(context) * 0.75,
+                          left: ResponsiveHelper.getResponsiveSpacing(context) * 0.75,
+                          right: ResponsiveHelper.getResponsiveSpacing(context) * 0.75,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              ResponsiveHelper.autoSizeText(
                                 'Smart Farming Solutions',
+                                context: context,
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: ResponsiveHelper.getFontSize(context, 18),
                                 ),
+                                maxLines: 1,
                               ),
                               const SizedBox(height: 2),
-                              Text(
+                              ResponsiveHelper.autoSizeText(
                                 'Grow better with technology',
+                                context: context,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: Colors.white70,
+                                  fontSize: ResponsiveHelper.getFontSize(context, 14),
                                 ),
+                                maxLines: 1,
                               ),
                             ],
                           ),
@@ -295,16 +330,16 @@ class _DashboardHomeState extends State<DashboardHome>
               },
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
           AnimatedSmoothIndicator(
             activeIndex: _currentBannerIndex,
             count: _bannerImages.length,
             effect: WormEffect(
               dotColor: AppTheme.borderGrey,
               activeDotColor: AppTheme.primaryGreen,
-              dotHeight: 6,
-              dotWidth: 6,
-              spacing: 8,
+              dotHeight: ResponsiveHelper.isMobile(context) ? 5 : 6,
+              dotWidth: ResponsiveHelper.isMobile(context) ? 5 : 6,
+              spacing: ResponsiveHelper.isMobile(context) ? 6 : 8,
             ),
           ),
         ],
@@ -321,8 +356,8 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildQuickActions() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: const QuickActionGrid(),
+      margin: ResponsiveHelper.getResponsiveHorizontalPadding(context),
+      child: QuickActionGrid(onNavigate: widget.onNavigate),
     );
   }
 
@@ -332,17 +367,19 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildCropStatusOverview() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: ResponsiveHelper.getResponsiveHorizontalPadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          ResponsiveHelper.autoSizeText(
             'Crop Status Overview',
+            context: context,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
+              fontSize: ResponsiveHelper.getFontSize(context, 20),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
           const CropStatusCard(),
         ],
       ),
@@ -351,35 +388,46 @@ class _DashboardHomeState extends State<DashboardHome>
 
   Widget _buildAnalyticsSummary() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: ResponsiveHelper.getResponsiveHorizontalPadding(context),
       child: const AnalyticsSummary(),
     );
   }
 
   Widget _buildLatestNews() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: ResponsiveHelper.getResponsiveHorizontalPadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Latest Agriculture News',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+              Expanded(
+                child: ResponsiveHelper.autoSizeText(
+                  'Latest Agriculture News',
+                  context: context,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.getFontSize(context, 20),
+                  ),
+                  maxLines: 1,
                 ),
               ),
               TextButton(
                 onPressed: () {
                   // Navigate to news page
                 },
-                child: const Text('See All'),
+                child: ResponsiveHelper.autoSizeText(
+                  'See All',
+                  context: context,
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getFontSize(context, 14),
+                  ),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
           const NewsCarousel(),
         ],
       ),
@@ -387,139 +435,63 @@ class _DashboardHomeState extends State<DashboardHome>
   }
 
   Widget _buildEducationalContent() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.school,
-                    color: AppTheme.primaryGreen,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Today\'s Learning',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.lightGreen.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppTheme.lightGreen.withOpacity(0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.lightbulb,
-                      color: AppTheme.sunshine,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Tip: Apply nitrogen fertilizer when corn plants are 6-8 inches tall for optimal growth.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCommunityHighlights() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Community Highlights',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to community
-                    },
-                    child: const Text('Join Discussion'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildCommunityItem(
-                'Success Story: 40% yield increase with organic farming',
-                '2 hours ago',
-                Icons.trending_up,
-                AppTheme.success,
-              ),
-              const SizedBox(height: 8),
-              _buildCommunityItem(
-                'Q&A: Best practices for monsoon crop protection',
-                '5 hours ago',
-                Icons.help_outline,
-                AppTheme.info,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCommunityItem(String title, String time, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
+    return ResponsiveHelper.responsiveCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+          Row(
+            children: [
+              Icon(
+                Icons.school,
+                color: AppTheme.primaryGreen,
+                size: ResponsiveHelper.isMobile(context) ? 20 : 24,
+              ),
+              SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+              ResponsiveHelper.autoSizeText(
+                'Today\'s Learning',
+                context: context,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: ResponsiveHelper.getFontSize(context, 18),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  time,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textGrey,
+              ),
+            ],
+          ),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+          Container(
+            padding: ResponsiveHelper.getResponsivePadding(context).copyWith(
+              top: 12,
+              bottom: 12,
+            ),
+            decoration: BoxDecoration(
+              color: AppTheme.lightGreen.withValues(alpha: 0.1),
+              borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+                topLeft: const Radius.circular(8),
+                topRight: const Radius.circular(8),
+                bottomLeft: const Radius.circular(8),
+                bottomRight: const Radius.circular(8),
+              ),
+              border: Border.all(
+                color: AppTheme.lightGreen.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.lightbulb,
+                  color: AppTheme.sunshine,
+                  size: ResponsiveHelper.isMobile(context) ? 18 : 20,
+                ),
+                SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+                Expanded(
+                  child: ResponsiveHelper.autoSizeText(
+                    'Tip: Apply nitrogen fertilizer when corn plants are 6-8 inches tall for optimal growth.',
+                    context: context,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: ResponsiveHelper.getFontSize(context, 14),
+                    ),
+                    maxLines: ResponsiveHelper.isMobile(context) ? 2 : 1,
                   ),
                 ),
               ],
@@ -530,12 +502,109 @@ class _DashboardHomeState extends State<DashboardHome>
     );
   }
 
-  Future<void> _refreshData() async {
-    // Simulate data refresh
-    await Future.delayed(const Duration(seconds: 2));
-    // Trigger rebuild
-    if (mounted) {
-      setState(() {});
-    }
+  Widget _buildCommunityHighlights() {
+    return ResponsiveHelper.responsiveCard(
+      context: context,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ResponsiveHelper.autoSizeText(
+                  'Community Highlights',
+                  context: context,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.getFontSize(context, 18),
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Navigate to community
+                },
+                child: ResponsiveHelper.autoSizeText(
+                  'Join Discussion',
+                  context: context,
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getFontSize(context, 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+          _buildCommunityItem(
+            'Success Story: 40% yield increase with organic farming',
+            '2 hours ago',
+            Icons.trending_up,
+            AppTheme.success,
+          ),
+          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+          _buildCommunityItem(
+            'Q&A: Best practices for monsoon crop protection',
+            '5 hours ago',
+            Icons.help_outline,
+            AppTheme.info,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommunityItem(String title, String time, IconData icon, Color color) {
+    return Container(
+      padding: ResponsiveHelper.getResponsivePadding(context).copyWith(
+        top: 12,
+        bottom: 12,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+          topLeft: const Radius.circular(8),
+          topRight: const Radius.circular(8),
+          bottomLeft: const Radius.circular(8),
+          bottomRight: const Radius.circular(8),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon, 
+            color: color, 
+            size: ResponsiveHelper.isMobile(context) ? 18 : 20
+          ),
+          SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ResponsiveHelper.autoSizeText(
+                  title,
+                  context: context,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: ResponsiveHelper.getFontSize(context, 14),
+                  ),
+                  maxLines: ResponsiveHelper.isMobile(context) ? 2 : 1,
+                ),
+                const SizedBox(height: 2),
+                ResponsiveHelper.autoSizeText(
+                  time,
+                  context: context,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textGrey,
+                    fontSize: ResponsiveHelper.getFontSize(context, 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

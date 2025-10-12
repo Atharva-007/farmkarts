@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
+import 'utils/app_constants.dart';
 import 'add_sell_item_page.dart';
 import 'features/marketplace/marketplace_home.dart';
 
@@ -344,7 +345,7 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -363,7 +364,7 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
             title,
             style: TextStyle(
               fontSize: 12,
-              color: textColor.withOpacity(0.8),
+              color: textColor.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -451,7 +452,7 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppTheme.lightGreen.withOpacity(0.1),
+              color: AppTheme.lightGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

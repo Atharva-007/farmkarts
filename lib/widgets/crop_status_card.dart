@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/responsive_helper.dart';
 
 class CropStatusCard extends StatelessWidget {
   const CropStatusCard({super.key});
@@ -9,37 +10,55 @@ class CropStatusCard extends StatelessWidget {
     return Card(
       elevation: 2,
       margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: ResponsiveHelper.getResponsivePadding(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Active Crops',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: ResponsiveHelper.autoSizeText(
+                    'Active Crops',
+                    context: context,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveHelper.getFontSize(context, 18),
+                    ),
+                    maxLines: 1,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ResponsiveHelper.getResponsiveSpacing(context) * 0.5,
+                    vertical: ResponsiveHelper.getResponsiveSpacing(context) * 0.25,
                   ),
-                  child: Text(
+                  decoration: BoxDecoration(
+                    color: AppTheme.success.withValues(alpha: 0.1),
+                    borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+                      topLeft: const Radius.circular(12),
+                      topRight: const Radius.circular(12),
+                      bottomLeft: const Radius.circular(12),
+                      bottomRight: const Radius.circular(12),
+                    ),
+                  ),
+                  child: ResponsiveHelper.autoSizeText(
                     '3 Active',
+                    context: context,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.success,
                       fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveHelper.getFontSize(context, 12),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
             _buildCropItem(
               context,
               'Wheat (Field A)',
@@ -48,7 +67,7 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.lightGreen,
               85,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             _buildCropItem(
               context,
               'Corn (Field B)',
@@ -57,7 +76,7 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.sunshine,
               65,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             _buildCropItem(
               context,
               'Tomatoes (Greenhouse)',
@@ -81,59 +100,78 @@ class CropStatusCard extends StatelessWidget {
     int healthPercentage,
   ) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: ResponsiveHelper.getResponsivePadding(context).copyWith(
+        top: 12,
+        bottom: 12,
+      ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+          topLeft: const Radius.circular(8),
+          topRight: const Radius.circular(8),
+          bottomLeft: const Radius.circular(8),
+          bottomRight: const Radius.circular(8),
+        ),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
               color: color,
-              size: 20,
+              size: ResponsiveHelper.isMobile(context) ? 18 : 20,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                ResponsiveHelper.autoSizeText(
                   name,
+                  context: context,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
+                    fontSize: ResponsiveHelper.getFontSize(context, 16),
                   ),
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 2),
-                Text(
+                ResponsiveHelper.autoSizeText(
                   stage,
+                  context: context,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.textGrey,
+                    fontSize: ResponsiveHelper.getFontSize(context, 12),
                   ),
+                  maxLines: ResponsiveHelper.isMobile(context) ? 2 : 1,
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(
+                    ResponsiveHelper.autoSizeText(
                       'Health: ',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      context: context,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: ResponsiveHelper.getFontSize(context, 12),
+                      ),
                     ),
-                    Text(
+                    ResponsiveHelper.autoSizeText(
                       '$healthPercentage%',
+                      context: context,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: _getHealthColor(healthPercentage),
+                        fontSize: ResponsiveHelper.getFontSize(context, 12),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
                     Expanded(
                       child: LinearProgressIndicator(
                         value: healthPercentage / 100,
