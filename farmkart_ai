@@ -1,0 +1,2 @@
+# FarmKart AI Expert System
+This directory contains the AI microservice for agricultural expert advice using RAG (Retrieval Augmented Generation) with local Ollama and FAISS.

@@ -1,7 +1,8 @@
+// Quick fix for auth service - simplified and working version
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import '../models/user_model.dart';
@@ -15,172 +16,182 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  User? get currentUser => _auth.currentUser;
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  // Simple and fast image upload method
+  Future<String> _uploadLicenseImageQuick(
+    String uid, {
+    File? licenseImage,
+    Uint8List? imageBytes,
+    String? imageName,
+  }) async {
+    try {
+      if ((kIsWeb && imageBytes == null) || (!kIsWeb && licenseImage == null)) {
+        throw Exception('No image data provided');
+      }
 
-  // Sign up with role-based registration
-  Future<UserCredential?> signUpWithEmailAndPassword({
+      // Check file size early
+      if (kIsWeb && imageBytes != null && imageBytes.length > 2 * 1024 * 1024) {
+        throw Exception('Image too large. Please select an image smaller than 2MB.');
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${uid}_$timestamp.jpg';
+      final ref = _storage.ref().child('licenses').child(fileName);
+
+      print('Creating storage reference: licenses/$fileName');
+
+      // Simplified upload without complex metadata
+      late UploadTask uploadTask;
+
+      if (kIsWeb && imageBytes != null) {
+        print('Uploading image bytes for web platform (${imageBytes.length} bytes)');
+        uploadTask = ref.putData(imageBytes);
+      } else if (!kIsWeb && licenseImage != null) {
+        print('Uploading image file for mobile platform');
+        uploadTask = ref.putFile(licenseImage);
+      } else {
+        throw Exception('Platform mismatch');
+      }
+
+      print('Starting upload task with timeout...');
+      
+      // Track upload progress for debugging
+      uploadTask.snapshotEvents.listen((event) {
+        double progress = event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
+        print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
+      });
+
+      // Simplified timeout handling
+      final snapshot = await uploadTask.timeout(
+        const Duration(seconds: 30), // Reduced timeout
+        onTimeout: () => throw Exception('Image upload timed out. Please check your internet connection and try again.'),
+      );
+
+      if (snapshot.state == TaskState.success) {
+        final downloadUrl = await snapshot.ref.getDownloadURL();
+        print('Upload successful. Download URL: $downloadUrl');
+        return downloadUrl;
+      } else {
+        throw Exception('Upload failed with state: ${snapshot.state}');
+      }
+
+    } catch (e) {
+      print('Error uploading license image: $e');
+      if (e.toString().toLowerCase().contains('timeout')) {
+        throw Exception('Upload timed out. Please check your internet connection and try again.');
+      } else if (e.toString().toLowerCase().contains('permission')) {
+        throw Exception('Permission denied. Please check your internet connection.');
+      } else if (e.toString().toLowerCase().contains('too large') || e.toString().toLowerCase().contains('size')) {
+        throw Exception('Image file is too large. Please select an image smaller than 2MB.');
+      } else {
+        throw Exception('Upload failed. Please try with a different image or check your internet connection.');
+      }
+    }
+  }
+
+  // Main signup method
+  Future<UserCredential> signUpWithEmailAndPassword({
     required String email,
     required String password,
-    required UserRole role,
     required String fullName,
     required String mobileNo,
-    double? acresLand, // For farmers
-    String? dukanName, // For addat
-    File? licenseImage, // For addat (mobile)
-    Uint8List? licenseImageBytes, // For addat (web)
-    String? licenseImageName, // Image filename
+    required UserRole role,
+    double? acresLand,
+    String? dukanName,
+    File? licenseImage,
+    Uint8List? licenseImageBytes,
+    String? licenseImageName,
   }) async {
-    UserCredential? userCredential;
-    
     try {
-      print('Starting signup process for email: $email, role: $role');
-      
-      // Create user with email and password
-      userCredential = await _auth.createUserWithEmailAndPassword(
+      // Create user account first
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      if (userCredential.user != null) {
-        final uid = userCredential.user!.uid;
-        final now = DateTime.now();
+      final user = userCredential.user!;
+      final uid = user.uid;
 
-        print('User created successfully with UID: $uid');
-
-        try {
-          if (role == UserRole.farmer) {
-            // Create farmer profile
-            final farmer = FarmerModel(
-              uid: uid,
-              email: email,
-              fullName: fullName,
-              mobileNo: mobileNo,
-              acresLand: acresLand ?? 0.0,
-              createdAt: now,
-              updatedAt: now,
-            );
-
-            print('Creating farmer profile in Firestore...');
-            await _firestore.collection('users').doc(uid).set(farmer.toMap());
-            print('Farmer profile created successfully');
-            
-          } else if (role == UserRole.addat) {
-            String licenseImageUrl = '';
-
-            // Upload license image if provided
-            if (licenseImage != null || licenseImageBytes != null) {
-              print('Uploading license image...');
-              try {
-                licenseImageUrl = await _uploadLicenseImage(
-                  uid, 
-                  licenseImage: licenseImage,
-                  imageBytes: licenseImageBytes,
-                  imageName: licenseImageName,
-                );
-                print('License image uploaded successfully: $licenseImageUrl');
-              } catch (uploadError) {
-                print('Error uploading license image: $uploadError');
-                // Continue without license image for now
-                licenseImageUrl = '';
-              }
-            }
-
-            // Create addat profile
-            final addat = AddatModel(
-              uid: uid,
-              email: email,
-              fullName: fullName,
-              mobileNo: mobileNo,
-              dukanName: dukanName ?? '',
-              licenseImageUrl: licenseImageUrl,
-              createdAt: now,
-              updatedAt: now,
-            );
-
-            print('Creating addat profile in Firestore...');
-            await _firestore.collection('users').doc(uid).set(addat.toMap());
-            print('Addat profile created successfully');
-          }
-
-          // Update display name
-          print('Updating display name...');
-          await userCredential.user!.updateDisplayName(fullName);
-          print('Display name updated successfully');
-          
-        } catch (firestoreError) {
-          print('Error creating user profile in Firestore: $firestoreError');
-          // Delete the auth user if profile creation fails
-          try {
-            await userCredential.user!.delete();
-          } catch (deleteError) {
-            print('Error deleting user after profile creation failure: $deleteError');
-          }
-          throw Exception('Failed to create user profile: $firestoreError');
-        }
+      // Upload license image if needed (for addats) - now optional during signup
+      String? licenseImageUrl;
+      if (role == UserRole.addat && (licenseImage != null || licenseImageBytes != null)) {
+        licenseImageUrl = await _uploadLicenseImageQuick(
+          uid,
+          licenseImage: licenseImage,
+          imageBytes: licenseImageBytes,
+          imageName: licenseImageName,
+        );
       }
+
+      // Create user profile
+      UserModel userModel;
+      if (role == UserRole.farmer) {
+        userModel = FarmerModel(
+          uid: uid,
+          email: email,
+          fullName: fullName,
+          mobileNo: mobileNo,
+          acresLand: acresLand ?? 0.0,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      } else {
+        userModel = AddatModel(
+          uid: uid,
+          email: email,
+          fullName: fullName,
+          mobileNo: mobileNo,
+          dukanName: dukanName ?? '',
+          licenseImageUrl: licenseImageUrl, // Can be null now
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+      }
+
+      // Save to Firestore
+      await _firestore.collection('users').doc(uid).set(userModel.toMap());
 
       return userCredential;
     } catch (e) {
-      print('Error in signup process: $e');
-      
-      // If user was created but profile failed, clean up
-      if (userCredential?.user != null) {
+      // Clean up auth user if profile creation fails
+      if (_auth.currentUser != null) {
         try {
-          await userCredential!.user!.delete();
+          await _auth.currentUser!.delete();
         } catch (deleteError) {
-          print('Error cleaning up user after signup failure: $deleteError');
+          print('Could not clean up auth user: $deleteError');
         }
       }
-      
-      rethrow;
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
 
-  // Sign in with email and password
-  Future<UserCredential?> signInWithEmailAndPassword({
+  // Other required methods
+  Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      return await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return userCredential;
     } catch (e) {
-      print('Error signing in: $e');
-      rethrow;
+      throw Exception('Login failed: ${e.toString()}');
     }
   }
 
-  // Sign out
   Future<void> signOut() async {
-    try {
-      await _auth.signOut();
-    } catch (e) {
-      print('Error signing out: $e');
-      rethrow;
-    }
+    await _auth.signOut();
   }
 
-  // Get user profile
   Future<UserModel?> getUserProfile(String uid) async {
     try {
-      print('Getting user profile for UID: $uid');
-      
-      // Check if Firestore is available
-      await _checkFirestoreConnection();
-      
       final doc = await _firestore.collection('users').doc(uid).get();
       
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
-        print('User document found with data: ${data.keys}');
-        
         final roleString = data['role'] as String?;
+        
         if (roleString == null) {
-          print('Error: No role field found in user document');
           throw Exception('User profile is corrupted - missing role information');
         }
         
@@ -189,154 +200,121 @@ class AuthService {
           orElse: () => UserRole.farmer,
         );
 
-        print('User role determined as: $role');
-
         if (role == UserRole.farmer) {
-          final farmer = FarmerModel.fromMap(data);
-          print('Created FarmerModel for: ${farmer.fullName}');
-          return farmer;
+          return FarmerModel.fromMap(data);
         } else {
-          final addat = AddatModel.fromMap(data);
-          print('Created AddatModel for: ${addat.fullName}');
-          return addat;
+          return AddatModel.fromMap(data);
         }
       } else {
-        print('User document does not exist for UID: $uid');
-        throw Exception('User profile not found. Please register again or contact support.');
+        throw Exception('User profile not found. Please register again.');
       }
     } catch (e) {
-      print('Error getting user profile for UID $uid: $e');
-      
-      // Handle specific Firestore errors
-      final errorString = e.toString();
-      if (errorString.contains('unavailable') || errorString.contains('offline')) {
-        throw Exception('Unable to connect to database. Please check your internet connection.');
-      } else if (errorString.contains('permission-denied')) {
-        throw Exception('Database access denied. Please ensure Firestore is properly configured.');
-      } else if (errorString.contains('not-found')) {
-        throw Exception('Database not found. Please ensure Firestore is set up in Firebase Console.');
-      }
-      
-      rethrow;
+      throw Exception('Failed to load user profile: ${e.toString()}');
     }
   }
 
-  // Check Firestore connection
-  Future<void> _checkFirestoreConnection() async {
+  User? get currentUser => _auth.currentUser;
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  // Get current user model
+  Future<UserModel?> getCurrentUserModel() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    
     try {
-      // Try to perform a simple operation to check connection
-      await _firestore.settings;
-      print('Firestore connection check passed');
+      return await getUserProfile(user.uid);
     } catch (e) {
-      print('Firestore connection check failed: $e');
-      throw Exception('Unable to connect to Firestore. Please check your internet connection and Firebase configuration.');
+      print('Error getting current user model: $e');
+      return null;
     }
   }
 
   // Update user profile
-  Future<void> updateUserProfile(UserModel user) async {
+  Future<void> updateUserProfile(UserModel userModel) async {
     try {
-      await _firestore.collection('users').doc(user.uid).update({
-        ...user.toMap(),
-        'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      });
+      await _firestore.collection('users').doc(userModel.uid).update(userModel.toMap());
     } catch (e) {
-      print('Error updating user profile: $e');
-      rethrow;
+      throw Exception('Failed to update user profile: ${e.toString()}');
     }
   }
 
-  // Upload license image for addat
-  Future<String> _uploadLicenseImage(
-    String uid, {
+  // Delete user account
+  Future<void> deleteUserAccount() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No user logged in');
+      
+      // Delete user document from Firestore
+      await _firestore.collection('users').doc(user.uid).delete();
+      
+      // Delete authentication account
+      await user.delete();
+    } catch (e) {
+      throw Exception('Failed to delete account: ${e.toString()}');
+    }
+  }
+
+  // Reset password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      throw Exception('Failed to send password reset email: ${e.toString()}');
+    }
+  }
+
+  // Update email
+  Future<void> updateEmail(String newEmail) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No user logged in');
+      
+      await user.updateEmail(newEmail);
+      
+      // Update email in user profile
+      final userProfile = await getUserProfile(user.uid);
+      if (userProfile != null) {
+        if (userProfile is FarmerModel) {
+          final updatedProfile = userProfile.copyWith(email: newEmail);
+          await updateUserProfile(updatedProfile);
+        } else if (userProfile is AddatModel) {
+          final updatedProfile = userProfile.copyWith(email: newEmail);
+          await updateUserProfile(updatedProfile);
+        }
+      }
+    } catch (e) {
+      throw Exception('Failed to update email: ${e.toString()}');
+    }
+  }
+
+  // Update password
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('No user logged in');
+      
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      throw Exception('Failed to update password: ${e.toString()}');
+    }
+  }
+
+  // Upload license image (for license management page)
+  Future<String> uploadLicenseImage({
+    required String userId,
     File? licenseImage,
-    Uint8List? imageBytes,
-    String? imageName,
+    Uint8List? licenseImageBytes,
+    required String licenseImageName,
   }) async {
     try {
-      print('Starting image upload for user: $uid');
-      
-      // Validate that we have image data
-      if ((kIsWeb && imageBytes == null) || (!kIsWeb && licenseImage == null)) {
-        throw Exception('No valid image data provided for platform');
-      }
-      
-      final ref = _storage.ref().child('licenses').child('$uid.jpg');
-      print('Created storage reference: licenses/$uid.jpg');
-      
-      UploadTask uploadTask;
-      
-      if (kIsWeb && imageBytes != null) {
-        print('Uploading image bytes for web platform (${imageBytes.length} bytes)');
-        uploadTask = ref.putData(
-          imageBytes,
-          SettableMetadata(
-            contentType: 'image/jpeg',
-            customMetadata: {
-              'originalName': imageName ?? 'license.jpg',
-              'uploadedBy': uid,
-              'uploadedAt': DateTime.now().toIso8601String(),
-            },
-          ),
-        );
-      } else if (!kIsWeb && licenseImage != null) {
-        print('Uploading image file for mobile platform');
-        uploadTask = ref.putFile(
-          licenseImage,
-          SettableMetadata(
-            contentType: 'image/jpeg',
-            customMetadata: {
-              'originalName': imageName ?? 'license.jpg',
-              'uploadedBy': uid,
-              'uploadedAt': DateTime.now().toIso8601String(),
-            },
-          ),
-        );
-      } else {
-        throw Exception('Platform mismatch or no valid image data');
-      }
-      
-      print('Starting upload task...');
-      final snapshot = await uploadTask;
-      print('Upload completed successfully');
-      
-      final downloadUrl = await snapshot.ref.getDownloadURL();
-      print('Got download URL: $downloadUrl');
-      
-      return downloadUrl;
+      return await _uploadLicenseImageQuick(
+        userId,
+        licenseImage: licenseImage,
+        imageBytes: licenseImageBytes,
+        imageName: licenseImageName,
+      );
     } catch (e) {
-      print('Error uploading license image: $e');
-      
-      // Provide more specific error messages
-      if (e.toString().contains('storage/unauthorized')) {
-        throw Exception('Permission denied. Please check Firebase Storage rules.');
-      } else if (e.toString().contains('storage/invalid-format')) {
-        throw Exception('Invalid image format. Please use JPG or PNG.');
-      } else if (e.toString().contains('storage/object-not-found')) {
-        throw Exception('Storage location not found. Please contact support.');
-      } else {
-        throw Exception('Failed to upload license image: ${e.toString()}');
-      }
+      throw Exception('Failed to upload license image: ${e.toString()}');
     }
-  }
-
-  // Check if user exists
-  Future<bool> userExists(String uid) async {
-    try {
-      final doc = await _firestore.collection('users').doc(uid).get();
-      return doc.exists;
-    } catch (e) {
-      print('Error checking if user exists: $e');
-      return false;
-    }
-  }
-
-  // Get current user model
-  Future<UserModel?> getCurrentUserModel() async {
-    final user = currentUser;
-    if (user != null) {
-      return await getUserProfile(user.uid);
-    }
-    return null;
   }
 }

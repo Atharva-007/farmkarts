@@ -5,12 +5,13 @@ class Product {
   final String category;
   final double price;
   final String unit;
-  final String imageUrl;
+  final List<String> imageUrls;
   final String sellerId;
   final String sellerName;
   final String location;
   final DateTime timestamp;
   final bool isOrganic;
+  final bool isAvailable;
   final int quantity;
   final List<String> tags;
 
@@ -21,30 +22,44 @@ class Product {
     required this.category,
     required this.price,
     required this.unit,
-    required this.imageUrl,
+    required this.imageUrls,
     required this.sellerId,
     required this.sellerName,
     required this.location,
     required this.timestamp,
     this.isOrganic = false,
+    this.isAvailable = true,
     this.quantity = 0,
     this.tags = const [],
   });
 
-  factory Product.fromMap(String id, Map<dynamic, dynamic> map) {
+  factory Product.fromMap(Map<String, dynamic> map) {
+    DateTime timestamp = DateTime.now();
+    
+    // Handle Firestore Timestamp or milliseconds
+    if (map['timestamp'] != null) {
+      if (map['timestamp'] is int) {
+        timestamp = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
+      } else if (map['timestamp'].runtimeType.toString().contains('Timestamp')) {
+        // Firestore Timestamp
+        timestamp = (map['timestamp'] as dynamic).toDate();
+      }
+    }
+    
     return Product(
-      id: id,
+      id: map['id'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       category: map['category'] ?? '',
       price: (map['price'] ?? 0).toDouble(),
       unit: map['unit'] ?? 'kg',
-      imageUrl: map['imageUrl'] ?? '',
+      imageUrls: List<String>.from(map['imageUrls'] ?? [map['imageUrl'] ?? '']),
       sellerId: map['sellerId'] ?? '',
       sellerName: map['sellerName'] ?? '',
       location: map['location'] ?? '',
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] ?? 0),
+      timestamp: timestamp,
       isOrganic: map['isOrganic'] ?? false,
+      isAvailable: map['isAvailable'] ?? true,
       quantity: map['quantity'] ?? 0,
       tags: List<String>.from(map['tags'] ?? []),
     );
@@ -52,17 +67,20 @@ class Product {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'description': description,
       'category': category,
       'price': price,
       'unit': unit,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'sellerId': sellerId,
       'sellerName': sellerName,
       'location': location,
-      'timestamp': timestamp.millisecondsSinceEpoch,
+      'timestamp': timestamp.millisecondsSinceEpoch, // Keep for backward compatibility
+      'createdAt': timestamp.millisecondsSinceEpoch, // New field for consistency
       'isOrganic': isOrganic,
+      'isAvailable': isAvailable,
       'quantity': quantity,
       'tags': tags,
     };

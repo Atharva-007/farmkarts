@@ -42,13 +42,13 @@ class ProductCard extends StatelessWidget {
                         top: Radius.circular(AppConstants.borderRadius),
                       ),
                     ),
-                    child: product.imageUrl.isNotEmpty
+                    child: product.imageUrls.isNotEmpty
                         ? ClipRRect(
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(AppConstants.borderRadius),
                             ),
                             child: Image.network(
-                              product.imageUrl,
+                              product.imageUrls.first,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   _buildPlaceholderImage(),

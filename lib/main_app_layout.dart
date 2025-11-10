@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
 import 'utils/responsive_helper.dart';
 import 'features/dashboard/dashboard_home.dart';
-import 'features/marketplace/marketplace_home.dart';
+import 'features/marketplace/complete_marketplace_page.dart';
 import 'features/community/community_dashboard.dart';
 import 'features/crops/crops_dashboard.dart';
 import 'features/weather/weather_dashboard.dart';
-import 'features/apmc/apmc_market_page.dart';
+import 'features/apmc/enhanced_apmc_market_live_fixed.dart';
 import 'features/profile/profile_dashboard.dart';
+import 'features/chat/enhanced_ai_expert_chat_page.dart';
+import 'features/orders/order_tracking_page.dart';
 import 'services/user_state_service.dart';
+import 'services/conversation_service.dart';
 import 'models/user_model.dart';
 
 class MainAppLayout extends StatefulWidget {
@@ -29,13 +33,17 @@ class _MainAppLayoutState extends State<MainAppLayout> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    _initializePages();
+  }
+
+  void _initializePages() {
     _pages = [
       DashboardHome(onNavigate: _navigateToPage),
-      const MarketplaceHome(),
+      const CompleteMarketplacePage(),
       const CommunityDashboard(),
       const CropsDashboard(),
       const WeatherDashboard(),
-      const APMCMarketPage(),
+      const EnhancedAPMCMarketLiveFixed(),
       const ProfileDashboard(),
     ];
   }
@@ -57,17 +65,6 @@ class _MainAppLayoutState extends State<MainAppLayout> {
   ];
 
   Widget? _getFloatingActionButton() {
-    if (_currentIndex == 1) { // Marketplace page
-      return FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to add product page or show add product dialog
-          _showAddProductDialog();
-        },
-        backgroundColor: AppTheme.accentOrange,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Product', style: TextStyle(color: Colors.white)),
-      );
-    }
     return null;
   }
 
@@ -121,26 +118,20 @@ class _MainAppLayoutState extends State<MainAppLayout> {
   Widget _buildFloatingMenuButton() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.primaryGreen,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: AppTheme.defaultShadow,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          borderRadius: BorderRadius.circular(16),
           onTap: () => _scaffoldKey.currentState?.openDrawer(),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
+          child: Container(
             padding: const EdgeInsets.all(12),
             child: Icon(
               Icons.menu,
-              color: AppTheme.primaryGreen,
+              color: Colors.white,
               size: 24,
             ),
           ),
@@ -180,12 +171,40 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                    onPressed: () => _showComingSoon('Notifications'),
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.notifications_outlined, color: Colors.white),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(1),
+                            decoration: BoxDecoration(
+                              color: AppTheme.error,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 12,
+                              minHeight: 12,
+                            ),
+                            child: const Text(
+                              '3',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    onPressed: () => _showNotifications(),
                   ),
                   IconButton(
                     icon: const Icon(Icons.search, color: Colors.white),
-                    onPressed: () => _showComingSoon('Search'),
+                    onPressed: () => _showSearchDialog(),
                   ),
                 ],
               ),
@@ -276,22 +295,30 @@ class _MainAppLayoutState extends State<MainAppLayout> {
         final roleIcon = user?.role == UserRole.farmer ? Icons.agriculture : Icons.store;
 
         return Drawer(
+          backgroundColor: Colors.white,
           child: Column(
             children: [
               UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
+                  color: Colors.white,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey, width: 0.5),
+                  ),
                 ),
                 accountName: Text(
                   userName,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    color: Colors.black87,
                   ),
                 ),
-                accountEmail: Text(userEmail),
+                accountEmail: Text(
+                  userEmail,
+                  style: const TextStyle(color: Colors.black54),
+                ),
                 currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
                   child: Icon(
                     roleIcon,
                     color: AppTheme.primaryGreen,
@@ -302,7 +329,7 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: AppTheme.primaryGreen.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -310,7 +337,7 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppTheme.primaryGreen,
                       ),
                     ),
                   ),
@@ -363,6 +390,13 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                     ),
                     
                     const Divider(),
+                    
+                    // AI Chat Feature
+                    _buildDrawerItem(
+                      icon: Icons.psychology,
+                      title: 'AI Expert Chat',
+                      onTap: () => _navigateToAIChat(),
+                    ),
                     
                     // Additional features
                     _buildDrawerItem(
@@ -443,10 +477,188 @@ class _MainAppLayoutState extends State<MainAppLayout> {
     );
   }
 
+  void _navigateToAIChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EnhancedAIExpertChatPage(),
+      ),
+    );
+  }
+
   void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$feature coming soon!'),
+        backgroundColor: AppTheme.primaryGreen,
+      ),
+    );
+  }
+
+  void _showNotifications() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _buildNotificationsSheet(),
+    );
+  }
+
+  void _showSearchDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Search'),
+        content: TextField(
+          decoration: const InputDecoration(
+            hintText: 'Search products, farmers, or markets...',
+            prefixIcon: Icon(Icons.search),
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (value) {
+            Navigator.pop(context);
+            if (value.isNotEmpty) {
+              _performSearch(value);
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsSheet() {
+    final notifications = [
+      _NotificationItem(
+        title: 'New Market Rate Update',
+        subtitle: 'Wheat prices increased by 2.5% in Mumbai APMC',
+        time: '5 min ago',
+        icon: Icons.trending_up,
+        color: AppTheme.success,
+      ),
+      _NotificationItem(
+        title: 'Weather Alert',
+        subtitle: 'Heavy rainfall expected in your area tomorrow',
+        time: '1 hour ago',
+        icon: Icons.cloud,
+        color: AppTheme.warning,
+      ),
+      _NotificationItem(
+        title: 'Community Post',
+        subtitle: 'Ram Sharma shared farming tips in your community',
+        time: '2 hours ago',
+        icon: Icons.people,
+        color: AppTheme.info,
+      ),
+    ];
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'Notifications',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  // Mark all as read
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('All notifications marked as read'),
+                      backgroundColor: AppTheme.primaryGreen,
+                    ),
+                  );
+                },
+                child: const Text('Mark all read'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return _buildNotificationCard(notification);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationCard(_NotificationItem notification) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: notification.color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            notification.icon,
+            color: notification.color,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          notification.title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(
+              notification.subtitle,
+              style: const TextStyle(fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              notification.time,
+              style: TextStyle(
+                fontSize: 10,
+                color: AppTheme.textGrey,
+              ),
+            ),
+          ],
+        ),
+        onTap: () {
+          Navigator.pop(context);
+          // Handle notification tap
+        },
+      ),
+    );
+  }
+
+  void _performSearch(String query) {
+    // Navigate to search results or filter current page
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Searching for: $query'),
         backgroundColor: AppTheme.primaryGreen,
       ),
     );
@@ -480,4 +692,20 @@ class _MainAppLayoutState extends State<MainAppLayout> {
     // Implement logout logic here
     Navigator.pushReplacementNamed(context, '/login');
   }
+}
+
+class _NotificationItem {
+  final String title;
+  final String subtitle;
+  final String time;
+  final IconData icon;
+  final Color color;
+
+  _NotificationItem({
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    required this.icon,
+    required this.color,
+  });
 }

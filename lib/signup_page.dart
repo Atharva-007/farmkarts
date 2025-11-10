@@ -45,45 +45,89 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _pickLicenseImage() async {
     try {
+      setState(() {
+        _errorMessage = null; // Clear any previous errors
+      });
+      
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80,
+        imageQuality: 85, // Slightly higher quality for better preview
+        maxWidth: 1920,   // Limit size to prevent huge uploads
+        maxHeight: 1920,
       );
+      
       if (pickedFile != null) {
         if (kIsWeb) {
           // For web platform
           final imageBytes = await pickedFile.readAsBytes();
+          
+          // Check file size (5MB limit)
+          if (imageBytes.length > 5 * 1024 * 1024) {
+            setState(() {
+              _errorMessage = 'Image too large. Please select an image smaller than 5MB.';
+            });
+            return;
+          }
+          
           setState(() {
             _licenseImageBytes = imageBytes;
             _licenseImageName = pickedFile.name;
             _licenseImage = null; // Clear file for web
           });
+          
+          print('Web image selected: ${pickedFile.name} (${imageBytes.length} bytes)');
         } else {
           // For mobile platforms
+          final file = File(pickedFile.path);
+          final fileSize = await file.length();
+          
+          // Check file size (5MB limit)
+          if (fileSize > 5 * 1024 * 1024) {
+            setState(() {
+              _errorMessage = 'Image too large. Please select an image smaller than 5MB.';
+            });
+            return;
+          }
+          
           setState(() {
-            _licenseImage = File(pickedFile.path);
+            _licenseImage = file;
             _licenseImageBytes = null; // Clear bytes for mobile
             _licenseImageName = pickedFile.name;
           });
+          
+          print('Mobile image selected: ${pickedFile.name} (${fileSize} bytes)');
         }
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image selected: ${pickedFile.name}'),
+            backgroundColor: AppTheme.primaryGreen,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
+      print('Error picking image: $e');
       setState(() {
-        _errorMessage = 'Error picking image: $e';
+        _errorMessage = 'Error selecting image: $e';
       });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting image: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Validate role-specific fields
-    if (_selectedRole == UserRole.addat && _licenseImage == null && _licenseImageBytes == null) {
-      setState(() {
-        _errorMessage = 'Please upload your license image';
-      });
-      return;
-    }
+    // No license validation needed during signup anymore
+    // Vendors can upload license later in their profile
 
     setState(() {
       _isLoading = true;
@@ -91,7 +135,10 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     try {
-      print('Starting signup process...');
+      print('Starting optimized signup process...');
+      
+      // Show progress messages to user
+      _showProgressSnackBar('Creating account...');
       
       final userCredential = await _authService.signUpWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -105,37 +152,59 @@ class _SignUpPageState extends State<SignUpPage> {
         dukanName: _selectedRole == UserRole.addat 
             ? _dukanNameController.text.trim() 
             : null,
-        licenseImage: _selectedRole == UserRole.addat && !kIsWeb
-            ? _licenseImage 
-            : null,
-        licenseImageBytes: _selectedRole == UserRole.addat && kIsWeb
-            ? _licenseImageBytes
-            : null,
-        licenseImageName: _selectedRole == UserRole.addat
-            ? _licenseImageName
-            : null,
+        // License upload removed from signup - vendors can upload later
+        licenseImage: null,
+        licenseImageBytes: null,
+        licenseImageName: null,
+      ).timeout(
+        const Duration(minutes: 2), // Reduced timeout since no image upload
+        onTimeout: () => throw Exception('Account creation timed out. Please check your internet connection and try again.'),
       );
 
       if (userCredential?.user != null) {
         print('Signup successful, setting user state...');
         
-        // Set user in state service
+        // Show progress
+        _showProgressSnackBar('Setting up your profile...');
+        
+        // Set user in state service with timeout
         final userStateService = Provider.of<UserStateService>(context, listen: false);
-        await userStateService.setCurrentUser(userCredential!.user!.uid);
+        await userStateService.setCurrentUser(userCredential!.user!.uid).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () => throw Exception('Profile setup timed out. Please try logging in.'),
+        );
         
         if (userStateService.currentUser != null) {
           print('User state set successfully, navigating to home...');
           
           if (mounted) {
+            // Clear any existing snackbars
+            ScaffoldMessenger.of(context).clearSnackBars();
+            
             // Show success message
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Welcome ${userStateService.currentUser!.fullName}!'),
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text('Welcome ${userStateService.currentUser!.fullName}! Your account has been created successfully.'),
+                    ),
+                  ],
+                ),
                 backgroundColor: AppTheme.success,
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
               ),
             );
             
-            Navigator.pushReplacementNamed(context, '/home');
+            // Navigate to home with a slight delay to show success message
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            });
           }
         } else {
           setState(() {
@@ -150,63 +219,346 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (e) {
       print('Signup error: $e');
       
+      // Clear progress snackbar
+      ScaffoldMessenger.of(context).clearSnackBars();
+      
       String errorMessage = 'An error occurred during signup.';
       
       // Handle specific Firebase Auth errors
-      if (e.toString().contains('email-already-in-use')) {
+      final errorString = e.toString().toLowerCase();
+      
+      if (errorString.contains('email-already-in-use')) {
         errorMessage = 'This email is already registered. Please use a different email or try logging in.';
-      } else if (e.toString().contains('weak-password')) {
-        errorMessage = 'Password is too weak. Please use at least 6 characters.';
-      } else if (e.toString().contains('invalid-email')) {
+      } else if (errorString.contains('weak-password')) {
+        errorMessage = 'Password is too weak. Please use at least 6 characters with a mix of letters and numbers.';
+      } else if (errorString.contains('invalid-email')) {
         errorMessage = 'Please enter a valid email address.';
-      } else if (e.toString().contains('operation-not-allowed')) {
+      } else if (errorString.contains('operation-not-allowed')) {
         errorMessage = 'Email/password accounts are not enabled. Please contact support.';
-      } else if (e.toString().contains('network-request-failed')) {
+      } else if (errorString.contains('network-request-failed') || errorString.contains('network error')) {
         errorMessage = 'Network error. Please check your internet connection and try again.';
-      } else if (e.toString().contains('Permission denied')) {
-        errorMessage = 'Database access denied. Please contact support.';
-      } else if (e.toString().contains('Failed to upload license image')) {
-        errorMessage = 'Failed to upload license image. Please try with a different image.';
+      } else if (errorString.contains('timeout') || errorString.contains('timed out')) {
+        errorMessage = 'The operation timed out. Please check your internet connection and try again.';
+      } else if (errorString.contains('permission denied') || errorString.contains('database access denied')) {
+        errorMessage = 'Database access issue. Please try again or contact support if the problem persists.';
+      } else if (errorString.contains('failed to upload license image')) {
+        errorMessage = 'Failed to upload license image. Please try with a different image or check your internet connection.';
+      } else if (errorString.contains('failed to create user profile')) {
+        errorMessage = 'Account created but profile setup failed. Please try logging in or contact support.';
       } else {
-        errorMessage = e.toString().replaceAll('Exception: ', '');
+        // Clean up generic error messages
+        errorMessage = e.toString().replaceAll('Exception: ', '').replaceAll('FormatException: ', '');
+        if (errorMessage.length > 200) {
+          errorMessage = 'An unexpected error occurred. Please try again or contact support if the problem persists.';
+        }
       }
       
       setState(() => _errorMessage = errorMessage);
+      
+      // Show error snackbar for timeout/network errors for immediate feedback
+      if (errorString.contains('timeout') || errorString.contains('network')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(child: Text(errorMessage)),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () => _signUp(),
+            ),
+          ),
+        );
+      }
+      
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  void _showProgressSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(message),
+          ],
+        ),
+        backgroundColor: AppTheme.primaryGreen,
+        duration: const Duration(seconds: 30), // Long duration for progress
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Widget _buildImageWidget() {
     if (kIsWeb && _licenseImageBytes != null) {
       // For web platform, use Image.memory
-      return Image.memory(
-        _licenseImageBytes!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else if (!kIsWeb && _licenseImage != null) {
-      // For mobile platforms, use Image.file
-      return Image.file(
-        _licenseImage!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      // Fallback placeholder
       return Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.grey.shade200,
-        child: const Icon(
-          Icons.image,
-          size: 50,
-          color: Colors.grey,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              Image.memory(
+                _licenseImageBytes!,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error displaying web image: $error');
+                  return _buildErrorPlaceholder();
+                },
+              ),
+              // File info overlay
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _licenseImageName ?? 'license.jpg',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${(_licenseImageBytes!.length / 1024).toStringAsFixed(1)} KB',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
+    } else if (!kIsWeb && _licenseImage != null) {
+      // For mobile platforms, use Image.file
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              Image.file(
+                _licenseImage!,
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error displaying mobile image: $error');
+                  return _buildErrorPlaceholder();
+                },
+              ),
+              // File info overlay
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _licenseImageName ?? 'license.jpg',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      FutureBuilder<int>(
+                        future: _licenseImage!.length(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Text(
+                              '${(snapshot.data! / 1024).toStringAsFixed(1)} KB',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Fallback placeholder when no image is selected
+      return _buildEmptyPlaceholder();
     }
+  }
+
+  Widget _buildErrorPlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 40,
+            color: Colors.red.shade400,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Error loading image',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.red.shade700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Tap to select again',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.red.shade600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyPlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.cloud_upload_outlined,
+            size: 40,
+            color: AppTheme.primaryGreen,
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Upload License Image',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryGreen,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Tap to select image',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Max size: 5MB',
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -464,65 +816,66 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: 16),
                       
-                      // License Upload
-                      GestureDetector(
-                        onTap: _pickLicenseImage,
-                        child: Container(
-                          width: double.infinity,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.grey.shade50,
+                      // License Upload - Now handled in profile after account creation
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGreen.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.primaryGreen.withOpacity(0.3),
                           ),
-                          child: (_licenseImage != null || _licenseImageBytes != null)
-                              ? Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: _buildImageWidget(),
-                                    ),
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black54,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: IconButton(
-                                          icon: const Icon(Icons.close, color: Colors.white),
-                                          onPressed: () => setState(() {
-                                            _licenseImage = null;
-                                            _licenseImageBytes = null;
-                                            _licenseImageName = null;
-                                          }),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              : const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.upload_file, size: 40, color: Colors.grey),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'Upload License Image',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Tap to select image',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  color: AppTheme.primaryGreen,
+                                  size: 20,
                                 ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'License Verification',
+                                  style: TextStyle(
+                                    color: AppTheme.primaryGreen,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'After creating your account, you can upload your business license in your profile for verification. This will help build trust with customers.',
+                              style: TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.verified,
+                                  color: AppTheme.success,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Quick account creation - no waiting!',
+                                  style: TextStyle(
+                                    color: AppTheme.success,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],

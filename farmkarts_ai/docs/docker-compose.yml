@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  ai-service:
+    build: ./ai_service
+    container_name: ai_service
+    restart: unless-stopped
+    environment:
+      - AI_INTERNAL_KEY=${AI_INTERNAL_KEY}
+      - OLLAMA_MODEL=gemma:3.1b
+    volumes:
+      - ./ai_service/data:/app/data
+      - ./ai_service/faiss_index.bin:/app/faiss_index.bin
+      - ./ai_service/faiss_meta.json:/app/faiss_meta.json
+    ports:
+      - "8000:8000"
+    network_mode: bridge
+
+  node-proxy:
+    build: ./node_proxy
+    container_name: node_proxy
+    depends_on:
+      - ai-service
+    environment:
+      - AI_URL=http://ai-service:8000/ask
+      - AI_INTERNAL_KEY=${AI_INTERNAL_KEY}
+      - FIREBASE_CRED_PATH=/secrets/firebase.json
+    volumes:
+      - ./secrets:/secrets
+    ports:
+      - "3000:3000"

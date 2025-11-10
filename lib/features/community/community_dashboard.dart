@@ -48,30 +48,167 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             constraints: BoxConstraints(
               maxWidth: ResponsiveHelper.getMaxWidth(context),
             ),
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildAppBar(context),
-                SliverPadding(
-                  padding: ResponsiveHelper.getScreenPadding(context),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildCommunityStats(context),
-                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildQuickActions(context),
-                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildRecentDiscussions(context),
-                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildExpertAdvice(context),
-                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                      _buildSuccessStories(context),
-                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                    ]),
+            child: Column(
+              children: [
+                _buildIntegratedHeader(),
+                Expanded(
+                  child: CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverPadding(
+                        padding: ResponsiveHelper.getScreenPadding(context),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate([
+                            _buildCommunityStats(context),
+                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                            _buildRecentDiscussions(context),
+                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                            _buildExpertAdvice(context),
+                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                            _buildSuccessStories(context),
+                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                          ]),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIntegratedHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Action buttons row
+          Row(
+            children: [
+              _buildHeaderAction(
+                icon: Icons.add_circle_outline,
+                label: 'New Post',
+                onTap: _showCreatePost,
+                isPrimary: true,
+              ),
+              const SizedBox(width: 12),
+              _buildHeaderAction(
+                icon: Icons.chat_bubble_outline,
+                label: 'Messages',
+                onTap: _showMessages,
+                badge: '7',
+              ),
+              const SizedBox(width: 12),
+              _buildHeaderAction(
+                icon: Icons.group_add,
+                label: 'Join Groups',
+                onTap: _showGroups,
+              ),
+              const Spacer(),
+              _buildHeaderAction(
+                icon: Icons.more_vert,
+                label: 'More',
+                onTap: _showMoreOptions,
+              ),
+            ],
+          ),
+          
+          // Community stats
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildStatChip('2.5k Members', Icons.people),
+              const SizedBox(width: 12),
+              _buildStatChip('150 Posts Today', Icons.article),
+              const SizedBox(width: 12),
+              _buildStatChip('45 Experts', Icons.verified),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    String? badge,
+    bool isPrimary = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isPrimary ? AppTheme.primaryGreen : null,
+          border: isPrimary ? null : Border.all(color: AppTheme.borderGrey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Stack(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: isPrimary ? Colors.white : AppTheme.primaryGreen,
+                ),
+                if (ResponsiveHelper.isDesktop(context)) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isPrimary ? Colors.white : AppTheme.textDark,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (badge != null)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: AppTheme.error,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    badge,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -599,6 +736,186 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
             ),
           ),
           const Icon(Icons.chevron_right, color: AppTheme.textGrey),
+        ],
+      ),
+    );
+  }
+
+  void _showCreatePost() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Create New Post',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'What\'s on your mind?',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 5,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.photo),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.videocam),
+                ),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.poll),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Post created!')),
+                      );
+                    },
+                    child: const Text('Post'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMessages() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Messages'),
+        content: const Text('You have 7 unread messages from the community.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('View All'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGroups() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Join Groups'),
+        content: const Text('Discover and join farmer groups in your area.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Browse Groups'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMoreOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.event),
+              title: const Text('Events'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Events feature coming soon!')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.business_center),
+              title: const Text('Market Updates'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Market updates available!')),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.school),
+              title: const Text('Learning Resources'),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Learning resources available!')),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(String text, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppTheme.primaryGreen),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.primaryGreen,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );

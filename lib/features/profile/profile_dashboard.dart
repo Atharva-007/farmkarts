@@ -4,6 +4,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
 import '../../services/user_state_service.dart';
+import 'license_management_page.dart';
 
 class ProfileDashboard extends StatefulWidget {
   const ProfileDashboard({super.key});
@@ -320,17 +321,105 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                 label: 'Shop Name',
                 value: user.dukanName,
               ),
+              const SizedBox(height: 16),
+              
+              // Enhanced License Status Section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _getLicenseStatusColor(user).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _getLicenseStatusColor(user).withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _getLicenseStatusIcon(user),
+                          color: _getLicenseStatusColor(user),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'License Verification',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _getLicenseStatusColor(user),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        if (user.licenseImageUrl != null && user.isLicenseVerified)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.success,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'VERIFIED',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _getLicenseStatusMessage(user),
+                      style: TextStyle(
+                        color: AppTheme.textGrey,
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                    if (user.licenseUploadedAt != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Uploaded: ${_formatDate(user.licenseUploadedAt!)}',
+                        style: TextStyle(
+                          color: AppTheme.textGrey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openLicenseManagement(),
+                        icon: Icon(
+                          user.licenseImageUrl != null ? Icons.edit : Icons.upload_file,
+                          size: 18,
+                        ),
+                        label: Text(
+                          user.licenseImageUrl != null ? 'Manage License' : 'Upload License',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _getLicenseStatusColor(user),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Expanded(
-                    child: _buildInfoItem(
-                      icon: user.isLicenseVerified ? Icons.verified : Icons.pending,
-                      label: 'License Status',
-                      value: user.isLicenseVerified ? 'Verified' : 'Pending',
-                      valueColor: user.isLicenseVerified ? AppTheme.success : AppTheme.warning,
-                    ),
-                  ),
                   Expanded(
                     child: _buildInfoItem(
                       icon: Icons.calendar_today,
@@ -611,9 +700,43 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   void _openLicenseManagement() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('License management coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const LicenseManagementPage(),
+      ),
     );
+  }
+
+  // Helper methods for license status
+  Color _getLicenseStatusColor(AddatModel user) {
+    if (user.licenseImageUrl == null) {
+      return AppTheme.error;
+    } else if (!user.isLicenseVerified) {
+      return AppTheme.warning;
+    } else {
+      return AppTheme.success;
+    }
+  }
+
+  IconData _getLicenseStatusIcon(AddatModel user) {
+    if (user.licenseImageUrl == null) {
+      return Icons.upload_file;
+    } else if (!user.isLicenseVerified) {
+      return Icons.pending;
+    } else {
+      return Icons.verified;
+    }
+  }
+
+  String _getLicenseStatusMessage(AddatModel user) {
+    if (user.licenseImageUrl == null) {
+      return 'Upload your business license to start selling products and build customer trust.';
+    } else if (!user.isLicenseVerified) {
+      return 'Your license is under review by our admin team. You\'ll be notified once verification is complete.';
+    } else {
+      return 'Your business license is verified! You can now sell products with full credibility.';
+    }
   }
 
   void _openHelp() {

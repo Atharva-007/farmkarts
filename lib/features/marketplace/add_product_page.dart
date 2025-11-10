@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
+import '../../models/product_model.dart';
+import '../../services/marketplace_service.dart';
+import '../../services/user_state_service.dart';
 
 class AddProductPage extends StatefulWidget {
   final Function? onProductAdded;
-  final Map<String, dynamic>? product;
+  final Product? product;
 
   const AddProductPage({super.key, this.onProductAdded, this.product});
 
@@ -25,11 +28,14 @@ class _AddProductPageState extends State<AddProductPage>
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   String _selectedCategory = 'Vegetables';
   String _selectedUnit = 'kg';
   bool _isOrganic = false;
   bool _isSubmitting = false;
+  
+  final MarketplaceService _marketplaceService = MarketplaceService();
 
   final List<String> _categories = [
     'Vegetables',
@@ -77,13 +83,14 @@ class _AddProductPageState extends State<AddProductPage>
 
   void _populateFields() {
     final product = widget.product!;
-    _nameController.text = product['productName'] ?? '';
-    _descriptionController.text = product['description'] ?? '';
-    _priceController.text = product['price'] ?? '';
-    _quantityController.text = product['quantity']?.toString() ?? '';
-    _selectedCategory = product['category'] ?? 'Vegetables';
-    _selectedUnit = product['unit'] ?? 'kg';
-    _isOrganic = product['isOrganic'] ?? false;
+    _nameController.text = product.name;
+    _descriptionController.text = product.description;
+    _priceController.text = product.price.toString();
+    _quantityController.text = product.quantity.toString();
+    _locationController.text = product.location;
+    _selectedCategory = product.category;
+    _selectedUnit = product.unit;
+    _isOrganic = product.isOrganic;
   }
 
   @override
@@ -109,31 +116,40 @@ class _AddProductPageState extends State<AddProductPage>
       return;
     }
 
+    final userStateService = Provider.of<UserStateService>(context, listen: false);
+    
     setState(() => _isSubmitting = true);
 
     try {
-      final productData = {
-        'productName': _nameController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'price': _priceController.text.trim(),
-        'category': _selectedCategory,
-        'unit': _selectedUnit,
-        'quantity': int.tryParse(_quantityController.text.trim()) ?? 0,
-        'isOrganic': _isOrganic,
-        'sellerId': user.uid,
-        'sellerName': user.displayName ?? user.email?.split('@')[0] ?? 'Seller',
-        'timestamp': DateTime.now().millisecondsSinceEpoch,
-        'status': 'active',
-        'views': 0,
-        'inquiries': 0,
-      };
+      final product = Product(
+        id: widget.product?.id ?? '',
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        category: _selectedCategory,
+        price: double.parse(_priceController.text.trim()),
+        unit: _selectedUnit,
+        imageUrls: widget.product?.imageUrls ?? [], // Keep existing images or empty for new
+        sellerId: user.uid,
+        sellerName: userStateService.currentUser?.fullName ?? 
+                   user.displayName ?? 
+                   user.email?.split('@')[0] ?? 
+                   'Seller',
+        location: _locationController.text.trim().isEmpty 
+                  ? 'Location not specified'
+                  : _locationController.text.trim(),
+        timestamp: DateTime.now(),
+        isOrganic: _isOrganic,
+        quantity: int.tryParse(_quantityController.text.trim()) ?? 0,
+        tags: _generateTags(),
+      );
 
       if (widget.product != null) {
         // Update existing product
-        await FirebaseDatabase.instance
-            .ref('marketplace/products')
-            .child(widget.product!['key'])
-            .update(productData);
+        print('Updating product with ID: ${widget.product!.id}');
+        await _marketplaceService.updateProduct(
+          widget.product!.id,
+          product.toMap(),
+        );
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -145,10 +161,9 @@ class _AddProductPageState extends State<AddProductPage>
         }
       } else {
         // Add new product
-        await FirebaseDatabase.instance
-            .ref('marketplace/products')
-            .push()
-            .set(productData);
+        print('Adding new product: ${product.name}');
+        final productId = await _marketplaceService.addProduct(product, user.uid);
+        print('Product added with ID: $productId');
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -165,13 +180,14 @@ class _AddProductPageState extends State<AddProductPage>
       }
 
       if (mounted) {
-        Navigator.pop(context);
+        Navigator.pop(context, true); // Return true to indicate successful addition
       }
     } catch (e) {
+      print('Error submitting product: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: AppTheme.error,
           ),
         );
@@ -181,6 +197,28 @@ class _AddProductPageState extends State<AddProductPage>
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  List<String> _generateTags() {
+    final tags = <String>[];
+    
+    // Add category as tag
+    tags.add(_selectedCategory.toLowerCase());
+    
+    // Add organic tag if applicable
+    if (_isOrganic) {
+      tags.add('organic');
+    }
+    
+    // Add name words as tags
+    final nameWords = _nameController.text.toLowerCase().split(' ');
+    for (final word in nameWords) {
+      if (word.isNotEmpty && word.length > 2) {
+        tags.add(word);
+      }
+    }
+    
+    return tags.toSet().toList(); // Remove duplicates
   }
 
   @override
@@ -228,8 +266,8 @@ class _AddProductPageState extends State<AddProductPage>
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           gradient: LinearGradient(
             colors: [
-              AppTheme.primaryGreen.withOpacity(0.1),
-              AppTheme.lightGreen.withOpacity(0.1),
+              AppTheme.primaryGreen.withValues(alpha: 0.1),
+              AppTheme.lightGreen.withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -339,6 +377,19 @@ class _AddProductPageState extends State<AddProductPage>
                 if (value.trim().length < 10) {
                   return 'Description should be at least 10 characters';
                 }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                labelText: 'Location',
+                hintText: 'e.g., Village, District, State',
+                prefixIcon: Icon(Icons.location_on),
+              ),
+              validator: (value) {
+                // Location is optional, will use user's default location if empty
                 return null;
               },
             ),
@@ -487,7 +538,7 @@ class _AddProductPageState extends State<AddProductPage>
           backgroundColor: AppTheme.primaryGreen,
           foregroundColor: Colors.white,
           elevation: 4,
-          shadowColor: AppTheme.primaryGreen.withOpacity(0.3),
+          shadowColor: AppTheme.primaryGreen.withValues(alpha: 0.3),
         ),
         child: _isSubmitting
             ? const SizedBox(
@@ -520,30 +571,11 @@ class _AddProductPageState extends State<AddProductPage>
   }
 }
 
-class ProductDetailPage extends StatelessWidget {
-  final dynamic product;
-
-  const ProductDetailPage({super.key, required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Product Details'),
-        backgroundColor: AppTheme.primaryGreen,
-        foregroundColor: Colors.white,
-      ),
-      body: const Center(
-        child: Text('Product details coming soon!'),
-      ),
-    );
-  }
-}
-
 class BuyRequestPage extends StatelessWidget {
   final dynamic product;
+  final int? quantity;
 
-  const BuyRequestPage({super.key, required this.product});
+  const BuyRequestPage({super.key, required this.product, this.quantity});
 
   @override
   Widget build(BuildContext context) {

@@ -86,12 +86,34 @@ class FarmerModel extends UserModel {
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] ?? 0),
     );
   }
+
+  FarmerModel copyWith({
+    String? uid,
+    String? email,
+    String? fullName,
+    String? mobileNo,
+    double? acresLand,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return FarmerModel(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      mobileNo: mobileNo ?? this.mobileNo,
+      acresLand: acresLand ?? this.acresLand,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(),
+    );
+  }
 }
 
 class AddatModel extends UserModel {
   final String dukanName;
-  final String licenseImageUrl;
+  final String? licenseImageUrl; // Made optional
   final bool isLicenseVerified;
+  final DateTime? licenseUploadedAt; // Track when license was uploaded
+  final String? verificationNotes; // Admin can add notes
 
   AddatModel({
     required String uid,
@@ -99,8 +121,10 @@ class AddatModel extends UserModel {
     required String fullName,
     required String mobileNo,
     required this.dukanName,
-    required this.licenseImageUrl,
+    this.licenseImageUrl, // Optional now
     this.isLicenseVerified = false,
+    this.licenseUploadedAt,
+    this.verificationNotes,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) : super(
@@ -117,8 +141,10 @@ class AddatModel extends UserModel {
   Map<String, dynamic> toMap() {
     final map = super.toMap();
     map['dukanName'] = dukanName;
-    map['licenseImageUrl'] = licenseImageUrl;
+    map['licenseImageUrl'] = licenseImageUrl; // Will be null if not uploaded
     map['isLicenseVerified'] = isLicenseVerified;
+    map['licenseUploadedAt'] = licenseUploadedAt?.millisecondsSinceEpoch;
+    map['verificationNotes'] = verificationNotes;
     return map;
   }
 
@@ -129,10 +155,42 @@ class AddatModel extends UserModel {
       fullName: map['fullName'] ?? '',
       mobileNo: map['mobileNo'] ?? '',
       dukanName: map['dukanName'] ?? '',
-      licenseImageUrl: map['licenseImageUrl'] ?? '',
+      licenseImageUrl: map['licenseImageUrl'], // Can be null
       isLicenseVerified: map['isLicenseVerified'] ?? false,
+      licenseUploadedAt: map['licenseUploadedAt'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(map['licenseUploadedAt'])
+          : null,
+      verificationNotes: map['verificationNotes'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ?? 0),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updatedAt'] ?? 0),
+    );
+  }
+
+  AddatModel copyWith({
+    String? uid,
+    String? email,
+    String? fullName,
+    String? mobileNo,
+    String? dukanName,
+    String? licenseImageUrl,
+    bool? isLicenseVerified,
+    DateTime? licenseUploadedAt,
+    String? verificationNotes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return AddatModel(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      mobileNo: mobileNo ?? this.mobileNo,
+      dukanName: dukanName ?? this.dukanName,
+      licenseImageUrl: licenseImageUrl ?? this.licenseImageUrl,
+      isLicenseVerified: isLicenseVerified ?? this.isLicenseVerified,
+      licenseUploadedAt: licenseUploadedAt ?? this.licenseUploadedAt,
+      verificationNotes: verificationNotes ?? this.verificationNotes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 }

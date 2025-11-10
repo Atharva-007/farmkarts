@@ -11,7 +11,7 @@ class SellPage extends StatefulWidget {
   const SellPage({super.key});
 
   @override
-  _SellPageState createState() => _SellPageState();
+  State<SellPage> createState() => _SellPageState();
 }
 
 class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin {
@@ -52,38 +52,17 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
   }
 
   void _listenToDatabase() {
-    _dbRef.orderByChild('timestamp').onValue.listen((event) {
-      final data = event.snapshot.value;
-      if (data != null && data is Map) {
-        final List<Map<String, dynamic>> loadedItems = [];
-        data.forEach((key, value) {
-          // Only show items from current user
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null && value['sellerId'] == user.uid) {
-            loadedItems.add({
-              'key': key,
-              'productName': value['productName'],
-              'description': value['description'],
-              'price': value['price'],
-              'category': value['category'] ?? 'Other',
-              'unit': value['unit'] ?? 'kg',
-              'quantity': value['quantity'] ?? 0,
-              'sellerId': value['sellerId'],
-              'sellerName': value['sellerName'],
-              'timestamp': value['timestamp'],
-              'status': value['status'] ?? 'active',
-              'views': value['views'] ?? 0,
-              'inquiries': value['inquiries'] ?? 0,
-            });
-          }
-        });
-
-        loadedItems.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
-
+    _dbRef.onValue.listen((event) {
+      if (event.snapshot.value != null) {
+        final data = Map<String, dynamic>.from(event.snapshot.value as Map);
         setState(() {
-          _itemsForSale
-            ..clear()
-            ..addAll(loadedItems);
+          _itemsForSale.clear();
+          data.forEach((key, value) {
+            _itemsForSale.add({
+              'id': key,
+              ...Map<String, dynamic>.from(value),
+            });
+          });
           _isLoading = false;
         });
       } else {
@@ -95,46 +74,38 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     });
   }
 
-  void _addItemToDatabase(String productName, String description, String price, 
-                         String category, String unit, int quantity) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to sell products')),
-      );
-      return;
-    }
-
-    final newItem = {
-      'productName': productName,
-      'description': description,
-      'price': price,
-      'category': category,
-      'unit': unit,
-      'quantity': quantity,
-      'sellerId': user.uid,
-      'sellerName': user.displayName ?? user.email?.split('@')[0] ?? 'Seller',
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-      'status': 'active',
-      'views': 0,
-      'inquiries': 0,
-    };
-
-    _dbRef.push().set(newItem).then((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Product listed successfully!'),
-          backgroundColor: AppTheme.success,
-        ),
-      );
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to list product: $error'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
-    });
+  void _deleteItem(Map<String, dynamic> item) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Item'),
+          content: Text('Are you sure you want to delete ${item['name']}?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                _dbRef.child(item['id']).remove().then((_) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Item deleted successfully')),
+                  );
+                }).catchError((error) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete item: $error')),
+                  );
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _navigateToAddSellItemPage() async {
@@ -142,46 +113,25 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
       context,
       MaterialPageRoute(
         builder: (context) => AddSellItemPage(
-          onAddItem: _addItemToDatabase,
-        ),
-      ),
-    );
-  }
-
-  void _deleteItem(Map<String, dynamic> item) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text('Are you sure you want to delete "${item['productName']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              _dbRef.child(item['key']).remove().then((_) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Product deleted successfully'),
-                    backgroundColor: AppTheme.success,
-                  ),
-                );
-              }).catchError((error) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to delete: $error'),
-                    backgroundColor: AppTheme.error,
-                  ),
-                );
+          onAddItem: (name, description, price, category, unit, quantity) {
+            // Handle adding the item to your list
+            setState(() {
+              _itemsForSale.add({
+                'name': name,
+                'description': description,
+                'price': price,
+                'category': category,
+                'unit': unit,
+                'quantity': quantity,
+                'status': 'active',
+                'views': 0,
+                'inquiries': 0,
+                'dateAdded': DateTime.now().toString(),
               });
-            },
-            child: const Text('Delete', style: TextStyle(color: AppTheme.error)),
-          ),
-        ],
+            });
+            _showSuccessSnackBar('Product added successfully!');
+          },
+        ),
       ),
     );
   }
@@ -191,41 +141,20 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     final user = FirebaseAuth.instance.currentUser;
     
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('Sell Products'),
+        title: const Text('Sell Your Products'),
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.storefront),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MarketplaceHome(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.analytics),
-            onPressed: _showAnalytics,
+            icon: const Icon(Icons.add),
+            onPressed: user != null ? _navigateToAddSellItemPage : null,
           ),
         ],
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: user == null ? _buildLoginPrompt() : _buildSellerDashboard(),
-      ),
-      floatingActionButton: user != null ? FloatingActionButton.extended(
-        onPressed: _navigateToAddSellItemPage,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
-        backgroundColor: AppTheme.primaryGreen,
-        foregroundColor: Colors.white,
-      ) : null,
+      body: user == null ? _buildLoginPrompt() : _buildMainContent(),
+      floatingActionButton: user != null ? _buildFloatingActionButton() : null,
     );
   }
 
@@ -258,6 +187,11 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, '/login'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
               child: const Text('Login'),
             ),
           ],
@@ -266,110 +200,14 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildSellerDashboard() {
-    return Column(
-      children: [
-        _buildSellerStats(),
-        Expanded(
-          child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppTheme.primaryGreen),
-                )
-              : _itemsForSale.isEmpty
-                  ? _buildEmptyState()
-                  : _buildProductsList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSellerStats() {
-    final activeItems = _itemsForSale.where((item) => item['status'] == 'active').length;
-    final totalViews = _itemsForSale.fold<int>(0, (sum, item) => sum + (item['views'] as int));
-    final totalInquiries = _itemsForSale.fold<int>(0, (sum, item) => sum + (item['inquiries'] as int));
-
-    return Container(
-      padding: AppConstants.defaultPadding,
-      decoration: BoxDecoration(
-        color: AppTheme.primaryGreen,
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Seller Dashboard',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Active Products',
-                  activeItems.toString(),
-                  Icons.inventory,
-                  Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Total Views',
-                  totalViews.toString(),
-                  Icons.visibility,
-                  Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Inquiries',
-                  totalInquiries.toString(),
-                  Icons.message,
-                  Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String title, String value, IconData icon, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: textColor, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: textColor.withValues(alpha: 0.8),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+  Widget _buildMainContent() {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _itemsForSale.isEmpty
+              ? _buildEmptyState()
+              : _buildItemsList(),
     );
   }
 
@@ -381,13 +219,13 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.add_box_outlined,
+              Icons.inventory_2_outlined,
               size: 80,
               color: AppTheme.textGrey,
             ),
             const SizedBox(height: 16),
             Text(
-              'No Products Listed',
+              'No items for sale',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 color: AppTheme.textGrey,
                 fontWeight: FontWeight.bold,
@@ -404,6 +242,11 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
               onPressed: _navigateToAddSellItemPage,
               icon: const Icon(Icons.add),
               label: const Text('Add Product'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              ),
             ),
           ],
         ),
@@ -411,205 +254,283 @@ class _SellPageState extends State<SellPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildProductsList() {
-    return RefreshIndicator(
-      onRefresh: () async {
-        // Refresh will be handled by the database listener
-        await Future.delayed(const Duration(seconds: 1));
-      },
-      color: AppTheme.primaryGreen,
-      child: ListView.builder(
-        padding: AppConstants.defaultPadding,
-        itemCount: _itemsForSale.length,
-        itemBuilder: (context, index) {
-          final item = _itemsForSale[index];
-          return _buildProductCard(item);
-        },
+  Widget _buildItemsList() {
+    final activeItems = _itemsForSale.where((item) => item['status'] == 'active').length;
+    final totalViews = _itemsForSale.fold<int>(0, (sum, item) => sum + (item['views'] as int? ?? 0));
+    final totalInquiries = _itemsForSale.fold<int>(0, (sum, item) => sum + (item['inquiries'] as int? ?? 0));
+
+    return Column(
+      children: [
+        // Stats Section
+        Container(
+          padding: AppConstants.defaultPadding,
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGreen.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.2)),
+          ),
+          child: Column(
+            children: [
+              Text(
+                'Your Selling Statistics',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryGreen,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatCard('Active Items', activeItems.toString(), Icons.inventory),
+                  const SizedBox(width: 12),
+                  _buildStatCard('Total Views', totalViews.toString(), Icons.visibility),
+                  const SizedBox(width: 12),
+                  _buildStatCard('Inquiries', totalInquiries.toString(), Icons.question_answer),
+                ],
+              ),
+            ],
+          ),
+        ),
+        
+        // Items List
+        Expanded(
+          child: Padding(
+            padding: AppConstants.defaultPadding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Your Products',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _navigateToAddSellItemPage,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add New'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _itemsForSale.length,
+                    itemBuilder: (context, index) {
+                      final item = _itemsForSale[index];
+                      return _buildItemCard(item);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppTheme.primaryGreen, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryGreen,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textGrey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> item) {
-    final isActive = item['status'] == 'active';
-    
+  Widget _buildItemCard(Map<String, dynamic> item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          border: Border.all(
-            color: isActive ? AppTheme.success : AppTheme.textGrey,
-            width: 2,
-          ),
-        ),
-        child: ListTile(
-          contentPadding: AppConstants.defaultPadding,
-          leading: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: AppTheme.lightGreen.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.agriculture,
-              size: 30,
-              color: AppTheme.primaryGreen,
-            ),
-          ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  item['productName'] ?? 'No Name',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Product Image
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.lightGreen.withOpacity(0.2),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isActive ? AppTheme.success : AppTheme.textGrey,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  isActive ? 'Active' : 'Inactive',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Text(
-                item['description'] ?? 'No Description',
-                style: TextStyle(color: AppTheme.textGrey),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(
-                    '₹${item['price'] ?? '0'} / ${item['unit'] ?? 'kg'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+              child: item['imageUrl'] != null && item['imageUrl'].isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        item['imageUrl'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.agriculture,
+                            color: AppTheme.primaryGreen,
+                            size: 32,
+                          );
+                        },
+                      ),
+                    )
+                  : Icon(
+                      Icons.agriculture,
                       color: AppTheme.primaryGreen,
-                      fontSize: 16,
+                      size: 32,
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Qty: ${item['quantity'] ?? 0} ${item['unit'] ?? 'kg'}',
-                    style: TextStyle(
-                      color: AppTheme.textGrey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
+            ),
+            const SizedBox(width: 16),
+            
+            // Product Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.visibility, size: 16, color: AppTheme.textGrey),
-                  const SizedBox(width: 4),
-                  Text('${item['views']} views', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
-                  const SizedBox(width: 16),
-                  Icon(Icons.message, size: 16, color: AppTheme.textGrey),
-                  const SizedBox(width: 4),
-                  Text('${item['inquiries']} inquiries', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                  Text(
+                    item['name'] ?? 'Unknown Product',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '₹${item['price'] ?? '0'} per ${item['unit'] ?? 'kg'}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppTheme.primaryGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Quantity: ${item['quantity'] ?? '0'} ${item['unit'] ?? 'kg'}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: (item['status'] == 'active' ? AppTheme.success : AppTheme.warning)
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: (item['status'] == 'active' ? AppTheme.success : AppTheme.warning)
+                                .withOpacity(0.3),
+                          ),
+                        ),
+                        child: Text(
+                          item['status'] ?? 'inactive',
+                          style: TextStyle(
+                            color: item['status'] == 'active' ? AppTheme.success : AppTheme.warning,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${item['views'] ?? 0} views',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppTheme.textGrey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-          trailing: PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit, color: AppTheme.primaryGreen),
-                    const SizedBox(width: 8),
-                    const Text('Edit'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: AppTheme.error),
-                    const SizedBox(width: 8),
-                    const Text('Delete'),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) {
-              switch (value) {
-                case 'edit':
-                  // Edit functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit feature coming soon!')),
-                  );
-                  break;
-                case 'delete':
+            ),
+            
+            // Actions
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  // Navigate to edit page
+                } else if (value == 'delete') {
                   _deleteItem(item);
-                  break;
-              }
-            },
-          ),
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Edit'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete, color: Colors.red),
+                    title: Text('Delete', style: TextStyle(color: Colors.red)),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _showAnalytics() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        padding: AppConstants.defaultPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: AppTheme.borderGrey,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Sales Analytics',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text('Detailed analytics coming soon!'),
-          ],
-        ),
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton.extended(
+      onPressed: _navigateToAddSellItemPage,
+      backgroundColor: AppTheme.primaryGreen,
+      foregroundColor: Colors.white,
+      icon: const Icon(Icons.add),
+      label: const Text('Add Product'),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.primaryGreen,
       ),
     );
   }

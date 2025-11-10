@@ -5,15 +5,19 @@ import '../utils/responsive_helper.dart';
 class SearchFilterBar extends StatelessWidget {
   final List<String> categories;
   final String selectedCategory;
+  final String searchQuery;
   final Function(String) onCategoryChanged;
   final Function(String) onSearchChanged;
+  final VoidCallback? onFilterPressed;
 
   const SearchFilterBar({
     super.key,
     required this.categories,
     required this.selectedCategory,
+    required this.searchQuery,
     required this.onCategoryChanged,
     required this.onSearchChanged,
+    this.onFilterPressed,
   });
 
   @override
@@ -30,20 +34,36 @@ class SearchFilterBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withOpacity(0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: TextField(
-            onChanged: onSearchChanged,
-            decoration: const InputDecoration(
-              hintText: 'Search products, categories, sellers...',
-              border: InputBorder.none,
-              icon: Icon(Icons.search, color: AppTheme.primaryGreen),
-              hintStyle: TextStyle(color: AppTheme.textGrey),
-            ),
+          child: Row(
+            children: [
+              const Icon(Icons.search, color: AppTheme.primaryGreen),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  onChanged: onSearchChanged,
+                  controller: TextEditingController(text: searchQuery),
+                  decoration: const InputDecoration(
+                    hintText: 'Search products, categories, sellers...',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: AppTheme.textGrey),
+                  ),
+                ),
+              ),
+              if (onFilterPressed != null) ...[
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: onFilterPressed,
+                  icon: const Icon(Icons.filter_list, color: AppTheme.primaryGreen),
+                  splashRadius: 20,
+                ),
+              ],
+            ],
           ),
         ),
         
@@ -77,7 +97,7 @@ class SearchFilterBar extends StatelessWidget {
                   selectedColor: AppTheme.primaryGreen,
                   checkmarkColor: Colors.white,
                   elevation: isSelected ? 4 : 2,
-                  shadowColor: AppTheme.primaryGreen.withValues(alpha: 0.3),
+                  shadowColor: AppTheme.primaryGreen.withOpacity(0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(

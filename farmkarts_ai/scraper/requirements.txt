@@ -1,0 +1,8 @@
+requests
+beautifulsoup4
+lxml
+pdfplumber
+tqdm
+python-dateutil
+python-dotenv
+playwright==1.35.0

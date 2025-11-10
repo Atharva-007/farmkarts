@@ -29,6 +29,20 @@
       ]
     },
     {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isAvailable",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
@@ -57,11 +71,11 @@
       ]
     },
     {
-      "collectionGroup": "products",
+      "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "isActive",
+          "fieldPath": "productId",
           "order": "ASCENDING"
         },
         {
