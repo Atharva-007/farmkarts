@@ -5,7 +5,7 @@ class OrderModel {
   final String productCategory;
   final String productImageUrl;
   final String buyerId;
-  final String buyerName;
+  final String buyerNam e;
   final String buyerPhone;
   final String buyerAddress;
   final String sellerId;
