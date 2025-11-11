@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Firebase Test</title>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="status">Testing...</div>
+    <button id="testBtn" onclick="testConnection()">Test Again</button>
+    <button id="addTestProduct" onclick="addTestProduct()">Add Test Product</button>
+    
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBirSzwlaVmycUCxpAE4324nxibd4THy4o",
+            authDomain: "farmkart-9f4f3.firebaseapp.com",
+            databaseURL: "https://farmkart-9f4f3-default-rtdb.firebaseio.com",
+            projectId: "farmkart-9f4f3",
+            storageBucket: "farmkart-9f4f3.firebasestorage.app",
+            messagingSenderId: "709785957438",
+            appId: "1:709785957438:web:79a3c3de4243c0ed134d6f"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        async function testConnection() {
+            try {
+                document.getElementById('status').innerHTML = 'Testing Firebase connection...';
+                
+                // Test 1: Basic Firestore connection
+                await db.collection('test').doc('connection').set({
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    message: 'Connection test successful'
+                });
+                
+                document.getElementById('status').innerHTML = '✅ Firestore connection successful!';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('status').innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function addTestProduct() {
+            try {
+                document.getElementById('status').innerHTML = 'Adding test product...';
+                
+                // Sign in anonymously first
+                if (!auth.currentUser) {
+                    await auth.signInAnonymously();
+                    document.getElementById('status').innerHTML = 'Signed in anonymously...';
+                }
+                
+                // Add a test product
+                const productRef = await db.collection('products').add({
+                    name: 'Test Product - ' + new Date().toLocaleString(),
+                    description: 'This is a test product to verify Firebase integration',
+                    category: 'Vegetables',
+                    price: 100,
+                    unit: 'kg',
+                    imageUrls: [],
+                    sellerId: auth.currentUser.uid,
+                    sellerName: 'Test Seller',
+                    location: 'Test Location',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    isAvailable: true,
+                    isOrganic: false,
+                    quantity: 10,
+                    tags: ['test'],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Add selling history
+                await db.collection('selling_history').add({
+                    productId: productRef.id,
+                    productName: 'Test Product',
+                    sellerId: auth.currentUser.uid,
+                    sellerName: 'Test Seller',
+                    category: 'Vegetables',
+                    initialPrice: 100,
+                    currentPrice: 100,
+                    totalQuantity: 10,
+                    soldQuantity: 0,
+                    availableQuantity: 10,
+                    totalRevenue: 0.0,
+                    totalViews: 0,
+                    totalInquiries: 0,
+                    status: 'active',
+                    isActive: true,
+                    listedDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSoldDate: null,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                document.getElementById('status').innerHTML = `✅ Test product added successfully!<br>Product ID: ${productRef.id}<br>User ID: ${auth.currentUser.uid}`;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('status').innerHTML = `❌ Error adding product: ${error.message}`;
+            }
+        }
+        
+        // Run initial test
+        testConnection();
+    </script>
+</body>
+</html>

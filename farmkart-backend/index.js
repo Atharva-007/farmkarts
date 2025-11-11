@@ -14,6 +14,11 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Import route modules
+const productRoutes = require('./routes/productRoutes');
+const userRoutes = require('./routes/userRoutes');
+const roleMiddleware = require('./middleware/roleMiddleware');
+
 // Configure Winston Logger
 const logger = winston.createLogger({
   level: 'info',
@@ -73,13 +78,24 @@ app.use((req, res, next) => {
 // Initialize Firebase Admin SDK
 try {
   if (!admin.apps.length) {
-    admin.initializeApp({
-      databaseURL: process.env.FIREBASE_DATABASE_URL,
-    });
+    // For development, use default credentials or service account key
+    if (process.env.NODE_ENV === 'production' && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      admin.initializeApp({
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+      });
+    } else {
+      // For development, use project ID for auto-initialization
+      admin.initializeApp({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        databaseURL: process.env.FIREBASE_DATABASE_URL,
+      });
+    }
   }
   logger.info('Firebase Admin initialized successfully');
 } catch (error) {
   logger.error('Firebase admin initialization error:', error);
+  // Continue without Firebase for development
+  console.warn('Continuing without Firebase - some features may not work');
 }
 
 // Get references to Firebase services
@@ -220,6 +236,12 @@ function getFallbackAIResponse(query) {
     return 'Thank you for your farming question. For specific agricultural advice, consider factors like your location, soil conditions, climate, and crop type. I recommend consulting with local agricultural extension officers or experienced farmers in your area for region-specific guidance. FarmKart also connects you with agricultural experts and fellow farmers.';
   }
 }
+
+// ============= NEW PRODUCT MANAGEMENT ROUTES =============
+
+// Use the new route modules
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
 
 // ============= EXISTING ROUTES CONTINUE BELOW =============
 app.get('/', (req, res) => {

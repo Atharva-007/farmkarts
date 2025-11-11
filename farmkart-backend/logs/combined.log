@@ -1,0 +1,220 @@
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.023Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.245Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.245Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T00:09:34.246Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T00:10:15.574Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T00:10:20.010Z"}
+{"level":"info","message":"GET /favicon.ico - ::1","service":"farmkart-backend","timestamp":"2025-11-08T00:10:20.069Z"}
+{"level":"warn","message":"404 - Route not found: GET /favicon.ico","service":"farmkart-backend","timestamp":"2025-11-08T00:10:20.069Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.614Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.853Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.853Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:52:00.854Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:52:21.191Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:52:24.695Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:52:31.640Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.313Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.448Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.448Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:53:07.449Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:53:33.059Z"}
+{"error":"Expected property name or '}' in JSON at position 1 (line 1 column 2)","ip":"::1","level":"error","message":"Unhandled error:","method":"POST","service":"farmkart-backend","stack":"SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:518:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-11-08T11:53:45.920Z","url":"/ai/advice"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T11:53:48.613Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:53:52.063Z"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T11:53:56.950Z"}
+{"error":"Expected property name or '}' in JSON at position 1 (line 1 column 2)","ip":"::1","level":"error","message":"Unhandled error:","method":"POST","service":"farmkart-backend","stack":"SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:518:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-11-08T11:54:15.343Z","url":"/ai/advice"}
+{"level":"info","message":"GET /ai/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:54:32.042Z"}
+{"level":"info","message":"GET /ai/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:54:48.444Z"}
+{"level":"info","message":"GET /favicon.ico - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:54:48.519Z"}
+{"level":"warn","message":"404 - Route not found: GET /favicon.ico","service":"farmkart-backend","timestamp":"2025-11-08T11:54:48.519Z"}
+{"level":"info","message":"GET / - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:55:09.567Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.515Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.739Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T11:59:19.740Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T11:59:41.588Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.663Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.803Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.803Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.803Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.803Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:01:05.804Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:03:13.209Z"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T12:03:18.465Z"}
+{"level":"info","message":"GET /ai/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:03:47.645Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:04:21.663Z"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T12:04:23.285Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:04:27.292Z"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T12:04:28.912Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:05:34.007Z"}
+{"level":"info","message":"AI response generated successfully via Ollama","service":"farmkart-backend","timestamp":"2025-11-08T12:05:35.323Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.041Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.291Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.292Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:09:32.293Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:10:04.971Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.414Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.560Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.560Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.560Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.560Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:11:22.561Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:12:10.329Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.561Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.696Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.697Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.698Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:12:47.698Z"}
+{"error":"Expected property name or '}' in JSON at position 1 (line 1 column 2)","ip":"::1","level":"error","message":"Unhandled error:","method":"POST","service":"farmkart-backend","stack":"SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)\n    at JSON.parse (<anonymous>)\n    at parse (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\types\\json.js:92:19)\n    at C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\body-parser\\lib\\read.js:128:18\n    at AsyncResource.runInAsyncScope (node:async_hooks:214:14)\n    at invokeCallback (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:238:16)\n    at done (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:227:7)\n    at IncomingMessage.onEnd (C:\\Users\\athar\\StudioProjects\\farmkarts_new\\farmkart-backend\\node_modules\\raw-body\\index.js:287:7)\n    at IncomingMessage.emit (node:events:518:28)\n    at endReadableNT (node:internal/streams/readable:1698:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)","timestamp":"2025-11-08T12:13:48.479Z","url":"/ai/advice"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.274Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.424Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.424Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.424Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.424Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.424Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:14:05.425Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:14:20.291Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:14:31.527Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:14:47.949Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:21:44.984Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.246Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.246Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.247Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.248Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.248Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.248Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.248Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:21:45.248Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:22:20.853Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:23:57.654Z"}
+{"level":"info","message":"POST /ai/advice - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:23:57.773Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.636Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.916Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.917Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.917Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.917Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-08T12:27:24.918Z"}
+{"level":"info","message":"GET /api/health - ::1","service":"farmkart-backend","timestamp":"2025-11-08T12:29:05.549Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.304Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.546Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.547Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.547Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.547Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.547Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-10T21:26:15.548Z"}
+{"level":"info","message":"Firebase Admin initialized successfully","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.661Z"}
+{"level":"info","message":"🚀 FarmKart Enhanced Backend Server started successfully","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.808Z"}
+{"level":"info","message":"🌐 Server running on port 3000","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.808Z"}
+{"level":"info","message":"🏥 Health check: http://localhost:3000/api/health","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"📱 Environment: production","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"📋 Available endpoints:","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  🛒 Products: /api/products","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  📦 Orders: /api/orders","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  💳 Payments: /api/payments","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  💬 Conversations: /api/conversations","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  🔔 Notifications: /api/notifications","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  📊 Analytics: /api/analytics","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  👥 Users: /api/users","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}
+{"level":"info","message":"  ⚕️ Health: /api/health","service":"farmkart-backend","timestamp":"2025-11-10T21:27:10.809Z"}

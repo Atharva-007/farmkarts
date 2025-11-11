@@ -6,9 +6,16 @@ import '../../theme/app_theme.dart';
 import '../../models/product_model.dart';
 import '../../models/user_model.dart';
 import '../../services/marketplace_service.dart';
+import '../../services/product_service.dart';
 import '../../services/user_state_service.dart';
 import '../../services/conversation_service.dart';
 import '../../utils/app_constants.dart';
+import 'add_product_page.dart';
+import 'selling_history_page.dart';
+import 'buying_list_page.dart';
+import 'product_detail_page_new.dart';
+import 'enhanced_selling_products_list.dart';
+import 'enhanced_selling_product_detail_page.dart';
 
 class CompleteMarketplacePage extends StatefulWidget {
   const CompleteMarketplacePage({super.key});
@@ -21,6 +28,7 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final MarketplaceService _marketplaceService = MarketplaceService();
+  final ProductService _productService = ProductService();
   final ConversationService _conversationService = ConversationService();
   
   List<Product> _sellingProducts = [];
@@ -29,8 +37,12 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   String _selectedCategory = 'All';
   String _searchQuery = '';
   bool _isLoading = true;
+  bool _loadingBuy = false;
+  bool _loadingSell = false;
   String? _error;
   UserRole? _userRole;
+  
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -42,6 +54,7 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   @override
   void dispose() {
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -52,26 +65,36 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
         _error = null;
       });
 
+      print('CompleteMarketplacePage: Loading marketplace data...');
+
       // Get user role
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        if (userDoc.exists) {
-          final userData = UserModel.fromMap(userDoc.data()!);
-          _userRole = userData.role;
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          if (userDoc.exists) {
+            final userData = UserModel.fromMap(userDoc.data()!);
+            _userRole = userData.role;
+            print('CompleteMarketplacePage: User role: $_userRole');
+          }
+        } catch (e) {
+          print('CompleteMarketplacePage: Warning - Could not load user role: $e');
+          // Continue without user role
         }
       }
 
-      // Load categories
-      _categories = await _marketplaceService.getCategories();
+      // Load categories from ProductService
+      _categories = ['All', ...(await _productService.getCategories())];
+      print('CompleteMarketplacePage: Loaded ${_categories.length} categories');
       
       // Load products
       await _loadProducts();
       
     } catch (e) {
+      print('CompleteMarketplacePage: Error loading data: $e');
       setState(() {
         _error = 'Error loading data: $e';
       });
@@ -81,42 +104,126 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   }
 
   Future<void> _loadProducts() async {
-    try {
-      // Load selling products (current user's products)
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _sellingProducts = await _marketplaceService.getProductsBySeller(user.uid);
-      }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-      // Load buying products (other users' products)
-      _buyingProducts = await _marketplaceService.getProducts(
-        category: _selectedCategory == 'All' ? null : _selectedCategory,
-        userRole: _userRole,
-        excludeCurrentUser: true,
+    try {
+      print('CompleteMarketplacePage: Loading products for user ${user.uid}');
+      
+      // Load selling products (current user's products) in parallel
+      setState(() => _loadingSell = true);
+      final sellingFuture = _productService.getProducts(
+        sellerId: user.uid,
+        isAvailable: null, // Get all user's products regardless of availability
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
       );
+
+      // Load buying products (other users' products) in parallel
+      setState(() => _loadingBuy = true);
+      final buyingFuture = _productService.getProducts(
+        category: _selectedCategory == 'All' ? null : _selectedCategory,
+        excludeSeller: user.uid, // Exclude current user's products
+        isAvailable: true, // Only get available products for buying
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+        limit: 50,
+      );
+
+      // Wait for both to complete
+      final results = await Future.wait([sellingFuture, buyingFuture]);
+      
+      setState(() {
+        _sellingProducts = results[0];
+        _buyingProducts = results[1];
+        _loadingSell = false;
+        _loadingBuy = false;
+      });
+
+      print('CompleteMarketplacePage: Loaded ${_sellingProducts.length} selling products and ${_buyingProducts.length} buying products');
 
       _filterProducts();
     } catch (e) {
+      print('CompleteMarketplacePage: Error loading products: $e');
       setState(() {
         _error = 'Error loading products: $e';
+        _loadingSell = false;
+        _loadingBuy = false;
       });
     }
   }
 
   void _filterProducts() {
     setState(() {
-      // Filter selling products
-      if (_searchQuery.isNotEmpty) {
-        _sellingProducts = _sellingProducts.where((product) =>
-            product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.description.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-
-        _buyingProducts = _buyingProducts.where((product) =>
-            product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            product.sellerName.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
-      }
+      // No need to filter here as the products are already loaded properly
+      // The search will be handled in the UI widgets
     });
+  }
+
+  void _navigateToSellingHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SellingHistoryPage(),
+      ),
+    );
+  }
+
+  void _navigateToBuyingList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const BuyingListPage(),
+      ),
+    );
+  }
+
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Sort Products',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                title: const Text('Latest First'),
+                leading: const Icon(Icons.access_time),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement sorting logic
+                },
+              ),
+              ListTile(
+                title: const Text('Price: Low to High'),
+                leading: const Icon(Icons.arrow_upward),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement sorting logic
+                },
+              ),
+              ListTile(
+                title: const Text('Price: High to Low'),
+                leading: const Icon(Icons.arrow_downward),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement sorting logic
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -126,6 +233,49 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Marketplace'),
+        actions: [
+          if (FirebaseAuth.instance.currentUser != null) ...[
+            IconButton(
+              icon: const Icon(Icons.history),
+              tooltip: 'Selling History',
+              onPressed: () => _navigateToSellingHistory(),
+            ),
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'refresh':
+                    _loadData();
+                    break;
+                  case 'sort':
+                    _showSortOptions();
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'refresh',
+                  child: Row(
+                    children: [
+                      Icon(Icons.refresh),
+                      SizedBox(width: 8),
+                      Text('Refresh'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'sort',
+                  child: Row(
+                    children: [
+                      Icon(Icons.sort),
+                      SizedBox(width: 8),
+                      Text('Sort'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(100),
           child: Column(
@@ -214,12 +364,44 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   }
 
   Widget _buildSellingTab() {
-    return Column(
-      children: [
-        _buildSearchBar(),
-        _buildCategoryFilter(),
-        Expanded(child: _buildSellingProductsList()),
-      ],
+    // Return the enhanced selling products list directly
+    return const EnhancedSellingProductsList();
+  }
+
+  Widget _buildSellingControls() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.history),
+              label: const Text('Selling History'),
+              onPressed: _navigateToSellingHistory,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.primaryGreen,
+                side: const BorderSide(color: AppTheme.primaryGreen),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.analytics),
+              label: const Text('Analytics'),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Analytics feature coming soon!')),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppTheme.info,
+                side: const BorderSide(color: AppTheme.info),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -490,18 +672,53 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
 
   // Navigation and action methods
   void _navigateToAddProduct() async {
-    final result = await Navigator.pushNamed(context, '/add-product');
-    if (result == true) {
-      _loadData(); // Refresh the data
+    try {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AddProductPage(),
+        ),
+      );
+      if (result == true && mounted) {
+        _loadData(); // Refresh the data
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product added successfully!'),
+            backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error navigating to add product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error opening add product page: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
     }
   }
 
   void _viewProductDetails(Product product) {
-    Navigator.pushNamed(
-      context,
-      '/product-detail',
-      arguments: product,
-    );
+    final currentUser = FirebaseAuth.instance.currentUser;
+    
+    // If this is the seller's own product, navigate to enhanced detail page
+    if (currentUser?.uid == product.sellerId) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EnhancedSellingProductDetailPage(product: product),
+        ),
+      );
+    } else {
+      // For other products, use the regular product detail page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailPageNew(productId: product.id),
+        ),
+      );
+    }
   }
 
   void _contactSeller(Product product) async {
@@ -535,10 +752,11 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   }
 
   void _editProduct(Product product) async {
-    final result = await Navigator.pushNamed(
+    final result = await Navigator.push(
       context,
-      '/edit-product',
-      arguments: product,
+      MaterialPageRoute(
+        builder: (context) => AddProductPage(product: product),
+      ),
     );
     if (result == true) {
       _loadData();
@@ -546,55 +764,10 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   }
 
   void _viewOrders(Product product) {
-    Navigator.pushNamed(
-      context,
-      '/product-orders',
-      arguments: product.id,
-    );
-  }
-
-  void _showSortOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.trending_up),
-              title: const Text('Price: Low to High'),
-              onTap: () {
-                Navigator.pop(context);
-                _sortProducts('price_asc');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.trending_down),
-              title: const Text('Price: High to Low'),
-              onTap: () {
-                Navigator.pop(context);
-                _sortProducts('price_desc');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.access_time),
-              title: const Text('Recently Added'),
-              onTap: () {
-                Navigator.pop(context);
-                _sortProducts('date_desc');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.inventory),
-              title: const Text('Quantity Available'),
-              onTap: () {
-                Navigator.pop(context);
-                _sortProducts('quantity_desc');
-              },
-            ),
-          ],
-        ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Orders for ${product.name} - Coming Soon!'),
+        backgroundColor: AppTheme.info,
       ),
     );
   }

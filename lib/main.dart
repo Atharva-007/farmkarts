@@ -8,6 +8,10 @@ import 'signup_page.dart';
 import 'theme/app_theme.dart';
 import 'main_app_layout.dart';
 import 'services/user_state_service.dart';
+import 'features/marketplace/add_product_page.dart';
+import 'pages/selling_history_page.dart';
+import 'pages/buying_list_page.dart';
+import 'add_sell_item_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +46,10 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/signup': (context) => const SignUpPage(),
           '/home': (context) => const MainAppLayout(),
+          '/add-product': (context) => const AddProductPage(),
+          '/add_product': (context) => const AddSellItemPage(),
+          '/selling_history': (context) => const SellingHistoryPage(),
+          '/buying_list': (context) => const BuyingListPage(),
         },
       ),
     );

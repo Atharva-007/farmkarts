@@ -306,90 +306,6 @@ class _AddSellItemPageState extends State<AddSellItemPage>
     _showSuccessMessage('Tag removed');
   }
 
-  Future<void> _pickImages() async {
-    try {
-      if (_selectedImages.length >= 5) {
-        _showErrorMessage('Maximum 5 images allowed');
-        return;
-      }
-
-      final List<XFile> images = await _imagePicker.pickMultiImage(
-        maxHeight: 1024,
-        maxWidth: 1024,
-        imageQuality: 80,
-      );
-      
-      if (images.isEmpty) return;
-      
-      if (images.length + _selectedImages.length > 5) {
-        _showErrorMessage('You can only select up to 5 images total');
-        return;
-      }
-      
-      // Validate file sizes
-      for (final image in images) {
-        final file = File(image.path);
-        final fileSize = await file.length();
-        if (fileSize > 5 * 1024 * 1024) { // 5MB limit
-          _showErrorMessage('Image ${image.name} is too large. Maximum size is 5MB');
-          return;
-        }
-      }
-      
-      setState(() {
-        _selectedImages.addAll(images.map((image) => File(image.path)));
-      });
-      
-      _showSuccessMessage('${images.length} image(s) added successfully');
-    } catch (e) {
-      _showErrorMessage('Error selecting images: ${e.toString()}');
-    }
-  }
-
-  void _removeImage(int index) {
-    setState(() {
-      _selectedImages.removeAt(index);
-    });
-    _showSuccessMessage('Image removed');
-  }
-
-  void _addTag() {
-    final tag = _tagController.text.trim();
-    if (tag.isEmpty) {
-      _showErrorMessage('Please enter a tag');
-      return;
-    }
-    
-    if (tag.length < 2) {
-      _showErrorMessage('Tag must be at least 2 characters');
-      return;
-    }
-    
-    if (_tags.contains(tag.toLowerCase())) {
-      _showErrorMessage('Tag already added');
-      return;
-    }
-    
-    if (_tags.length >= 10) {
-      _showErrorMessage('Maximum 10 tags allowed');
-      return;
-    }
-    
-    setState(() {
-      _tags.add(tag);
-      _tagController.clear();
-    });
-    
-    _showSuccessMessage('Tag "$tag" added');
-  }
-
-  void _removeTag(String tag) {
-    setState(() {
-      _tags.remove(tag);
-    });
-    _showSuccessMessage('Tag removed');
-  }
-
   Future<void> _submitItem() async {
     // Clear any previous errors
     _clearErrors();
@@ -433,12 +349,13 @@ class _AddSellItemPageState extends State<AddSellItemPage>
         sellerName: user.displayName ?? 'Unknown Seller',
         location: _locationController.text.trim(),
         timestamp: DateTime.now(),
+        isAvailable: true, // Add this required field
         isOrganic: _isOrganic,
         quantity: int.parse(_quantityController.text.trim()),
         tags: _tags,
       );
 
-      // Add product to marketplace
+      // Add product to marketplace using Firebase directly
       final productId = await _marketplaceService.addProduct(product, user.uid);
 
       // Call the callback if provided (for backward compatibility)

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'dart:typed_data';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
 import '../../services/marketplace_service.dart';
-import '../../services/user_state_service.dart';
+import '../../services/product_service.dart';
 
 class AddProductPage extends StatefulWidget {
   final Function? onProductAdded;
@@ -29,13 +32,20 @@ class _AddProductPageState extends State<AddProductPage>
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _certificationController = TextEditingController();
 
   String _selectedCategory = 'Vegetables';
   String _selectedUnit = 'kg';
   bool _isOrganic = false;
   bool _isSubmitting = false;
+  List<XFile> _selectedImages = []; // Changed from List<File> to List<XFile> for web compatibility
+  List<String> _tags = [];
+  DateTime? _harvestDate;
+  DateTime? _expiryDate;
   
   final MarketplaceService _marketplaceService = MarketplaceService();
+  final ProductService _productService = ProductService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   final List<String> _categories = [
     'Vegetables',
@@ -45,18 +55,22 @@ class _AddProductPageState extends State<AddProductPage>
     'Pulses',
     'Spices',
     'Equipment',
+    'Dairy',
+    'Fertilizers',
+    'Organic',
     'Other'
   ];
 
   final List<String> _units = [
     'kg',
-    'gram',
-    'quintal',
+    'g',
     'ton',
     'piece',
     'dozen',
+    'bundle',
+    'bag',
     'liter',
-    'bunch'
+    'ml'
   ];
 
   @override
@@ -91,6 +105,130 @@ class _AddProductPageState extends State<AddProductPage>
     _selectedCategory = product.category;
     _selectedUnit = product.unit;
     _isOrganic = product.isOrganic;
+    _tags = List<String>.from(product.tags);
+    // Note: Existing images would need to be handled separately for updates
+  }
+
+  Future<void> _selectImages() async {
+    try {
+      final List<XFile>? selectedImages = await _imagePicker.pickMultiImage();
+      
+      if (selectedImages != null && selectedImages.isNotEmpty) {
+        setState(() {
+          _selectedImages = selectedImages;
+          if (_selectedImages.length > 5) {
+            _selectedImages = _selectedImages.take(5).toList();
+          }
+        });
+        
+        if (selectedImages.length > 5) {
+          _showErrorSnackBar('Maximum 5 images allowed. First 5 images selected.');
+        }
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to select images: $e');
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
+  }
+
+  Future<void> _selectDate(bool isHarvestDate) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    
+    if (picked != null) {
+      setState(() {
+        if (isHarvestDate) {
+          _harvestDate = picked;
+        } else {
+          _expiryDate = picked;
+        }
+      });
+    }
+  }
+
+  void _addTag() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          title: const Text('Add Tag'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: 'Enter tag name',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final tag = controller.text.trim();
+                if (tag.isNotEmpty && !_tags.contains(tag)) {
+                  setState(() {
+                    _tags.add(tag);
+                  });
+                }
+                Navigator.pop(context);
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _tags.remove(tag);
+    });
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.error,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
+  void _showSuccessMessage(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 3,
+      backgroundColor: AppTheme.success,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 3,
+      backgroundColor: AppTheme.error,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   @override
@@ -100,6 +238,8 @@ class _AddProductPageState extends State<AddProductPage>
     _descriptionController.dispose();
     _priceController.dispose();
     _quantityController.dispose();
+    _locationController.dispose();
+    _certificationController.dispose();
     super.dispose();
   }
 
@@ -110,68 +250,70 @@ class _AddProductPageState extends State<AddProductPage>
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to add products')),
-      );
+      _showErrorMessage('Please login to add products');
       return;
     }
-
-    final userStateService = Provider.of<UserStateService>(context, listen: false);
     
     setState(() => _isSubmitting = true);
 
     try {
+      // Create product object
       final product = Product(
-        id: widget.product?.id ?? '',
+        id: widget.product?.id ?? '', // Will be set by Firestore for new products
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
         price: double.parse(_priceController.text.trim()),
         unit: _selectedUnit,
-        imageUrls: widget.product?.imageUrls ?? [], // Keep existing images or empty for new
+        imageUrls: [], // Will be updated after image upload
         sellerId: user.uid,
-        sellerName: userStateService.currentUser?.fullName ?? 
-                   user.displayName ?? 
-                   user.email?.split('@')[0] ?? 
-                   'Seller',
+        sellerName: user.displayName ?? user.email ?? 'Unknown Seller',
         location: _locationController.text.trim().isEmpty 
                   ? 'Location not specified'
                   : _locationController.text.trim(),
         timestamp: DateTime.now(),
         isOrganic: _isOrganic,
+        isAvailable: true,
         quantity: int.tryParse(_quantityController.text.trim()) ?? 0,
-        tags: _generateTags(),
+        tags: _tags,
       );
 
       if (widget.product != null) {
         // Update existing product
-        print('Updating product with ID: ${widget.product!.id}');
-        await _marketplaceService.updateProduct(
-          widget.product!.id,
-          product.toMap(),
+        final updates = product.toMap();
+        updates.remove('id'); // Don't update ID
+        updates['updatedAt'] = DateTime.now().millisecondsSinceEpoch;
+        
+        await _marketplaceService.updateProduct(widget.product!.id, updates);
+        
+        if (mounted) {
+          _showSuccessMessage('Product updated successfully!');
+        }
+      } else {
+        // Add new product using ProductService (Firebase)
+        print('AddProductPage: Creating product using ProductService...');
+        final productId = await _productService.createProduct(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          category: _selectedCategory,
+          price: double.parse(_priceController.text.trim()),
+          unit: _selectedUnit,
+          quantity: int.tryParse(_quantityController.text.trim()) ?? 0,
+          location: _locationController.text.trim().isEmpty 
+                    ? 'Location not specified'
+                    : _locationController.text.trim(),
+          tags: _tags,
+          isOrganic: _isOrganic,
+          harvestDate: _harvestDate,
+          expiryDate: _expiryDate,
+          certificationDetails: _certificationController.text.trim().isNotEmpty 
+                               ? _certificationController.text.trim() 
+                               : null,
+          imageFiles: _selectedImages,
         );
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Product updated successfully!'),
-              backgroundColor: AppTheme.success,
-            ),
-          );
-        }
-      } else {
-        // Add new product
-        print('Adding new product: ${product.name}');
-        final productId = await _marketplaceService.addProduct(product, user.uid);
-        print('Product added with ID: $productId');
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Product added successfully!'),
-              backgroundColor: AppTheme.success,
-            ),
-          );
+          _showSuccessMessage('🎉 Product added successfully! Your product is now live on the marketplace.');
         }
       }
 
@@ -180,17 +322,21 @@ class _AddProductPageState extends State<AddProductPage>
       }
 
       if (mounted) {
-        Navigator.pop(context, true); // Return true to indicate successful addition
+        Navigator.pop(context, true);
       }
     } catch (e) {
       print('Error submitting product: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: AppTheme.error,
-          ),
-        );
+        String errorMessage = e.toString();
+        if (errorMessage.contains('XMLHttpRequest error')) {
+          errorMessage = '🌐 Network connection failed. Please check your internet connection and try again.';
+        } else if (errorMessage.contains('permission-denied')) {
+          errorMessage = '🔒 Permission denied. Please check your authentication and try again.';
+        } else if (errorMessage.contains('network')) {
+          errorMessage = '🌐 Network error. Please check your internet connection.';
+        }
+        
+        _showErrorMessage(errorMessage);
       }
     } finally {
       if (mounted) {
@@ -242,11 +388,15 @@ class _AddProductPageState extends State<AddProductPage>
               children: [
                 _buildHeaderCard(),
                 const SizedBox(height: 20),
+                _buildImagesCard(),
+                const SizedBox(height: 20),
                 _buildProductDetailsCard(),
                 const SizedBox(height: 20),
                 _buildPricingCard(),
                 const SizedBox(height: 20),
                 _buildAdditionalInfoCard(),
+                const SizedBox(height: 20),
+                _buildTagsCard(),
                 const SizedBox(height: 30),
                 _buildSubmitButton(),
                 const SizedBox(height: 20),
@@ -493,6 +643,116 @@ class _AddProductPageState extends State<AddProductPage>
     );
   }
 
+  Widget _buildImagesCard() {
+    return Card(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Product Images',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Selected Images Grid
+            if (_selectedImages.isNotEmpty) ...[
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: _selectedImages.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: kIsWeb 
+                          ? Image.network(
+                              _selectedImages[index].path,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image, color: Colors.grey),
+                                );
+                              },
+                            )
+                          : FutureBuilder<Uint8List>(
+                              future: _selectedImages[index].readAsBytes(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return Image.memory(
+                                    snapshot.data!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  );
+                                } else {
+                                  return Container(
+                                    color: Colors.grey[300],
+                                    child: const Center(child: CircularProgressIndicator()),
+                                  );
+                                }
+                              },
+                            ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => _removeImage(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // Add Images Button
+            OutlinedButton.icon(
+              onPressed: _selectedImages.length < 5 ? _selectImages : null,
+              icon: const Icon(Icons.add_photo_alternate),
+              label: Text(_selectedImages.isEmpty 
+                  ? 'Add Product Images' 
+                  : 'Add More Images (${_selectedImages.length}/5)'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Add up to 5 high-quality images of your product',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textGrey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAdditionalInfoCard() {
     return Card(
       child: Padding(
@@ -522,6 +782,130 @@ class _AddProductPageState extends State<AddProductPage>
                 color: _isOrganic ? AppTheme.success : AppTheme.textGrey,
               ),
             ),
+            const SizedBox(height: 16),
+            
+            // Date Fields
+            Row(
+              children: [
+                // Harvest Date
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Harvest Date',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => _selectDate(true),
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                          _harvestDate != null 
+                              ? '${_harvestDate!.day}/${_harvestDate!.month}/${_harvestDate!.year}'
+                              : 'Select Date',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                
+                // Expiry Date
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Expiry Date',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textGrey,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton.icon(
+                        onPressed: () => _selectDate(false),
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                          _expiryDate != null 
+                              ? '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}'
+                              : 'Select Date',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            // Certification Details
+            if (_isOrganic) ...[
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _certificationController,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Organic Certification Details',
+                  hintText: 'Enter certification information',
+                  prefixIcon: Icon(Icons.verified),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagsCard() {
+    return Card(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tags',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _addTag,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add Tag'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            
+            if (_tags.isNotEmpty) ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _tags.map((tag) {
+                  return Chip(
+                    label: Text(tag),
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                    onDeleted: () => _removeTag(tag),
+                    backgroundColor: AppTheme.lightGreen.withAlpha(100),
+                  );
+                }).toList(),
+              ),
+            ] else ...[
+              Text(
+                'No tags added. Tags help buyers find your product easily.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.textGrey,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
           ],
         ),
       ),

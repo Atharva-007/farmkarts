@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Connection Test</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <h1>Firebase Connection Test</h1>
+    <div id="status">Testing...</div>
+    <button id="testBtn">Test Firebase</button>
+    <div id="results"></div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBirSzwlaVmycUCxpAE4324nxibd4THy4o",
+            authDomain: "farmkart-9f4f3.firebaseapp.com",
+            databaseURL: "https://farmkart-9f4f3-default-rtdb.firebaseio.com",
+            projectId: "farmkart-9f4f3",
+            storageBucket: "farmkart-9f4f3.firebasestorage.app",
+            messagingSenderId: "709785957438",
+            appId: "1:709785957438:web:79a3c3de4243c0ed134d6f",
+            measurementId: "G-EZMC38TXE2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        function log(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        async function testFirebase() {
+            document.getElementById('status').textContent = 'Testing Firebase...';
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                log('🔥 Firebase initialized successfully!');
+                
+                // Test anonymous auth
+                log('🔐 Testing anonymous authentication...');
+                await auth.signInAnonymously();
+                log('✅ Anonymous authentication successful!');
+                
+                // Test Firestore write
+                log('✍️ Testing Firestore write...');
+                const testDoc = {
+                    message: 'Test from web',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    testId: Date.now()
+                };
+                
+                const docRef = await db.collection('test').add(testDoc);
+                log('✅ Document written with ID: ' + docRef.id);
+                
+                // Test Firestore read
+                log('📖 Testing Firestore read...');
+                const docSnapshot = await docRef.get();
+                if (docSnapshot.exists) {
+                    log('✅ Document read successfully: ' + JSON.stringify(docSnapshot.data()));
+                } else {
+                    log('❌ Document not found');
+                }
+                
+                // Test products collection
+                log('📦 Testing products collection...');
+                const productsSnapshot = await db.collection('products').limit(1).get();
+                log('✅ Products collection accessible, found ' + productsSnapshot.docs.length + ' documents');
+                
+                // Clean up
+                log('🗑️ Cleaning up test document...');
+                await docRef.delete();
+                log('✅ Test document deleted');
+                
+                document.getElementById('status').textContent = '🎉 All tests passed!';
+                log('🎉 All Firebase tests passed successfully!');
+                
+            } catch (error) {
+                log('❌ Firebase test failed: ' + error.message);
+                document.getElementById('status').textContent = '❌ Tests failed';
+                console.error('Firebase test error:', error);
+            }
+        }
+
+        document.getElementById('testBtn').addEventListener('click', testFirebase);
+        
+        // Auto-run test on page load
+        window.addEventListener('load', testFirebase);
+    </script>
+</body>
+</html>

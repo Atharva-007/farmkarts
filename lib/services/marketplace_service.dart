@@ -4,6 +4,7 @@ import '../models/product_model.dart';
 import '../models/user_model.dart';
 import '../models/conversation_model.dart';
 import '../services/conversation_service.dart';
+import 'package:flutter/foundation.dart';
 
 class MarketplaceService {
   static final MarketplaceService _instance = MarketplaceService._internal();
@@ -21,6 +22,117 @@ class MarketplaceService {
   static const int _pageSize = 20;
   DocumentSnapshot? _lastDocument;
   bool _hasMoreData = true;
+
+  /// Add new product directly to Firebase
+  Future<String> addProduct(Product product, String sellerId) async {
+    try {
+      print('MarketplaceService: Starting product addition...');
+      
+      // Get current user for authentication check
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('🔐 User not authenticated. Please login and try again.');
+      }
+      
+      print('MarketplaceService: User authenticated: ${user.uid}');
+      
+      final productData = product.toMap();
+      productData['sellerId'] = sellerId;
+      productData['timestamp'] = FieldValue.serverTimestamp();
+      productData['isAvailable'] = true;
+      productData['createdAt'] = FieldValue.serverTimestamp();
+      productData['updatedAt'] = FieldValue.serverTimestamp();
+
+      print('MarketplaceService: Product data prepared: ${productData['name']}');
+      print('MarketplaceService: Attempting to write to Firestore...');
+      
+      // Add to Firestore directly with detailed error handling
+      DocumentReference docRef;
+      try {
+        docRef = await _firestore.collection('products').add(productData);
+        print('MarketplaceService: Product document created with ID: ${docRef.id}');
+      } catch (firestoreError) {
+        print('MarketplaceService: Firestore write error: $firestoreError');
+        print('MarketplaceService: Error details: ${firestoreError.toString()}');
+        
+        if (firestoreError.toString().contains('permission-denied')) {
+          throw Exception('🔒 Permission denied. Please check your Firestore security rules and authentication.');
+        } else if (firestoreError.toString().contains('network') || firestoreError.toString().contains('unavailable')) {
+          throw Exception('🌐 Network error. Please check your internet connection and try again.');
+        } else {
+          throw Exception('💾 Database error: ${firestoreError.toString()}');
+        }
+      }
+      
+      // Create selling history entry
+      print('MarketplaceService: Creating selling history entry...');
+      final sellingHistoryData = {
+        'productId': docRef.id,
+        'productName': product.name,
+        'sellerId': sellerId,
+        'sellerName': product.sellerName,
+        'category': product.category,
+        'initialPrice': product.price,
+        'currentPrice': product.price,
+        'totalQuantity': product.quantity,
+        'soldQuantity': 0,
+        'availableQuantity': product.quantity,
+        'totalRevenue': 0.0,
+        'totalViews': 0,
+        'totalInquiries': 0,
+        'status': 'active',
+        'isActive': true,
+        'listedDate': FieldValue.serverTimestamp(),
+        'lastSoldDate': null,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      try {
+        await _firestore.collection('selling_history').add(sellingHistoryData);
+        print('MarketplaceService: Selling history created successfully');
+      } catch (historyError) {
+        print('MarketplaceService: Warning - Failed to create selling history: $historyError');
+        // Don't fail the entire operation if selling history fails
+      }
+      
+      // Clear relevant caches
+      _clearProductCaches();
+      
+      print('MarketplaceService: Product added successfully with ID: ${docRef.id}');
+      return docRef.id;
+    } catch (e) {
+      print('MarketplaceService: Error adding product: $e');
+      print('MarketplaceService: Error type: ${e.runtimeType}');
+      print('MarketplaceService: Stack trace: ${StackTrace.current}');
+      
+      // Re-throw exception with better error message
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11); // Remove "Exception: " prefix
+      }
+      
+      // Return the original error message if it already has emoji or is formatted
+      if (errorMessage.contains('🔐') || errorMessage.contains('🌐') || errorMessage.contains('💾')) {
+        throw Exception(errorMessage);
+      }
+      
+      // Handle specific error cases
+      if (errorMessage.contains('permission-denied')) {
+        throw Exception('🔒 Permission denied. Please check your authentication and try again.');
+      } else if (errorMessage.contains('network') || errorMessage.contains('XMLHttpRequest error') || errorMessage.contains('unavailable')) {
+        throw Exception('🌐 Network connection failed. Please check your internet connection and try again.');
+      } else if (errorMessage.contains('timeout')) {
+        throw Exception('⏰ Request timed out. Please try again.');
+      } else if (errorMessage.contains('quota')) {
+        throw Exception('📊 Daily quota exceeded. Please try again tomorrow.');
+      } else {
+        throw Exception('❌ Failed to add product: $errorMessage');
+      }
+    }
+  }
+
+
 
   /// Get products with pagination and caching for better performance
   /// Excludes current user's products from buying section
@@ -202,38 +314,7 @@ class MarketplaceService {
   }
 
   /// Add new product (for vendors/addats)
-  Future<String> addProduct(Product product, String sellerId) async {
-    try {
-      print('MarketplaceService: Starting product addition...');
-      
-      final productData = product.toMap();
-      productData['sellerId'] = sellerId;
-      productData['timestamp'] = FieldValue.serverTimestamp();
-      productData['isAvailable'] = true;
-      productData['createdAt'] = FieldValue.serverTimestamp();
-      productData['updatedAt'] = FieldValue.serverTimestamp();
-
-      print('MarketplaceService: Product data prepared: ${productData['name']}');
-      
-      final docRef = await _firestore.collection('products').add(productData);
-      
-      // Clear relevant caches
-      _clearProductCaches();
-      
-      print('MarketplaceService: Product added successfully with ID: ${docRef.id}');
-      return docRef.id;
-    } catch (e) {
-      print('MarketplaceService: Error adding product: $e');
-      print('MarketplaceService: Error type: ${e.runtimeType}');
-      if (e.toString().contains('permission-denied')) {
-        throw Exception('Permission denied. Please check your authentication and try again.');
-      } else if (e.toString().contains('network')) {
-        throw Exception('Network error. Please check your internet connection.');
-      } else {
-        throw Exception('Failed to add product: ${e.toString()}');
-      }
-    }
-  }
+  /// Uses Firebase directly with optional backend sync
 
   /// Update product
   Future<void> updateProduct(String productId, Map<String, dynamic> updates) async {
@@ -264,6 +345,66 @@ class MarketplaceService {
     } catch (e) {
       print('MarketplaceService: Error deleting product: $e');
       rethrow;
+    }
+  }
+
+  /// Get selling history for current user
+  Future<List<Map<String, dynamic>>> getSellingHistoryByUser(String sellerId) async {
+    try {
+      print('MarketplaceService: Fetching selling history for seller: $sellerId');
+      
+      final query = _firestore
+          .collection('selling_history')
+          .where('sellerId', isEqualTo: sellerId)
+          .orderBy('listedDate', descending: true);
+      
+      final querySnapshot = await query.get();
+      
+      final sellingHistory = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+      
+      print('MarketplaceService: Found ${sellingHistory.length} selling history records');
+      return sellingHistory;
+      
+    } catch (e) {
+      print('MarketplaceService: Error fetching selling history: $e');
+      
+      // Fallback: Try without ordering if index doesn't exist
+      try {
+        print('MarketplaceService: Trying fallback query without ordering...');
+        final fallbackQuery = _firestore
+            .collection('selling_history')
+            .where('sellerId', isEqualTo: sellerId);
+        
+        final fallbackSnapshot = await fallbackQuery.get();
+        
+        final sellingHistory = fallbackSnapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList();
+        
+        // Sort in memory by listedDate if available
+        sellingHistory.sort((a, b) {
+          final aDate = a['listedDate'];
+          final bDate = b['listedDate'];
+          if (aDate != null && bDate != null) {
+            final aTimestamp = aDate is int ? aDate : (aDate as dynamic).millisecondsSinceEpoch;
+            final bTimestamp = bDate is int ? bDate : (bDate as dynamic).millisecondsSinceEpoch;
+            return bTimestamp.compareTo(aTimestamp); // Descending order
+          }
+          return 0;
+        });
+        
+        print('MarketplaceService: Fallback query returned ${sellingHistory.length} records');
+        return sellingHistory;
+      } catch (fallbackError) {
+        print('MarketplaceService: Fallback query also failed: $fallbackError');
+        return [];
+      }
     }
   }
 

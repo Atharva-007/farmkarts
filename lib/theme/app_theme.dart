@@ -19,6 +19,7 @@ class AppTheme {
   static const Color warning = Color(0xFFFF9800);
   static const Color error = Color(0xFFF44336);
   static const Color info = Color(0xFF2196F3);
+  static const Color primaryBlue = Color(0xFF2196F3);
 
   // Neutral Colors
   static const Color backgroundLight = Color(0xFFF5F7FA);

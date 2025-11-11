@@ -6,11 +6,17 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Allow authenticated users to read/write products
+    // Allow authenticated users to read/write products - SIMPLIFIED FOR TESTING
     match /products/{productId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && 
-        (request.auth.uid == resource.data.sellerId || request.auth.uid == request.resource.data.sellerId);
+      allow create, write: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.sellerId;
+    }
+    
+    // Allow authenticated users to read/write their selling history - SIMPLIFIED FOR TESTING
+    match /selling_history/{historyId} {
+      allow read: if request.auth != null;
+      allow create, write: if request.auth != null;
       allow delete: if request.auth != null && request.auth.uid == resource.data.sellerId;
     }
     
@@ -105,7 +111,7 @@ service cloud.firestore {
     
     // Test collection for connection testing - allow all authenticated users
     match /test/{document} {
-      allow read, write: if request.auth != null;
+      allow read, write, create, delete: if request.auth != null;
     }
     
     // Buy requests (legacy support)

@@ -41,7 +41,7 @@ dependencies:
   # Enhanced features for modern agriculture app (selected compatible ones)
   cached_network_image: ^3.3.1
   fl_chart: ^0.68.0
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.2
   connectivity_plus: ^5.0.2
   lottie: ^3.1.0
   smooth_page_indicator: ^1.1.0
