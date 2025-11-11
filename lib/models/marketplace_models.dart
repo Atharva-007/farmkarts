@@ -52,32 +52,54 @@ class SellingHistoryItem {
 
   factory SellingHistoryItem.fromMap(Map<String, dynamic> map) {
     return SellingHistoryItem(
-      id: map['id'] ?? '',
-      productId: map['productId'] ?? '',
-      productName: map['productName'] ?? '',
-      sellerId: map['sellerId'] ?? '',
-      sellerName: map['sellerName'] ?? '',
-      category: map['category'] ?? '',
+      id: map['id']?.toString() ?? '',
+      productId: map['productId']?.toString() ?? '',
+      productName: map['productName']?.toString() ?? '',
+      sellerId: map['sellerId']?.toString() ?? '',
+      sellerName: map['sellerName']?.toString() ?? '',
+      category: map['category']?.toString() ?? '',
       initialPrice: (map['initialPrice'] ?? map['originalPrice'] ?? 0).toDouble(),
       currentPrice: (map['currentPrice'] ?? 0).toDouble(),
-      totalQuantity: map['totalQuantity'] ?? map['originalQuantity'] ?? 0,
-      soldQuantity: map['soldQuantity'] ?? 0,
-      availableQuantity: map['availableQuantity'] ?? map['currentQuantity'] ?? 0,
-      status: map['status'] ?? 'active',
-      imageUrl: map['imageUrl'] ?? '',
-      listedDate: DateTime.tryParse(map['listedDate'] ?? '') ?? DateTime.now(),
-      lastSoldDate: map['lastSoldDate'] != null ? DateTime.tryParse(map['lastSoldDate']) : null,
+      totalQuantity: (map['totalQuantity'] ?? map['originalQuantity'] ?? 0) is int 
+          ? (map['totalQuantity'] ?? map['originalQuantity'] ?? 0)
+          : int.tryParse((map['totalQuantity'] ?? map['originalQuantity'] ?? 0).toString()) ?? 0,
+      soldQuantity: (map['soldQuantity'] ?? 0) is int 
+          ? map['soldQuantity'] 
+          : int.tryParse(map['soldQuantity'].toString()) ?? 0,
+      availableQuantity: (map['availableQuantity'] ?? map['currentQuantity'] ?? 0) is int 
+          ? (map['availableQuantity'] ?? map['currentQuantity'] ?? 0)
+          : int.tryParse((map['availableQuantity'] ?? map['currentQuantity'] ?? 0).toString()) ?? 0,
+      status: map['status']?.toString() ?? 'active',
+      imageUrl: map['imageUrl']?.toString() ?? '',
+      listedDate: BuyerInterest._parseDateTime(map['listedDate']),
+      lastSoldDate: map['lastSoldDate'] != null ? BuyerInterest._parseDateTime(map['lastSoldDate']) : null,
       totalRevenue: (map['totalRevenue'] ?? 0).toDouble(),
-      totalInquiries: map['totalInquiries'] ?? 0,
-      totalViews: map['totalViews'] ?? 0,
+      totalInquiries: (map['totalInquiries'] ?? 0) is int 
+          ? map['totalInquiries'] 
+          : int.tryParse(map['totalInquiries'].toString()) ?? 0,
+      totalViews: (map['totalViews'] ?? 0) is int 
+          ? map['totalViews'] 
+          : int.tryParse(map['totalViews'].toString()) ?? 0,
       isActive: map['isActive'] ?? true,
       currentProductData: map['currentProductData'] != null 
-        ? Product.fromMap(map['currentProductData'])
+        ? Product.fromMap(Map<String, dynamic>.from(map['currentProductData']))
         : null,
       performanceMetrics: map['performanceMetrics'] != null
-        ? PerformanceMetrics.fromMap(map['performanceMetrics'])
+        ? PerformanceMetrics.fromMap(Map<String, dynamic>.from(map['performanceMetrics']))
         : null,
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    // Handle Firestore Timestamp
+    if (value.runtimeType.toString().contains('Timestamp')) {
+      return (value as dynamic).toDate();
+    }
+    return DateTime.now();
   }
 
   Map<String, dynamic> toMap() {
@@ -177,14 +199,28 @@ class BuyerInterest {
       id: map['id'] ?? '',
       productId: map['productId'] ?? '',
       buyerId: map['buyerId'] ?? '',
-      buyerName: map['buyerName'] ?? '',
+      buyerName: map['buyerName'] ?? 'Unknown Buyer',
       buyerEmail: map['buyerEmail'] ?? '',
       message: map['message'] ?? '',
-      interestedQuantity: map['interestedQuantity'] ?? 1,
+      interestedQuantity: (map['interestedQuantity'] ?? 1) is int 
+          ? map['interestedQuantity'] 
+          : int.tryParse(map['interestedQuantity'].toString()) ?? 1,
       contactPreference: map['contactPreference'] ?? 'email',
       status: map['status'] ?? 'pending',
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: _parseDateTime(map['createdAt']),
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    // Handle Firestore Timestamp
+    if (value.runtimeType.toString().contains('Timestamp')) {
+      return (value as dynamic).toDate();
+    }
+    return DateTime.now();
   }
 
   Map<String, dynamic> toMap() {
@@ -239,18 +275,20 @@ class PriceOffer {
       id: map['id'] ?? '',
       productId: map['productId'] ?? '',
       buyerId: map['buyerId'] ?? '',
-      buyerName: map['buyerName'] ?? '',
+      buyerName: map['buyerName'] ?? 'Unknown Buyer',
       buyerEmail: map['buyerEmail'] ?? '',
       offeredPrice: (map['offeredPrice'] ?? 0).toDouble(),
-      quantity: map['quantity'] ?? 1,
+      quantity: (map['quantity'] ?? 1) is int 
+          ? map['quantity'] 
+          : int.tryParse(map['quantity'].toString()) ?? 1,
       message: map['message'] ?? '',
       status: map['status'] ?? 'pending',
       validUntil: map['validUntil'] != null 
-        ? DateTime.tryParse(map['validUntil'])
+        ? BuyerInterest._parseDateTime(map['validUntil'])
         : null,
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: BuyerInterest._parseDateTime(map['createdAt']),
       respondedAt: map['respondedAt'] != null
-        ? DateTime.tryParse(map['respondedAt'])
+        ? BuyerInterest._parseDateTime(map['respondedAt'])
         : null,
       response: map['response'],
     );
@@ -316,13 +354,15 @@ class MarketplaceTransaction {
       sellerId: map['sellerId'] ?? '',
       buyerId: map['buyerId'] ?? '',
       offerId: map['offerId'] ?? '',
-      quantity: map['quantity'] ?? 0,
+      quantity: (map['quantity'] ?? 0) is int 
+          ? map['quantity'] 
+          : int.tryParse(map['quantity'].toString()) ?? 0,
       pricePerUnit: (map['pricePerUnit'] ?? 0).toDouble(),
       totalAmount: (map['totalAmount'] ?? 0).toDouble(),
       status: map['status'] ?? 'confirmed',
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      createdAt: BuyerInterest._parseDateTime(map['createdAt']),
       completedAt: map['completedAt'] != null
-        ? DateTime.tryParse(map['completedAt'])
+        ? BuyerInterest._parseDateTime(map['completedAt'])
         : null,
     );
   }

@@ -34,6 +34,11 @@ class Product {
   });
 
   factory Product.fromMap(Map<String, dynamic> map) {
+    // Ensure we have a valid map
+    if (map.isEmpty) {
+      throw ArgumentError('Product map cannot be empty');
+    }
+    
     DateTime timestamp = DateTime.now();
     
     // Handle Firestore Timestamp or milliseconds
@@ -46,22 +51,32 @@ class Product {
       }
     }
     
+    // Handle imageUrls safely
+    List<String> imageUrls = [];
+    if (map['imageUrls'] != null && map['imageUrls'] is List) {
+      imageUrls = List<String>.from(map['imageUrls']);
+    } else if (map['imageUrl'] != null && map['imageUrl'].toString().isNotEmpty) {
+      imageUrls = [map['imageUrl'].toString()];
+    }
+    
     return Product(
-      id: map['id'] ?? '',
-      name: map['name'] ?? '',
-      description: map['description'] ?? '',
-      category: map['category'] ?? '',
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      category: map['category']?.toString() ?? '',
       price: (map['price'] ?? 0).toDouble(),
-      unit: map['unit'] ?? 'kg',
-      imageUrls: List<String>.from(map['imageUrls'] ?? [map['imageUrl'] ?? '']),
-      sellerId: map['sellerId'] ?? '',
-      sellerName: map['sellerName'] ?? '',
-      location: map['location'] ?? '',
+      unit: map['unit']?.toString() ?? 'kg',
+      imageUrls: imageUrls,
+      sellerId: map['sellerId']?.toString() ?? '',
+      sellerName: map['sellerName']?.toString() ?? '',
+      location: map['location']?.toString() ?? '',
       timestamp: timestamp,
       isOrganic: map['isOrganic'] ?? false,
       isAvailable: map['isAvailable'] ?? true,
-      quantity: map['quantity'] ?? 0,
-      tags: List<String>.from(map['tags'] ?? []),
+      quantity: (map['quantity'] ?? 0) is int 
+          ? map['quantity'] 
+          : int.tryParse(map['quantity'].toString()) ?? 0,
+      tags: map['tags'] != null ? List<String>.from(map['tags']) : [],
     );
   }
 

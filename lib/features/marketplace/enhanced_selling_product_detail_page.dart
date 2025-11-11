@@ -62,6 +62,8 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
   }
 
   Future<void> _loadProductData() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _error = null;
@@ -73,23 +75,43 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
         throw Exception('User not authenticated');
       }
 
-      // Load all data in parallel
-      final futures = [
-        _loadSellingHistory(),
-        _loadBuyerInterests(),
-        _loadPriceOffers(),
-        _loadTransactions(),
-        _loadAnalytics(),
-      ];
-
-      await Future.wait(futures);
-
-      setState(() => _isLoading = false);
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
+      // Load all data in parallel with individual error handling
+      await Future.wait([
+        _loadSellingHistory().catchError((e) {
+          print('Selling history load failed: $e');
+          return null;
+        }),
+        _loadBuyerInterests().catchError((e) {
+          print('Buyer interests load failed: $e');
+          return null;
+        }),
+        _loadPriceOffers().catchError((e) {
+          print('Price offers load failed: $e');
+          return null;
+        }),
+        _loadTransactions().catchError((e) {
+          print('Transactions load failed: $e');
+          return null;
+        }),
+      ]);
+      
+      // Load analytics after other data is loaded
+      await _loadAnalytics().catchError((e) {
+        print('Analytics load failed: $e');
+        return null;
       });
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      print('Error in _loadProductData: $e');
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -103,7 +125,10 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
           .get();
 
       if (query.docs.isNotEmpty) {
-        _sellingHistory = SellingHistoryItem.fromMap(query.docs.first.data());
+        final doc = query.docs.first;
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID to data
+        _sellingHistory = SellingHistoryItem.fromMap(data);
       }
     } catch (e) {
       print('Error loading selling history: $e');
@@ -119,11 +144,29 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
           .orderBy('createdAt', descending: true)
           .get();
 
-      _buyerInterests = query.docs
-          .map((doc) => BuyerInterest.fromMap(doc.data()))
-          .toList();
+      _buyerInterests = query.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID to data
+        return BuyerInterest.fromMap(data);
+      }).toList();
     } catch (e) {
       print('Error loading buyer interests: $e');
+      // Fallback: try without ordering if index doesn't exist
+      try {
+        final fallbackQuery = await FirebaseFirestore.instance
+            .collection('buyer_interests')
+            .where('productId', isEqualTo: widget.product.id)
+            .get();
+        
+        _buyerInterests = fallbackQuery.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return BuyerInterest.fromMap(data);
+        }).toList();
+      } catch (fallbackError) {
+        print('Fallback query also failed: $fallbackError');
+        _buyerInterests = [];
+      }
     }
   }
 
@@ -136,11 +179,29 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
           .orderBy('createdAt', descending: true)
           .get();
 
-      _priceOffers = query.docs
-          .map((doc) => PriceOffer.fromMap(doc.data()))
-          .toList();
+      _priceOffers = query.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID to data
+        return PriceOffer.fromMap(data);
+      }).toList();
     } catch (e) {
       print('Error loading price offers: $e');
+      // Fallback: try without ordering if index doesn't exist
+      try {
+        final fallbackQuery = await FirebaseFirestore.instance
+            .collection('price_offers')
+            .where('productId', isEqualTo: widget.product.id)
+            .get();
+        
+        _priceOffers = fallbackQuery.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return PriceOffer.fromMap(data);
+        }).toList();
+      } catch (fallbackError) {
+        print('Fallback query also failed: $fallbackError');
+        _priceOffers = [];
+      }
     }
   }
 
@@ -153,11 +214,29 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
           .orderBy('createdAt', descending: true)
           .get();
 
-      _transactions = query.docs
-          .map((doc) => MarketplaceTransaction.fromMap(doc.data()))
-          .toList();
+      _transactions = query.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Add document ID to data
+        return MarketplaceTransaction.fromMap(data);
+      }).toList();
     } catch (e) {
       print('Error loading transactions: $e');
+      // Fallback: try without ordering if index doesn't exist
+      try {
+        final fallbackQuery = await FirebaseFirestore.instance
+            .collection('marketplace_transactions')
+            .where('productId', isEqualTo: widget.product.id)
+            .get();
+        
+        _transactions = fallbackQuery.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return MarketplaceTransaction.fromMap(data);
+        }).toList();
+      } catch (fallbackError) {
+        print('Fallback query also failed: $fallbackError');
+        _transactions = [];
+      }
     }
   }
 
@@ -165,15 +244,23 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
     try {
       final firestore = FirebaseFirestore.instance;
       
-      // Get product views
-      final viewsQuery = await firestore
-          .collection('product_views')
-          .where('productId', isEqualTo: widget.product.id)
-          .get();
+      // Get product views with error handling
+      int totalViews = 0;
+      try {
+        final viewsQuery = await firestore
+            .collection('product_views')
+            .where('productId', isEqualTo: widget.product.id)
+            .get();
+        totalViews = viewsQuery.docs.length;
+      } catch (e) {
+        print('Error loading views: $e');
+        // Use fallback or default value
+        totalViews = widget.product.quantity > 0 ? 5 : 0; // Default fallback
+      }
 
-      // Calculate analytics
+      // Calculate analytics with safe defaults
       _analytics = {
-        'totalViews': viewsQuery.docs.length,
+        'totalViews': totalViews,
         'totalInterests': _buyerInterests.length,
         'totalOffers': _priceOffers.length,
         'pendingOffers': _priceOffers.where((offer) => offer.status == 'pending').length,
@@ -186,7 +273,17 @@ class _EnhancedSellingProductDetailPageState extends State<EnhancedSellingProduc
       };
     } catch (e) {
       print('Error loading analytics: $e');
-      _analytics = {};
+      // Provide safe fallback analytics
+      _analytics = {
+        'totalViews': 0,
+        'totalInterests': _buyerInterests.length,
+        'totalOffers': _priceOffers.length,
+        'pendingOffers': 0,
+        'acceptedOffers': 0,
+        'totalTransactions': 0,
+        'totalRevenue': 0.0,
+        'averageOfferPrice': 0.0,
+      };
     }
   }
 

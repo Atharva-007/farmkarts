@@ -5,19 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bceab694-d316-4791-9006-a2beedfb55a5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/farmkart-backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/farmkart-backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkart-backend/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/farmkart-backend/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkart-backend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/farmkart-backend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/firestore.rules" beforeDir="false" afterPath="$PROJECT_DIR$/firestore.rules" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/add_sell_item_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/add_sell_item_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/add_product_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/add_product_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/complete_marketplace_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/complete_marketplace_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/order_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/order_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/marketplace_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/marketplace_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/theme/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/theme/app_theme.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/web/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/enhanced_selling_product_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/enhanced_selling_product_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/marketplace_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/marketplace_models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/product_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/product_model.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
