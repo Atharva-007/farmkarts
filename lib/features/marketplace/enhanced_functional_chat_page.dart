@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../../utils/toast_helper.dart';
 import '../../models/product_model.dart';
 import '../../models/chat_model.dart';
 import '../../services/chat_service.dart';

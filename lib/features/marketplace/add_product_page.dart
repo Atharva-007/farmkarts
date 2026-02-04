@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../../utils/toast_helper.dart';
 import 'dart:typed_data';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
@@ -208,27 +208,11 @@ class _AddProductPageState extends State<AddProductPage>
   }
 
   void _showSuccessMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: AppTheme.success,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    ToastHelper.showSuccess(context, message);
   }
 
   void _showErrorMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: AppTheme.error,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    ToastHelper.showError(context, message);
   }
 
   @override

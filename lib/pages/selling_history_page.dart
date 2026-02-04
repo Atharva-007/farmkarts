@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../utils/toast_helper.dart';
 import '../services/marketplace_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';

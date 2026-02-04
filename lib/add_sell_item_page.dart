@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'utils/toast_helper.dart';
 import 'dart:io';
 import 'services/marketplace_service.dart';
 import 'theme/app_theme.dart';
@@ -122,27 +122,11 @@ class _AddSellItemPageState extends State<AddSellItemPage>
   }
 
   void _showSuccessMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: AppTheme.success,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    ToastHelper.showSuccess(context, message);
   }
 
   void _showErrorMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 3,
-      backgroundColor: AppTheme.error,
-      textColor: Colors.white,
-      fontSize: 16.0,
-    );
+    ToastHelper.showError(context, message);
   }
 
   bool _validateInputs() {
@@ -1421,3 +1405,4 @@ class _AddSellItemPageState extends State<AddSellItemPage>
     );
   }
 }
+

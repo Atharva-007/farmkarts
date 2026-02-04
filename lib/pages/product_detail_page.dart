@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import '../utils/toast_helper.dart';
 import '../models/product_model.dart';
 import '../services/enhanced_marketplace_service.dart';
 import '../services/chat_service.dart';
@@ -573,33 +573,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   void _showSuccessMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppTheme.success,
-      textColor: Colors.white,
-    );
+    ToastHelper.showSuccess(context, message);
   }
 
   void _showErrorMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppTheme.error,
-      textColor: Colors.white,
-    );
+    ToastHelper.showError(context, message);
   }
 
   void _showInfoMessage(String message) {
-    Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: AppTheme.info,
-      textColor: Colors.white,
-    );
+    ToastHelper.showInfo(context, message);
   }
 
   @override
