@@ -13,9 +13,7 @@ import '../../utils/app_constants.dart';
 import 'add_product_page.dart';
 import 'selling_history_page.dart';
 import 'buying_list_page.dart';
-import 'product_detail_page_new.dart';
-import 'enhanced_selling_products_list.dart';
-import 'enhanced_selling_product_detail_page.dart';
+import '../../pages/enhanced_product_detail_page.dart';
 
 class CompleteMarketplacePage extends StatefulWidget {
   const CompleteMarketplacePage({super.key});
@@ -700,24 +698,12 @@ class _CompleteMarketplacePageState extends State<CompleteMarketplacePage>
   }
 
   void _viewProductDetails(Product product) {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    
-    // If this is the seller's own product, navigate to enhanced detail page
-    if (currentUser?.uid == product.sellerId) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EnhancedSellingProductDetailPage(product: product),
-        ),
-      );
-    } else {
-      // For other products, use the regular product detail page
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductDetailPageNew(productId: product.id),
-        ),
-      );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EnhancedProductDetailPage(product: product),
+      ),
+    );
     }
   }
 

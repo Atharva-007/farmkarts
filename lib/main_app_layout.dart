@@ -4,20 +4,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
 import 'utils/responsive_helper.dart';
 import 'features/dashboard/dashboard_home.dart';
-import 'features/marketplace/complete_marketplace_page.dart';
+import 'features/marketplace/complete_functional_marketplace.dart';
 import 'features/community/community_dashboard.dart';
 import 'features/crops/crops_dashboard.dart';
 import 'features/weather/weather_dashboard.dart';
 import 'features/apmc/enhanced_apmc_market_live_fixed.dart';
 import 'features/profile/profile_dashboard.dart';
 import 'features/chat/enhanced_ai_expert_chat_page.dart';
-import 'features/orders/order_tracking_page.dart';
+import 'pages/orders_page.dart';
+import 'pages/contacted_sellers_page.dart';
 import 'services/user_state_service.dart';
 import 'services/conversation_service.dart';
 import 'models/user_model.dart';
 
 class MainAppLayout extends StatefulWidget {
-  const MainAppLayout({super.key});
+  final int? initialIndex;
+  
+  const MainAppLayout({super.key, this.initialIndex});
 
   @override
   State<MainAppLayout> createState() => _MainAppLayoutState();
@@ -32,17 +35,18 @@ class _MainAppLayoutState extends State<MainAppLayout> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _currentIndex = widget.initialIndex ?? 0;
+    _pageController = PageController(initialPage: _currentIndex);
     _initializePages();
   }
 
   void _initializePages() {
     _pages = [
       DashboardHome(onNavigate: _navigateToPage),
-      const CompleteMarketplacePage(),
+      const CompleteFunctionalMarketplace(),
       const CommunityDashboard(),
       const CropsDashboard(),
-      const WeatherDashboard(),
+      const WeatherDashboard(), 
       const EnhancedAPMCMarketLiveFixed(),
       const ProfileDashboard(),
     ];
@@ -391,6 +395,20 @@ class _MainAppLayoutState extends State<MainAppLayout> {
                     
                     const Divider(),
                     
+                    // Orders and Contacted Sellers in sidebar
+                    _buildDrawerItem(
+                      icon: Icons.shopping_bag,
+                      title: 'My Orders',
+                      onTap: () => _navigateToOrders(),
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.chat_bubble,
+                      title: 'Contacted Sellers',
+                      onTap: () => _navigateToContactedSellers(),
+                    ),
+                    
+                    const Divider(),
+                    
                     // AI Chat Feature
                     _buildDrawerItem(
                       icon: Icons.psychology,
@@ -482,6 +500,24 @@ class _MainAppLayoutState extends State<MainAppLayout> {
       context,
       MaterialPageRoute(
         builder: (context) => const EnhancedAIExpertChatPage(),
+      ),
+    );
+  }
+
+  void _navigateToOrders() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const OrdersPage(),
+      ),
+    );
+  }
+
+  void _navigateToContactedSellers() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ContactedSellersPage(),
       ),
     );
   }

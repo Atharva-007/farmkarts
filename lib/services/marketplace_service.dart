@@ -237,10 +237,9 @@ class MarketplaceService {
       
       final querySnapshot = await query.get();
       
-      return querySnapshot.docs.map((doc) {
+      return querySnapshot.docs.map<Product>((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }).toList();
     } catch (e) {
       print('MarketplaceService: Error in _getProductsByCategory: $e');
@@ -260,10 +259,10 @@ class MarketplaceService {
         
         final querySnapshot = await query.get();
         
-        return querySnapshot.docs.map((doc) {
+        return querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
-          return Product.fromMap(data);
+          return Product.fromMap(doc.id, data);
         }).toList();
       } catch (e) {
         // If createdAt fails, try without ordering
@@ -274,10 +273,10 @@ class MarketplaceService {
         
         final querySnapshot = await query.get();
         
-        return querySnapshot.docs.map((doc) {
+        return querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
-          return Product.fromMap(data);
+          return Product.fromMap(doc.id, data);
         }).toList();
       }
     } catch (e) {
@@ -302,8 +301,7 @@ class MarketplaceService {
       
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }
       
       return null;
@@ -360,7 +358,7 @@ class MarketplaceService {
       
       final querySnapshot = await query.get();
       
-      final sellingHistory = querySnapshot.docs.map((doc) {
+      final sellingHistory = querySnapshot.docs.map<Map<String, dynamic>>((doc) {
         final data = doc.data();
         data['id'] = doc.id;
         return data;
@@ -381,7 +379,7 @@ class MarketplaceService {
         
         final fallbackSnapshot = await fallbackQuery.get();
         
-        final sellingHistory = fallbackSnapshot.docs.map((doc) {
+        final sellingHistory = fallbackSnapshot.docs.map<Map<String, dynamic>>((doc) {
           final data = doc.data();
           data['id'] = doc.id;
           return data;
@@ -419,10 +417,9 @@ class MarketplaceService {
       
       final querySnapshot = await query.get();
       
-      return querySnapshot.docs.map((doc) {
+      return querySnapshot.docs.map<Product>((doc) {
         final data = doc.data();
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }).toList();
     } catch (e) {
       print('MarketplaceService: Error fetching products by seller: $e');
@@ -436,10 +433,9 @@ class MarketplaceService {
         
         final fallbackSnapshot = await fallbackQuery.get();
         
-        final products = fallbackSnapshot.docs.map((doc) {
+        final products = fallbackSnapshot.docs.map<Product>((doc) {
           final data = doc.data();
-          data['id'] = doc.id;
-          return Product.fromMap(data);
+          return Product.fromMap(doc.id, data);
         }).toList();
         
         // Sort in memory
@@ -483,10 +479,9 @@ class MarketplaceService {
       final searchLower = searchQuery.toLowerCase();
       
       return querySnapshot.docs
-          .map((doc) {
+          .map<Product>((doc) {
             final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
-            return Product.fromMap(data);
+            return Product.fromMap(doc.id, data);
           })
           .where((product) =>
               product.name.toLowerCase().contains(searchLower) ||
@@ -569,10 +564,9 @@ class MarketplaceService {
       
       final QuerySnapshot querySnapshot = await query.get();
       
-      List<Product> products = querySnapshot.docs.map((doc) {
+      List<Product> products = querySnapshot.docs.map<Product>((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }).toList();
       
       // Apply all filters in memory

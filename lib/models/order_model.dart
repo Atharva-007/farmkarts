@@ -20,6 +20,7 @@ class OrderModel {
   final DeliveryType deliveryType;
   final String? deliveryAddress;
   final DateTime orderDate;
+  final DateTime createdAt;
   final DateTime? confirmedDate;
   final DateTime? shippedDate;
   final DateTime? deliveredDate;
@@ -27,6 +28,7 @@ class OrderModel {
   final String? cancellationReason;
   final List<OrderStatusUpdate> statusUpdates;
   final String? notes;
+  final String? trackingId;
   final String? trackingNumber;
   final double? deliveryCharges;
   final String? paymentMethod;
@@ -54,6 +56,7 @@ class OrderModel {
     required this.deliveryType,
     this.deliveryAddress,
     required this.orderDate,
+    required this.createdAt,
     this.confirmedDate,
     this.shippedDate,
     this.deliveredDate,
@@ -61,11 +64,86 @@ class OrderModel {
     this.cancellationReason,
     this.statusUpdates = const [],
     this.notes,
+    this.trackingId,
     this.trackingNumber,
     this.deliveryCharges,
     this.paymentMethod,
     this.transactionId,
   });
+
+  // Factory constructor with default createdAt
+  factory OrderModel.create({
+    required String id,
+    required String productId,
+    required String productName,
+    required String productCategory,
+    String productImageUrl = '',
+    required String buyerId,
+    required String buyerName,
+    required String buyerPhone,
+    required String buyerAddress,
+    required String sellerId,
+    required String sellerName,
+    required String sellerPhone,
+    required double unitPrice,
+    required int quantity,
+    required String unit,
+    required double totalAmount,
+    OrderStatus status = OrderStatus.pending,
+    PaymentStatus paymentStatus = PaymentStatus.pending,
+    required DeliveryType deliveryType,
+    String? deliveryAddress,
+    required DateTime orderDate,
+    DateTime? createdAt,
+    DateTime? confirmedDate,
+    DateTime? shippedDate,
+    DateTime? deliveredDate,
+    DateTime? cancelledDate,
+    String? cancellationReason,
+    List<OrderStatusUpdate> statusUpdates = const [],
+    String? notes,
+    String? trackingNumber,
+    double? deliveryCharges,
+    String? paymentMethod,
+    String? transactionId,
+  }) {
+    return OrderModel(
+      id: id,
+      productId: productId,
+      productName: productName,
+      productCategory: productCategory,
+      productImageUrl: productImageUrl,
+      buyerId: buyerId,
+      buyerName: buyerName,
+      buyerPhone: buyerPhone,
+      buyerAddress: buyerAddress,
+      sellerId: sellerId,
+      sellerName: sellerName,
+      sellerPhone: sellerPhone,
+      unitPrice: unitPrice,
+      quantity: quantity,
+      unit: unit,
+      totalAmount: totalAmount,
+      status: status,
+      paymentStatus: paymentStatus,
+      deliveryType: deliveryType,
+      deliveryAddress: deliveryAddress,
+      orderDate: orderDate,
+      createdAt: createdAt ?? DateTime.now(),
+      confirmedDate: confirmedDate,
+      shippedDate: shippedDate,
+      deliveredDate: deliveredDate,
+      cancelledDate: cancelledDate,
+      cancellationReason: cancellationReason,
+      statusUpdates: statusUpdates,
+      notes: notes,
+      trackingId: trackingNumber,
+      trackingNumber: trackingNumber,
+      deliveryCharges: deliveryCharges,
+      paymentMethod: paymentMethod,
+      transactionId: transactionId,
+    );
+  }
 
   factory OrderModel.fromMap(String id, Map<String, dynamic> map) {
     return OrderModel(
@@ -99,7 +177,10 @@ class OrderModel {
       ),
       deliveryAddress: map['deliveryAddress'],
       orderDate: DateTime.fromMillisecondsSinceEpoch(map['orderDate'] ?? 0),
-      confirmedDate: map['confirmedDate'] != null 
+      createdAt: map['createdAt'] != null 
+          ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
+          : DateTime.now(),
+      confirmedDate: map['confirmedDate'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['confirmedDate'])
           : null,
       shippedDate: map['shippedDate'] != null 
@@ -145,6 +226,7 @@ class OrderModel {
       'deliveryType': deliveryType.toString().split('.').last,
       'deliveryAddress': deliveryAddress,
       'orderDate': orderDate.millisecondsSinceEpoch,
+      'createdAt': createdAt.millisecondsSinceEpoch,
       'confirmedDate': confirmedDate?.millisecondsSinceEpoch,
       'shippedDate': shippedDate?.millisecondsSinceEpoch,
       'deliveredDate': deliveredDate?.millisecondsSinceEpoch,
@@ -194,6 +276,7 @@ class OrderModel {
       deliveryType: deliveryType,
       deliveryAddress: deliveryAddress,
       orderDate: orderDate,
+      createdAt: createdAt, // Keep the original createdAt
       confirmedDate: confirmedDate ?? this.confirmedDate,
       shippedDate: shippedDate ?? this.shippedDate,
       deliveredDate: deliveredDate ?? this.deliveredDate,

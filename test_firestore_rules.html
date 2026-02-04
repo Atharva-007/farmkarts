@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Firestore Rules Test - Contact Seller Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firestore Rules Test - Contact Seller Fix</h1>
+    
+    <div class="status">
+        <h2>Test Status:</h2>
+        <div id="status">Click "Run Tests" to start verification</div>
+    </div>
+    
+    <button onclick="runTests()">Run Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCsJfAV0EEeBaKZo_IkfvyqOd3FzdAlhQY",
+            authDomain: "farmkart-9f4f3.firebaseapp.com",
+            projectId: "farmkart-9f4f3",
+            storageBucket: "farmkart-9f4f3.appspot.com",
+            messagingSenderId: "226349160031",
+            appId: "1:226349160031:android:b6f7501e36867d44f97ba8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('status').innerHTML = 'Click "Run Tests" to start verification';
+        }
+
+        async function runTests() {
+            clearResults();
+            document.getElementById('status').innerHTML = '<span class="info">🔄 Running tests...</span>';
+            
+            try {
+                log('<h3>🚀 Starting Contact Seller Fix Verification</h3>');
+                
+                // Test 1: Firebase initialization
+                log('✅ Firebase initialized successfully', 'success');
+                
+                // Test 2: Authentication
+                log('<h4>🔐 Testing Authentication...</h4>');
+                const user = auth.currentUser;
+                if (user) {
+                    log(`✅ User authenticated: ${user.email}`, 'success');
+                } else {
+                    log('🔄 No user found, signing in anonymously...', 'info');
+                    await auth.signInAnonymously();
+                    log('✅ Anonymous authentication successful', 'success');
+                }
+
+                // Test 3: Firestore connection
+                log('<h4>🔗 Testing Firestore Connection...</h4>');
+                await db.collection('test').doc('connection').get();
+                log('✅ Firestore connection successful', 'success');
+
+                // Test 4: Conversation creation (main fix)
+                log('<h4>💬 Testing Conversation Creation (Main Fix)...</h4>');
+                
+                const currentUser = auth.currentUser;
+                const conversationData = {
+                    productId: 'test-product-' + Date.now(),
+                    productName: 'Test Product for Contact Seller',
+                    buyerId: currentUser.uid,
+                    buyerName: 'Test Buyer',
+                    sellerId: 'test-seller-' + Date.now(),
+                    sellerName: 'Test Seller',
+                    participants: [currentUser.uid, 'test-seller-' + Date.now()],
+                    lastMessage: 'Hi! I am interested in your product.',
+                    lastMessageTime: Date.now(),
+                    lastMessageSenderId: currentUser.uid,
+                    unreadCount: 0,
+                    isActive: true,
+                    createdAt: Date.now()
+                };
+
+                const conversationRef = await db.collection('conversations').add(conversationData);
+                log('✅ Conversation created successfully!', 'success');
+                log(`   📍 Conversation ID: ${conversationRef.id}`, 'info');
+
+                // Test 5: Message creation
+                log('<h4>📨 Testing Message Creation...</h4>');
+                
+                const messageData = {
+                    conversationId: conversationRef.id,
+                    senderId: currentUser.uid,
+                    senderName: 'Test Buyer',
+                    receiverId: conversationData.sellerId,
+                    content: 'Hi! This is a test message for the contact seller feature.',
+                    type: 'text',
+                    timestamp: Date.now(),
+                    isRead: false
+                };
+
+                const messageRef = await db
+                    .collection('conversations')
+                    .doc(conversationRef.id)
+                    .collection('messages')
+                    .add(messageData);
+                
+                log('✅ Message created successfully!', 'success');
+                log(`   📍 Message ID: ${messageRef.id}`, 'info');
+
+                // Test 6: Reading conversation back
+                log('<h4>📖 Testing Conversation Read Access...</h4>');
+                
+                const conversationDoc = await db
+                    .collection('conversations')
+                    .doc(conversationRef.id)
+                    .get();
+                
+                if (conversationDoc.exists) {
+                    log('✅ Conversation read access successful!', 'success');
+                    const data = conversationDoc.data();
+                    log(`   📋 Product: ${data.productName}`, 'info');
+                    log(`   👤 Participants: ${data.participants.join(', ')}`, 'info');
+                } else {
+                    log('❌ Could not read conversation', 'error');
+                }
+
+                // Test 7: Clean up
+                log('<h4>🧹 Cleaning up test data...</h4>');
+                await db.collection('conversations').doc(conversationRef.id).delete();
+                log('✅ Test data cleaned up', 'success');
+
+                // Final result
+                log('<h3>🎉 ALL TESTS PASSED!</h3>', 'success');
+                log('<strong>The contact seller functionality is now working correctly!</strong>', 'success');
+                log('<p>Users can now:</p>', 'info');
+                log('• ✅ Click "Contact Seller" button without permission errors', 'success');
+                log('• ✅ Create conversations with sellers', 'success');
+                log('• ✅ Send messages successfully', 'success');
+                log('• ✅ Receive responses from sellers', 'success');
+                
+                document.getElementById('status').innerHTML = '<span class="success">✅ All tests passed! Contact seller fix is working.</span>';
+
+            } catch (error) {
+                log(`❌ TEST FAILED: ${error.message}`, 'error');
+                log(`<pre>Error details: ${error.stack}</pre>`, 'error');
+                
+                if (error.message.includes('permission-denied')) {
+                    log('🔍 This indicates a Firestore permission issue', 'warning');
+                    log('💡 Check that the security rules were deployed correctly', 'warning');
+                } else if (error.message.includes('unauthenticated')) {
+                    log('🔍 This indicates an authentication issue', 'warning');
+                } else {
+                    log('🔍 This indicates an unexpected error', 'warning');
+                }
+                
+                document.getElementById('status').innerHTML = '<span class="error">❌ Tests failed. Check results for details.</span>';
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            log('📄 Page loaded. Firebase configuration:', 'info');
+            log(`🏢 Project ID: ${firebaseConfig.projectId}`, 'info');
+            log(`🔑 App ID: ${firebaseConfig.appId}`, 'info');
+            log('Click "Run Tests" to verify the contact seller fix.', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -11,6 +11,9 @@ import 'services/user_state_service.dart';
 import 'features/marketplace/add_product_page.dart';
 import 'pages/selling_history_page.dart';
 import 'pages/buying_list_page.dart';
+import 'pages/chat_conversation_page.dart';
+import 'models/conversation_model.dart';
+import 'models/product_model.dart';
 import 'add_sell_item_page.dart';
 
 void main() async {
@@ -50,6 +53,80 @@ class MyApp extends StatelessWidget {
           '/add_product': (context) => const AddSellItemPage(),
           '/selling_history': (context) => const SellingHistoryPage(),
           '/buying_list': (context) => const BuyingListPage(),
+        },
+        onGenerateRoute: (RouteSettings settings) {
+          // Handle the /home route with arguments
+          if (settings.name == '/home') {
+            final args = settings.arguments as Map<String, dynamic>?;
+            final initialIndex = args?['initialIndex'] as int?;
+            
+            return MaterialPageRoute(
+              builder: (context) => MainAppLayout(initialIndex: initialIndex),
+              settings: settings,
+            );
+          }
+          
+          // Handle the /chat route with arguments
+          if (settings.name == '/chat') {
+            final args = settings.arguments as Map<String, dynamic>?;
+            if (args != null) {
+              // Create a dummy conversation from the arguments
+              final conversationId = args['conversationId'] as String? ?? '';
+              final product = args['product'] as Product?;
+              final otherUserId = args['otherUserId'] as String? ?? '';
+              final otherUserName = args['otherUserName'] as String? ?? '';
+              final productName = args['productName'] as String? ?? '';
+              
+              // Create a conversation object
+              final conversation = Conversation(
+                id: conversationId,
+                productId: product?.id ?? '',
+                productName: product?.name ?? productName,
+                buyerId: '', // Will be set by the service
+                buyerName: '',
+                sellerId: otherUserId,
+                sellerName: otherUserName,
+                lastMessage: 'Starting conversation...',
+                lastMessageTime: DateTime.now(),
+                lastMessageSenderId: '',
+                createdAt: DateTime.now(),
+              );
+              
+              return MaterialPageRoute(
+                builder: (context) => ChatConversationPage(
+                  conversation: conversation,
+                  product: product,
+                ),
+                settings: settings,
+              );
+            }
+          }
+          
+          // Return null if no route found - this will trigger onUnknownRoute
+          return null;
+        },
+        onUnknownRoute: (RouteSettings settings) {
+          // Handle unknown routes gracefully
+          return MaterialPageRoute(
+            builder: (context) => Scaffold(
+              appBar: AppBar(title: const Text('Page Not Found')),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text('Route "${settings.name}" not found'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+                      child: const Text('Go Home'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
         },
       ),
     );

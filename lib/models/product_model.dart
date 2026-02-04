@@ -33,7 +33,7 @@ class Product {
     this.tags = const [],
   });
 
-  factory Product.fromMap(Map<String, dynamic> map) {
+  factory Product.fromMap(String id, Map<String, dynamic> map) {
     // Ensure we have a valid map
     if (map.isEmpty) {
       throw ArgumentError('Product map cannot be empty');
@@ -60,7 +60,7 @@ class Product {
     }
     
     return Product(
-      id: map['id']?.toString() ?? '',
+      id: id,
       name: map['name']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       category: map['category']?.toString() ?? '',
@@ -78,6 +78,11 @@ class Product {
           : int.tryParse(map['quantity'].toString()) ?? 0,
       tags: map['tags'] != null ? List<String>.from(map['tags']) : [],
     );
+  }
+
+  // Legacy method for backward compatibility
+  factory Product.fromMapLegacy(Map<String, dynamic> map) {
+    return Product.fromMap(map['id']?.toString() ?? '', map);
   }
 
   Map<String, dynamic> toMap() {

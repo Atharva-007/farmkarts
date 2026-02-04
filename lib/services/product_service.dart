@@ -242,10 +242,9 @@ class ProductService {
       
       final QuerySnapshot querySnapshot = await query.get();
       
-      List<Product> products = querySnapshot.docs.map((doc) {
+      List<Product> products = querySnapshot.docs.map<Product>((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }).toList();
       
       // Apply additional filters in memory
@@ -288,10 +287,9 @@ class ProductService {
             .limit(limit)
             .get();
         
-        List<Product> products = querySnapshot.docs.map((doc) {
+        List<Product> products = querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
-          data['id'] = doc.id;
-          return Product.fromMap(data);
+          return Product.fromMap(doc.id, data);
         }).toList();
         
         // Apply all filters in memory
@@ -346,8 +344,7 @@ class ProductService {
       
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return Product.fromMap(data);
+        return Product.fromMap(doc.id, data);
       }
       
       return null;

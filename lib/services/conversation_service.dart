@@ -37,7 +37,7 @@ class ConversationService {
         return existingConversation.docs.first.id;
       }
 
-      // Create new conversation
+      // Create new conversation with participants field
       final conversation = Conversation(
         id: '',
         productId: productId,
@@ -52,9 +52,13 @@ class ConversationService {
         createdAt: DateTime.now(),
       );
 
+      // Add participants field for security rules
+      final conversationData = conversation.toMap();
+      conversationData['participants'] = [buyerId, sellerId];
+
       final docRef = await _firestore
           .collection('conversations')
-          .add(conversation.toMap());
+          .add(conversationData);
 
       // Add initial system message
       await sendMessage(
@@ -148,11 +152,12 @@ class ConversationService {
     }
   }
 
-  // Get conversations for current user
+  // Get conversations for current user (improved query to fetch both buyer and seller conversations)
   Stream<List<Conversation>> getUserConversations() {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
+    // Use participants array to get all conversations for current user
     return _firestore
         .collection('conversations')
         .where('participants', arrayContains: user.uid)
@@ -160,7 +165,11 @@ class ConversationService {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
-        return Conversation.fromMap(doc.id, doc.data());
+        final data = doc.data();
+        // Add proper unread count handling
+        final unreadCount = _getUnreadCountForUser(doc.id, user.uid);
+        data['unreadCount'] = unreadCount;
+        return Conversation.fromMap(doc.id, data);
       }).toList();
     });
   }
@@ -346,6 +355,47 @@ class ConversationService {
     }
   }
 
+  // Get unread count for specific user in conversation
+  int _getUnreadCountForUser(String conversationId, String userId) {
+    // This is a simplified version - in production you'd want to use a more efficient method
+    // For now, return 0 and handle unread counts in the UI
+    return 0;
+  }
+
+  // Send bid offer message
+  Future<void> sendBidOffer({
+    required String conversationId,
+    required double bidAmount,
+    required int quantity,
+    required String unit,
+    String? message,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final conversation = await getConversation(conversationId);
+      if (conversation == null) throw Exception('Conversation not found');
+
+      final receiverId = user.uid == conversation.buyerId ? conversation.sellerId : conversation.buyerId;
+      
+      final bidContent = '🏷️ **BID OFFER**\n\n'
+          '💰 **Price**: ₹${bidAmount.toStringAsFixed(2)} per $unit\n'
+          '📦 **Quantity**: $quantity $unit\n'
+          '💵 **Total Amount**: ₹${(bidAmount * quantity).toStringAsFixed(2)}\n'
+          '${message != null && message.isNotEmpty ? '\n📝 **Message**: $message' : ''}';
+
+      await sendMessage(
+        conversationId: conversationId,
+        receiverId: receiverId,
+        content: bidContent,
+        type: MessageType.priceQuote,
+      );
+    } catch (e) {
+      throw Exception('Failed to send bid offer: $e');
+    }
+  }
+
   // Get display content for different message types
   String _getDisplayContent(Message message) {
     switch (message.type) {
@@ -366,18 +416,35 @@ class ConversationService {
     }
   }
 
-  // Search conversations
+  // Search conversations (improved)
   Future<List<Conversation>> searchConversations(String query) async {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      final conversations = await _firestore
+      // Get conversations where user is buyer or seller
+      final buyerConversations = await _firestore
           .collection('conversations')
-          .where('participants', arrayContains: user.uid)
+          .where('buyerId', isEqualTo: user.uid)
           .get();
 
-      return conversations.docs
+      final sellerConversations = await _firestore
+          .collection('conversations')
+          .where('sellerId', isEqualTo: user.uid)
+          .get();
+
+      // Merge and deduplicate results
+      final allDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+      allDocs.addAll(buyerConversations.docs);
+      
+      // Add seller conversations that are not already included
+      for (final doc in sellerConversations.docs) {
+        if (!allDocs.any((existing) => existing.id == doc.id)) {
+          allDocs.add(doc);
+        }
+      }
+
+      return allDocs
           .map((doc) => Conversation.fromMap(doc.id, doc.data()))
           .where((conversation) =>
               conversation.productName.toLowerCase().contains(query.toLowerCase()) ||

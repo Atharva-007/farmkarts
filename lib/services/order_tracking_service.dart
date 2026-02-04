@@ -36,7 +36,7 @@ class OrderTrackingService {
         final data = jsonDecode(response.body);
         if (data['success']) {
           final ordersData = List<Map<String, dynamic>>.from(data['data']);
-          return ordersData.map((orderData) => OrderModel.fromMap(orderData)).toList();
+          return ordersData.map((orderData) => OrderModel.fromMap(orderData['id'] ?? '', orderData)).toList();
         }
       }
       return [];
@@ -57,7 +57,7 @@ class OrderTrackingService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          return OrderModel.fromMap(data['data']);
+          return OrderModel.fromMap(data['data']['id'] ?? '', data['data']);
         }
       }
       return null;
@@ -276,14 +276,14 @@ class OrderTrackingService {
         final data = jsonDecode(response.body);
         if (data['success']) {
           final ordersData = List<Map<String, dynamic>>.from(data['data']);
-          List<OrderModel> orders = ordersData.map((orderData) => OrderModel.fromMap(orderData)).toList();
+          List<OrderModel> orders = ordersData.map((orderData) => OrderModel.fromMap(orderData['id'] ?? '', orderData)).toList();
           
           // Apply client-side search filter if query provided
           if (query != null && query.isNotEmpty) {
             final queryLower = query.toLowerCase();
             orders = orders.where((order) =>
               order.productName.toLowerCase().contains(queryLower) ||
-              order.trackingId.toLowerCase().contains(queryLower) ||
+              (order.trackingId ?? '').toLowerCase().contains(queryLower) ||
               order.buyerName.toLowerCase().contains(queryLower) ||
               order.sellerName.toLowerCase().contains(queryLower)
             ).toList();
@@ -372,7 +372,7 @@ class OrderTrackingDetails {
 
   factory OrderTrackingDetails.fromMap(Map<String, dynamic> map) {
     return OrderTrackingDetails(
-      order: OrderModel.fromMap(map),
+      order: OrderModel.fromMap(map['order']['id'] ?? '', map['order']),
       trackingTimeline: (map['trackingTimeline'] as List<dynamic>?)
           ?.map((timeline) => TrackingTimeline.fromMap(timeline))
           .toList() ?? [],

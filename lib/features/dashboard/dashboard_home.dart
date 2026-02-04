@@ -289,12 +289,6 @@ class _DashboardHomeState extends State<DashboardHome>
             // Dashboard Cards Section
             _buildDashboardCards(),
 
-            // Weather Widget
-            Container(
-              padding: ResponsiveHelper.getResponsivePadding(context),
-              child: const WeatherWidget(),
-            ),
-
             // News Section
             Container(
               padding: ResponsiveHelper.getResponsivePadding(context),

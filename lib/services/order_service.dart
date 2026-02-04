@@ -51,6 +51,7 @@ class OrderService {
         deliveryType: deliveryType,
         deliveryAddress: deliveryAddress,
         orderDate: DateTime.now(),
+        createdAt: DateTime.now(), // Add this required parameter
         notes: notes,
         paymentMethod: paymentMethod,
         statusUpdates: [
@@ -460,6 +461,23 @@ class OrderService {
       await _firestore.collection('orders').doc(orderId).update(updateData);
     } catch (e) {
       throw Exception('Failed to update payment status: $e');
+    }
+  }
+
+  // Get orders by buyer ID 
+  Future<List<OrderModelFile.OrderModel>> getOrdersByBuyer(String buyerId) async {
+    try {
+      final orders = await _firestore
+          .collection('orders')
+          .where('buyerId', isEqualTo: buyerId)
+          .orderBy('orderDate', descending: true)
+          .get();
+
+      return orders.docs.map((doc) {
+        return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get orders by buyer: $e');
     }
   }
 

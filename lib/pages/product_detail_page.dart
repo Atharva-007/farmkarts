@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../models/product_model.dart';
-import '../services/marketplace_service.dart';
+import '../services/enhanced_marketplace_service.dart';
+import '../services/chat_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
+import 'seller_dashboard_page.dart';
 
+/// Enhanced Product Detail Page with buyer-seller functionality
 class ProductDetailPage extends StatefulWidget {
   final Product product;
 
@@ -24,13 +27,19 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
-  final MarketplaceService _marketplaceService = MarketplaceService();
+  final EnhancedMarketplaceService _enhancedService = EnhancedMarketplaceService();
+  final ChatService _chatService = ChatService();
   final TextEditingController _quantityController = TextEditingController(text: '1');
   final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _bidAmountController = TextEditingController();
+  final TextEditingController _bidQuantityController = TextEditingController(text: '1');
   
   bool _isContactingSeller = false;
+  bool _isSendingBid = false;
   int _selectedQuantity = 1;
   double _totalPrice = 0.0;
+  int _currentImageIndex = 0;
+  late PageController _pageController;
 
   @override
   void initState() {
@@ -47,10 +56,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       curve: Curves.easeIn,
     ));
     
+    _pageController = PageController();
     _animationController.forward();
     _calculateTotalPrice();
     
     _quantityController.addListener(_onQuantityChanged);
+    _bidAmountController.text = widget.product.price.toString();
   }
 
   @override
@@ -58,6 +69,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     _animationController.dispose();
     _quantityController.dispose();
     _messageController.dispose();
+    _bidAmountController.dispose();
+    _bidQuantityController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -92,19 +106,34 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     try {
       final initialMessage = _messageController.text.trim().isNotEmpty
           ? _messageController.text.trim()
-          : 'I am interested in your product: ${widget.product.name}. '
+          : 'Hi! I am interested in your product: ${widget.product.name}. '
             'Quantity: $_selectedQuantity ${widget.product.unit}. '
             'Total: ₹${_totalPrice.toStringAsFixed(2)}';
 
-      final conversationId = await _marketplaceService.contactSeller(
-        product: widget.product,
-        buyerName: user.displayName ?? 'Buyer',
-        initialMessage: initialMessage,
-      );
+      // Try the enhanced chat service first, fallback to marketplace service
+      try {
+        final conversationId = await _enhancedService.contactSeller(
+          product: widget.product,
+          buyerName: user.displayName ?? user.email ?? 'Buyer',
+          initialMessage: initialMessage,
+        );
+        
+        if (mounted) {
+          _showSuccessMessage('Message sent successfully!');
+          _showConversationCreatedDialog(conversationId);
+        }
+      } catch (e) {
+        // Fallback to chat service
+        final conversationId = await _chatService.startConversation(
+          product: widget.product,
+          buyerName: user.displayName ?? user.email ?? 'Buyer',
+          initialMessage: initialMessage,
+        );
 
-      if (mounted) {
-        _showSuccessMessage('Message sent successfully!');
-        _showConversationCreatedDialog(conversationId);
+        if (mounted) {
+          _showSuccessMessage('Message sent successfully!');
+          _showConversationCreatedDialog(conversationId);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -117,6 +146,303 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         });
       }
     }
+  }
+
+  Future<void> _makeBidOffer() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _showErrorMessage('Please login to make a bid');
+      return;
+    }
+
+    if (user.uid == widget.product.sellerId) {
+      _showErrorMessage('You cannot bid on your own product');
+      return;
+    }
+
+    final bidAmount = double.tryParse(_bidAmountController.text);
+    final bidQuantity = int.tryParse(_bidQuantityController.text) ?? 1;
+
+    if (bidAmount == null || bidAmount <= 0) {
+      _showErrorMessage('Please enter a valid bid amount');
+      return;
+    }
+
+    if (bidQuantity <= 0 || bidQuantity > widget.product.quantity) {
+      _showErrorMessage('Please enter a valid quantity');
+      return;
+    }
+
+    setState(() {
+      _isSendingBid = true;
+    });
+
+    try {
+      // Try enhanced marketplace service for bid
+      try {
+        final conversationId = await _enhancedService.contactSeller(
+          product: widget.product,
+          buyerName: user.displayName ?? user.email ?? 'Buyer',
+          initialMessage: 'I would like to make a bid on your product.',
+        );
+
+        await _enhancedService.sendBidOffer(
+          conversationId: conversationId,
+          bidAmount: bidAmount,
+          quantity: bidQuantity,
+          unit: widget.product.unit,
+          notes: 'Bid offer for ${widget.product.name}',
+        );
+
+        if (mounted) {
+          Navigator.pop(context); // Close bid dialog
+          _showSuccessMessage('Bid sent successfully!');
+        }
+      } catch (e) {
+        // Fallback to simple message
+        final message = 'BID OFFER: ₹$bidAmount per ${widget.product.unit} '
+                       'for $bidQuantity ${widget.product.unit}. '
+                       'Total: ₹${(bidAmount * bidQuantity).toStringAsFixed(2)}';
+
+        final conversationId = await _enhancedService.contactSeller(
+          product: widget.product,
+          buyerName: user.displayName ?? 'Buyer',
+          initialMessage: message,
+        );
+
+        if (mounted) {
+          Navigator.pop(context);
+          _showSuccessMessage('Bid sent successfully!');
+          _showConversationCreatedDialog(conversationId);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('Failed to send bid: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingBid = false;
+        });
+      }
+    }
+  }
+
+  void _showBidDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildBidDialog(),
+    );
+  }
+
+  Widget _buildBidDialog() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGreen,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Make a Bid Offer',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Product Info
+                  Text(
+                    widget.product.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'Current Price: ₹${widget.product.price}/${widget.product.unit}',
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Bid Amount
+                  const Text(
+                    'Your Bid Amount',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _bidAmountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      prefixText: '₹ ',
+                      suffixText: '/${widget.product.unit}',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: 'Enter your bid amount',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Quantity
+                  const Text(
+                    'Quantity',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _bidQuantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      suffixText: widget.product.unit,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: 'Enter quantity',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Total calculation
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppTheme.primaryGreen.withOpacity(0.3),
+                      ),
+                    ),
+                    child: ValueListenableBuilder(
+                      valueListenable: _bidAmountController,
+                      builder: (context, value, child) {
+                        final bidAmount = double.tryParse(_bidAmountController.text) ?? 0;
+                        final bidQuantity = int.tryParse(_bidQuantityController.text) ?? 1;
+                        final totalBid = bidAmount * bidQuantity;
+                        
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Total Bid:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '₹${totalBid.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primaryGreen,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Footer
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSendingBid ? null : _makeBidOffer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isSendingBid
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Send Bid Offer',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _viewBuyerInteractions() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SellerDashboardPage(),
+      ),
+    );
   }
 
   void _showConversationCreatedDialog(String conversationId) {
@@ -144,7 +470,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             onPressed: () {
               Navigator.pop(context); // Close dialog
               // Navigate to conversations if implemented
-              // Navigator.pushNamed(context, '/conversations');
+              _showInfoMessage('Navigate to chat feature coming soon');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryGreen,
@@ -170,7 +496,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Are you sure you want to purchase:'),
+          const Text('Are you sure you want to purchase:'),
           const SizedBox(height: 8),
           Text(
             widget.product.name,
@@ -227,26 +553,23 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             backgroundColor: AppTheme.primaryGreen,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Proceed to Buy'),
+          child: const Text('Contact Seller'),
         ),
       ],
     );
   }
 
   void _proceedToPurchase() {
-    // In a real app, this would navigate to a payment page
-    // For now, we'll show a placeholder
-    _showInfoMessage('Purchase feature will be implemented in the next version. Please contact the seller directly for now.');
+    // Navigate to contact seller with purchase intent
+    _messageController.text = 'I want to purchase ${widget.product.name}. '
+        'Quantity: $_selectedQuantity ${widget.product.unit}. '
+        'Total: ₹${_totalPrice.toStringAsFixed(2)}. '
+        'Please let me know the next steps.';
+    _contactSeller();
   }
 
   void _shareProduct() {
-    // In a real app, this would use the share plugin
     _showInfoMessage('Share feature will be implemented soon');
-  }
-
-  void _addToWishlist() {
-    // In a real app, this would save to wishlist
-    _showSuccessMessage('Added to wishlist (feature coming soon)');
   }
 
   void _showSuccessMessage(String message) {
@@ -286,147 +609,116 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      appBar: AppBar(
-        title: Text(widget.product.name),
-        backgroundColor: AppTheme.primaryGreen,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: _shareProduct,
-            icon: const Icon(Icons.share),
-            tooltip: 'Share',
-          ),
-          if (!isOwnProduct)
-            IconButton(
-              onPressed: _addToWishlist,
-              icon: const Icon(Icons.favorite_border),
-              tooltip: 'Add to Wishlist',
-            ),
-        ],
-      ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildProductHeader(),
-              _buildProductInfo(),
-              _buildSellerInfo(),
-              if (!isOwnProduct) _buildPurchaseSection(),
-              if (isOwnProduct) _buildOwnProductInfo(),
-              const SizedBox(height: 20),
-            ],
-          ),
+        child: CustomScrollView(
+          slivers: [
+            _buildSliverAppBar(),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  _buildProductInfo(),
+                  _buildSellerInfo(),
+                  if (!isOwnProduct) _buildPurchaseSection(),
+                  if (isOwnProduct) _buildSellerActions(),
+                  const SizedBox(height: 100), // Space for bottom bar
+                ],
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: !isOwnProduct ? _buildBottomBar() : null,
     );
   }
 
-  Widget _buildProductHeader() {
-    return Container(
-      width: double.infinity,
-      padding: AppConstants.defaultPadding,
-      color: AppTheme.primaryGreen.withOpacity(0.1),
-      child: Column(
-        children: [
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[400]!),
-            ),
-            child: widget.product.imageUrls.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      widget.product.imageUrls.first,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildPlaceholderImage();
-                      },
-                    ),
-                  )
-                : _buildPlaceholderImage(),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.product.name,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.product.category,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (widget.product.isOrganic)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.success),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.eco, size: 16, color: AppTheme.success),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Organic',
-                        style: TextStyle(
-                          color: AppTheme.success,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-        ],
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 300,
+      floating: false,
+      pinned: true,
+      backgroundColor: AppTheme.primaryGreen,
+      foregroundColor: Colors.white,
+      flexibleSpace: FlexibleSpaceBar(
+        background: _buildImageCarousel(),
       ),
+      actions: [
+        IconButton(
+          onPressed: _shareProduct,
+          icon: const Icon(Icons.share),
+          tooltip: 'Share',
+        ),
+      ],
     );
   }
 
-  Widget _buildPlaceholderImage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.image,
-            size: 48,
-            color: Colors.grey[500],
+  Widget _buildImageCarousel() {
+    if (widget.product.imageUrls.isEmpty) {
+      return Container(
+        color: Colors.grey[300],
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.image, size: 64, color: Colors.grey),
+              SizedBox(height: 8),
+              Text('No Image Available', style: TextStyle(color: Colors.grey)),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            'No Image',
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 14,
+        ),
+      );
+    }
+
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          onPageChanged: (index) {
+            setState(() {
+              _currentImageIndex = index;
+            });
+          },
+          itemCount: widget.product.imageUrls.length,
+          itemBuilder: (context, index) {
+            return Image.network(
+              widget.product.imageUrls[index],
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[300],
+                  child: const Center(
+                    child: Icon(Icons.error, size: 64, color: Colors.grey),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        
+        // Image indicators
+        if (widget.product.imageUrls.length > 1)
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: widget.product.imageUrls.asMap().entries.map((entry) {
+                return Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentImageIndex == entry.key
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.4),
+                  ),
+                );
+              }).toList(),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -434,34 +726,130 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     return Container(
       margin: AppConstants.defaultPadding,
       child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: AppConstants.defaultPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Product Information',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Product Name and Price
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.product.name,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.product.category,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (widget.product.isOrganic)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.success),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.eco, size: 16, color: AppTheme.success),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Organic',
+                            style: TextStyle(
+                              color: AppTheme.success,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Price
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGreen.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryGreen.withOpacity(0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.currency_rupee,
+                      color: AppTheme.primaryGreen,
+                      size: 32,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${widget.product.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'per ${widget.product.unit}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              
               const SizedBox(height: 16),
-              _buildInfoRow('Price', '₹${widget.product.price.toStringAsFixed(2)} per ${widget.product.unit}'),
+              
+              // Product Details
               _buildInfoRow('Available Quantity', '${widget.product.quantity} ${widget.product.unit}'),
               _buildInfoRow('Location', widget.product.location),
               if (widget.product.tags.isNotEmpty)
                 _buildInfoRow('Tags', widget.product.tags.join(', ')),
+              
               const SizedBox(height: 16),
-              Text(
+              
+              // Description
+              const Text(
                 'Description',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 widget.product.description,
-                style: const TextStyle(fontSize: 16, height: 1.5),
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.5,
+                ),
               ),
             ],
           ),
@@ -477,7 +865,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 120,
             child: Text(
               '$label:',
               style: const TextStyle(
@@ -501,14 +889,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     return Container(
       margin: AppConstants.defaultPadding,
       child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: AppConstants.defaultPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Seller Information',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -517,6 +908,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 children: [
                   CircleAvatar(
                     backgroundColor: AppTheme.primaryGreen,
+                    radius: 30,
                     child: Text(
                       widget.product.sellerName.isNotEmpty
                           ? widget.product.sellerName[0].toUpperCase()
@@ -524,6 +916,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 24,
                       ),
                     ),
                   ),
@@ -535,7 +928,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         Text(
                           widget.product.sellerName,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -547,10 +940,21 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                             Expanded(
                               child: Text(
                                 widget.product.location,
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                ),
+                                style: const TextStyle(color: Colors.grey),
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.star, size: 16, color: Colors.orange),
+                            const SizedBox(width: 4),
+                            const Text('4.5'),
+                            const SizedBox(width: 8),
+                            Text(
+                              '(24 reviews)',
+                              style: TextStyle(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -570,18 +974,23 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     return Container(
       margin: AppConstants.defaultPadding,
       child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: AppConstants.defaultPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Purchase Details',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
+              
+              // Quantity selector
               Row(
                 children: [
                   const Text(
@@ -604,7 +1013,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ),
                 ],
               ),
+              
               const SizedBox(height: 16),
+              
+              // Total price display
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -633,7 +1045,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ],
                 ),
               ),
+              
               const SizedBox(height: 16),
+              
+              // Message to seller
               TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
@@ -653,18 +1068,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     );
   }
 
-  Widget _buildOwnProductInfo() {
+  Widget _buildSellerActions() {
     return Container(
       margin: AppConstants.defaultPadding,
       child: Card(
-        child: Container(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
           padding: AppConstants.defaultPadding,
-          decoration: BoxDecoration(
-            color: AppTheme.info.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.info.withOpacity(0.3)),
-          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
@@ -674,7 +1087,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     child: Text(
                       'This is your product',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -683,21 +1096,20 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               ),
               const SizedBox(height: 12),
               const Text(
-                'You can view this product as buyers see it. To edit or manage this product, go to your selling history.',
+                'You can view buyer interactions and manage your product from here.',
                 style: TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/selling_history');
-                  },
-                  icon: const Icon(Icons.history),
-                  label: const Text('View Selling History'),
+                  onPressed: _viewBuyerInteractions,
+                  icon: const Icon(Icons.people),
+                  label: const Text('View Buyer Interactions'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.info,
+                    backgroundColor: AppTheme.primaryGreen,
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -739,19 +1151,25 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 foregroundColor: AppTheme.primaryGreen,
                 side: BorderSide(color: AppTheme.primaryGreen),
                 padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: _showBuyDialog,
-              icon: const Icon(Icons.shopping_cart),
-              label: const Text('Buy Now'),
+              onPressed: _showBidDialog,
+              icon: const Icon(Icons.local_offer),
+              label: const Text('Make Bid'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ),

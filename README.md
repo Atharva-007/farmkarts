@@ -127,13 +127,26 @@ lib/
 │   ├── dashboard/      # Main dashboard
 │   ├── marketplace/    # Product marketplace
 │   ├── apmc/          # APMC market integration
-│   ├── chat/          # AI expert chat
+│   ├── chat/          # AI expert chat & Enhanced contact seller
 │   ├── auth/          # Authentication
 │   ├── orders/        # Order management
 │   └── profile/       # User profiles
+├── pages/              # Main application pages
+│   ├── complete_whatsapp_contact_seller.dart  # 🆕 Enhanced contact seller
+│   ├── enhanced_contact_seller_page.dart      # Enhanced version
+│   ├── whatsapp_style_contact_seller_page.dart # WhatsApp styled
+│   └── contacted_sellers_page.dart            # Seller management
+├── models/             # Data models
+│   ├── enhanced_chat_models.dart              # 🆕 Advanced chat models
+│   ├── product_model.dart                     # Product data
+│   └── chat_model.dart                        # Basic chat
 ├── services/          # Business logic layer
-├── models/            # Data models
+│   ├── enhanced_chat_service.dart             # 🆕 Enhanced messaging
+│   └── chat_service.dart                      # Basic messaging
 ├── widgets/           # Reusable UI components
+├── utils/             # Utility functions
+│   ├── media_service.dart                     # 🆕 Media handling
+│   └── toast_helper.dart                      # Notifications
 ├── theme/             # App theming
 └── utils/             # Utility functions
 ```
@@ -225,7 +238,17 @@ dio: ^5.4.0
 - **Weather Integration**: Weather-based farming suggestions
 - **Resource Optimization**: Water, fertilizer, and seed usage optimization
 
-### 4. **Comprehensive User Management**
+### 4. **Enhanced WhatsApp-Style Contact Seller System**
+- **Glass Morphism Bid Card**: Real-time floating bid display with glass effects
+- **Professional Chat Interface**: WhatsApp-like messaging with enhanced features
+- **Advanced Bid Management**: Live bidding system with status tracking
+- **Media Sharing**: Photos, videos, documents, and location sharing
+- **Call Integration**: Voice and video calling capabilities
+- **Product Display**: Interactive carousel with detailed product information
+- **Typing Indicators**: Real-time typing status and read receipts
+- **Message Reactions**: Double-tap reactions and message options
+
+### 5. **Comprehensive User Management**
 - **Role-Based Access**: Farmers, Buyers, Vendors, Experts, Admins
 - **Profile Verification**: Document verification for authenticity
 - **Social Features**: Follow farmers, buyer networks, expert connections

@@ -55,6 +55,7 @@ class Conversation {
       'buyerName': buyerName,
       'sellerId': sellerId,
       'sellerName': sellerName,
+      'participants': [buyerId, sellerId], // Add participants array for Firestore rules
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime.millisecondsSinceEpoch,
       'lastMessageSenderId': lastMessageSenderId,

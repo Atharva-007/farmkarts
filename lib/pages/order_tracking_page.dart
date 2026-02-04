@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../models/order_model.dart';
 import '../services/order_tracking_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
@@ -8,11 +9,13 @@ import '../utils/app_constants.dart';
 class OrderTrackingPage extends StatefulWidget {
   final String? trackingId;
   final String? orderId;
+  final OrderModel? order;
 
   const OrderTrackingPage({
     super.key,
     this.trackingId,
     this.orderId,
+    this.order,
   });
 
   @override
@@ -222,7 +225,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                _buildStatusChip(order.status),
+                _buildStatusChip(order.status.toString()),
               ],
             ),
             const SizedBox(height: 16),
@@ -267,7 +270,7 @@ class _OrderTrackingPageState extends State<OrderTrackingPage> {
             ),
             const Divider(),
             _buildInfoRow('Order ID', order.id),
-            _buildInfoRow('Tracking ID', order.trackingId),
+            _buildInfoRow('Tracking ID', order.trackingId ?? 'Not available'),
             _buildInfoRow('Order Date', DateFormat('MMM dd, yyyy').format(order.orderDate)),
             _buildInfoRow('Seller', order.sellerName),
           ],
