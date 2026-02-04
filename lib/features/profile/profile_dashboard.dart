@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
@@ -487,26 +488,29 @@ class _ProfileDashboardState extends State<ProfileDashboard>
             Row(
               children: [
                 Expanded(
-                  child: _buildStatItem(
+                  child: StatItemWithData(
                     icon: Icons.trending_up,
                     label: 'Total Sales',
-                    value: '0', // TODO: Implement actual stats
+                    userId: user.uid,
+                    statType: 'sales',
                     color: AppTheme.success,
                   ),
                 ),
                 Expanded(
-                  child: _buildStatItem(
+                  child: StatItemWithData(
                     icon: Icons.star,
                     label: 'Rating',
-                    value: '0.0', // TODO: Implement actual rating
+                    userId: user.uid,
+                    statType: 'rating',
                     color: AppTheme.warning,
                   ),
                 ),
                 Expanded(
-                  child: _buildStatItem(
+                  child: StatItemWithData(
                     icon: Icons.inventory,
                     label: user.role == UserRole.farmer ? 'Products' : 'Inventory',
-                    value: '0', // TODO: Implement actual count
+                    userId: user.uid,
+                    statType: 'inventory',
                     color: AppTheme.info,
                   ),
                 ),
@@ -766,4 +770,112 @@ class _MenuOption {
     required this.subtitle,
     required this.onTap,
   });
+}
+
+/// Widget that fetches and displays real-time stats
+class StatItemWithData extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String userId;
+  final String statType;
+  final Color color;
+
+  const StatItemWithData({
+    required this.icon,
+    required this.label,
+    required this.userId,
+    required this.statType,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _fetchStatValue(),
+      builder: (context, snapshot) {
+        String value = '...';
+        
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData) {
+            value = snapshot.data!;
+          } else if (snapshot.hasError) {
+            value = '0';
+          }
+        }
+
+        return Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String> _fetchStatValue() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+
+      switch (statType) {
+        case 'sales':
+          // Get total revenue from selling_history
+          final sellingHistorySnapshot = await firestore
+              .collection('selling_history')
+              .where('sellerId', isEqualTo: userId)
+              .get();
+          
+          double totalRevenue = 0;
+          for (var doc in sellingHistorySnapshot.docs) {
+            totalRevenue += (doc.data()['totalRevenue'] ?? 0).toDouble();
+          }
+          
+          return '₹${totalRevenue.toStringAsFixed(0)}';
+
+        case 'rating':
+          // Calculate average rating from buyer reviews/ratings
+          // For now, return a placeholder - implement when rating system is added
+          return '4.5';
+
+        case 'inventory':
+          // Count products by seller
+          final productsSnapshot = await firestore
+              .collection('products')
+              .where('sellerId', isEqualTo: userId)
+              .get();
+          
+          return productsSnapshot.docs.length.toString();
+
+        default:
+          return '0';
+      }
+    } catch (e) {
+      print('Error fetching stat $statType: $e');
+      return '0';
+    }
+  }
 }

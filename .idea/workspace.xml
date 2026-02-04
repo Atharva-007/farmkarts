@@ -10,390 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bceab694-d316-4791-9006-a2beedfb55a5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Account Web Data" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Account Web Data-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Affiliation Database" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Affiliation Database-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/AutofillStrikeDatabase/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BookmarkMergedSurfaceOrdering" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BrowsingTopicsSiteData-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BrowsingTopicsState" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BudgetDatabase/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/BudgetDatabase/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/ClientCertificates/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/ClientCertificates/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/DIPS" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Download Service/EntryDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Rules/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Rules/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Rules/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Rules/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Rules/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Scripts/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Scripts/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Scripts/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Scripts/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension Scripts/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension State/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension State/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension State/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension State/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Extension State/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Favicons" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Favicons-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Feature Engagement Tracker/AvailabilityDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Feature Engagement Tracker/EventDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/Encryption/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/Encryption/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/Encryption/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/Encryption/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/GCM Store/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/History" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/History-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/000004.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/000005.ldb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/IndexedDB/http_localhost_8080.indexeddb.leveldb/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Local Storage/leveldb/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Local Storage/leveldb/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Local Storage/leveldb/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Local Storage/leveldb/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Login Data" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Login Data For Account" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Login Data For Account-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Login Data-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network Action Predictor" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network Action Predictor-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Cookies" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Cookies-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Network Persistent State" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/NetworkDataMigrated" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Reporting and NEL" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Reporting and NEL-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/TransportSecurity" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Trust Tokens" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Network/Trust Tokens-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/PersistentOriginTrials/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Preferences" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/PreferredApps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Safe Browsing Network/NetworkDataMigrated" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Safe Browsing Network/Safe Browsing Cookies" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Safe Browsing Network/Safe Browsing Cookies-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Secure Preferences" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SegmentInfoDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SignalDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Segmentation Platform/SignalStorageConfigDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/ServerCertificate" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/ServerCertificate-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/Database/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/Database/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/Database/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/Database/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/Database/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/2cc80dabc69f58b6_0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/4cb013792b196a35_1" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/f1cdccba37924bda_0" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Service Worker/ScriptCache/index-dir/the-real-index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Session Storage/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Session Storage/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Session Storage/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Session Storage/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Session Storage/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sessions/Session_13407310701428986" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sessions/Tabs_13407310716631126" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shared Dictionary/cache/index-dir/the-real-index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shared Dictionary/db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shared Dictionary/db-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/SharedStorage" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shortcuts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Shortcuts-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Site Characteristics Database/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Site Characteristics Database/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Site Characteristics Database/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Site Characteristics Database/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Site Characteristics Database/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sync Data/LevelDB/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sync Data/LevelDB/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sync Data/LevelDB/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Sync Data/LevelDB/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Top Sites" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Top Sites-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Web Data" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/Web Data-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/WebStorage/QuotaManager" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/WebStorage/QuotaManager-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/chrome_cart_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/chrome_cart_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/commerce_subscription_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/commerce_subscription_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/discount_infos_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/discount_infos_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/discounts_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/discounts_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/heavy_ad_intervention_opt_out.db-journal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/optimization_guide_hint_cache_store/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/parcel_tracking_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/parcel_tracking_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/metadata/000003.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/metadata/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/metadata/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/shared_proto_db/metadata/MANIFEST-000001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/chrome-device/Default/trusted_vault.pb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/dartpad/web_plugin_registrant.dart" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/dartpad/web_plugin_registrant.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/.filecache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/app.dill" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/app.dill.deps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/dart2js.d" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/dart2js.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/flutter_assets.d" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/gen_localizations.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/main.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/main.dart.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/main.dart.js.deps" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/outputs.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/service_worker.d" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_entrypoint.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_plugin_registrant.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_release_bundle.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_resources.d" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_service_worker.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_static_assets.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/flutter_build/b2abd3958d0cad8e608ae3c04605dc69/web_templated_files.stamp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/package_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/package_config_subset" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_config_subset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dart_tool/package_graph.json" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_graph.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins-dependencies" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_API_FIX_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_FEATURE_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_FEATURE_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_FIXED_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ADD_PRODUCT_TESTING_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_CHAT_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_CHAT_IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_CHAT_QUICK_START.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_CHAT_WORKING_SOLUTION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_EXPERT_CHAT_ENHANCEMENT_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AI_EXPERT_CHAT_ENHANCEMENT_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ALL_ISSUES_FIXED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ANALYSIS_REPORT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/API_CONNECTION_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/APMC_ERROR_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/APMC_MARKET_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AUTH_SIGNUP_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BUG_FIXES_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BUILD_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BUILD_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHAT_FLUENT_FIX_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CLEAN_APP_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPILATION_ERROR_FIXED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPILATION_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPLETE_AI_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPLETE_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPLETE_MARKETPLACE_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/COMPREHENSIVE_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CONTEXTUAL_AI_UPGRADE_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CRASH_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CREATE_NEW_FIREBASE_PROJECT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DASHBOARD_INTEGRATION_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DEBUG_FIREBASE_TEST.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DETAILED_FIRESTORE_SETUP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ENHANCED_AI_CHAT_FEATURES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ENHANCED_CHAT_DEPLOYED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ENHANCED_MARKETPLACE_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ENHANCED_MARKETPLACE_SELLING_IMPLEMENTATION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ERROR_FIXED_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_AI_CHAT_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_AI_EXPERT_CHAT_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_AUTH_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_CHAT_FIX_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_ENHANCED_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_SETUP_INSTRUCTIONS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_SUCCESS_APP_WORKING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_SUCCESS_CLEAN_PROJECT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_SUCCESS_REPORT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FINAL_UI_FIXES_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIREBASE_PERMISSIONS_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIREBASE_SECURITY_RULES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIREBASE_SETUP_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIREBASE_SETUP_FINAL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIREBASE_SUCCESS_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIRESTORE_DATABASE_CONFIG.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIRESTORE_PERMISSION_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIRESTORE_SETUP_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIRESTORE_SETUP_URGENT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FIRESTORE_VS_MONGODB.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FLUTTER_BUILD_FIX_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/FLUTTER_WEB_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/GRADLE_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/HOW_TO_USE_ENHANCED_CHAT.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMAGE_UPLOAD_FIXED.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMAGE_UPLOAD_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/IMPLEMENTED_ENHANCEMENTS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ISSUES_FIXED_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_AND_AI_CHAT_FIXES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_COMPLETE_FINAL.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_FIXED_SUCCESS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_FIXED_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_FIX_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_PRODUCT_FEATURE_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MARKETPLACE_TESTING_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MODERN_AGRICULTURE_APP_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NAVBAR_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NAVBAR_UPDATE_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PERFORMANCE_OPTIMIZATION_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PROBLEM_SOLVED_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PRODUCT_MANAGEMENT_IMPLEMENTATION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PROJECT_ANALYSIS_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PROJECT_ANALYSIS_GITHUB.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_FIRESTORE_SETUP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_FIX_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_PERMISSIONS_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_SELECTIONS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_SETUP_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_SETUP_LINKS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_START_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/QUICK_TEST_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RED_ERROR_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/RESPONSIVE_UI_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ROLE_BASED_AUTH_IMPLEMENTATION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SETUP_CHECKLIST.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SIMPLE_ENHANCEMENT_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SUCCESS_APP_RUNNING_PERFECTLY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SUCCESS_COMPLETE_APP_WORKING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/SWITCH_TO_REAL_AI.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TESTING_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/TRANSFORMATION_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UI_FIXES_COMPLETE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UI_FIXES_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UI_FIX_QUICK_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/UI_IMPROVEMENTS_SUMMARY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ULTIMATE_CHAT_FIX.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/checksums/md5-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/checksums/sha1-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/executionHistory/executionHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/executionHistory/executionHistory.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/fileHashes/resourceHashesCache.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/8.12/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/file-system.probe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/.gradle/noVersion/buildLogic.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/100b7cd564f379fcda68d7614639d3dd.cache.dill.track.dill" beforeDir="false" afterPath="$PROJECT_DIR$/build/100b7cd564f379fcda68d7614639d3dd.cache.dill.track.dill" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/flutter_assets/NOTICES" beforeDir="false" afterPath="$PROJECT_DIR$/build/flutter_assets/NOTICES" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/.last_build_id" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/AssetManifest.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/AssetManifest.bin.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/AssetManifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/FontManifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/NOTICES" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/fonts/MaterialIcons-Regular.otf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/packages/fluttertoast/assets/toastify.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/packages/fluttertoast/assets/toastify.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/assets/shaders/ink_sparkle.frag" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/canvaskit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/canvaskit.js.symbols" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/canvaskit.wasm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/chromium/canvaskit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/chromium/canvaskit.js.symbols" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/chromium/canvaskit.wasm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/skwasm.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/skwasm.js.symbols" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/canvaskit/skwasm.wasm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/favicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/flutter.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/flutter_bootstrap.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/flutter_service_worker.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/icons/Icon-192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/icons/Icon-512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/icons/Icon-maskable-192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/icons/Icon-maskable-512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/main.dart.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/test_add_product.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/test_firebase.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/web/version.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkart expert intergation roadmap and way.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_ai/QUICK_SETUP_GUIDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_ai/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_ai/ai_service/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_ai/node_proxy/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_ai/secrets/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/farmkarts_new.iml" beforeDir="false" afterPath="$PROJECT_DIR$/farmkarts_new.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/firestore.rules" beforeDir="false" afterPath="$PROJECT_DIR$/firestore.rules" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/dashboard/dashboard_home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/dashboard/dashboard_home.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/complete_marketplace_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/complete_marketplace_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main_app_layout.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main_app_layout.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/conversation_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/conversation_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/order_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/order_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/product_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/product_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/pages/order_tracking_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/order_tracking_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/pages/product_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/product_detail_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/conversation_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/conversation_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/enhanced_marketplace_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/enhanced_marketplace_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/working_marketplace_home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/working_marketplace_home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/profile_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/profile_dashboard.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/services/marketplace_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/marketplace_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/order_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/order_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/order_tracking_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/order_tracking_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/services/product_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/product_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/quick_action_grid.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/quick_action_grid.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/settings_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/settings_page.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -454,31 +76,31 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Flutter.main.dart.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "ResourceManagerPrefKey.ResourceType": "NAVIGATION",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "marketplace-enhancement",
-    "ignore.virus.scanning.warn.message": "true",
-    "io.flutter.project.isFirstOpen": "true",
-    "io.flutter.reload.alreadyRun": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/athar/StudioProjects/farmkarts_new",
-    "settings.editor.selected.configurable": "settings.sync",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Flutter.main.dart.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;ResourceManagerPrefKey.ResourceType&quot;: &quot;NAVIGATION&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;marketplace-enhancement&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/athar/StudioProjects/farmkarts_new&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.sync&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\athar\StudioProjects\farmkarts_new\android" />

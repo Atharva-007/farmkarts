@@ -252,12 +252,26 @@ class MarketplaceService {
     try {
       // Try with createdAt ordering first
       try {
-        final query = _firestore
+        Query query = _firestore
             .collection('products')
-            .orderBy('createdAt', descending: true)
-            .limit(_pageSize * 2);
+            .orderBy('createdAt', descending: true);
+        
+        // Apply pagination if we have a last document
+        if (_lastDocument != null) {
+          query = query.startAfterDocument(_lastDocument!);
+        }
+        
+        query = query.limit(_pageSize);
         
         final querySnapshot = await query.get();
+        
+        // Update pagination state
+        if (querySnapshot.docs.isNotEmpty) {
+          _lastDocument = querySnapshot.docs.last;
+          _hasMoreData = querySnapshot.docs.length >= _pageSize;
+        } else {
+          _hasMoreData = false;
+        }
         
         return querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
@@ -269,9 +283,17 @@ class MarketplaceService {
         print('MarketplaceService: CreatedAt ordering failed, trying without ordering: $e');
         final query = _firestore
             .collection('products')
-            .limit(_pageSize * 2);
+            .limit(_pageSize);
         
         final querySnapshot = await query.get();
+        
+        // Update pagination state
+        if (querySnapshot.docs.isNotEmpty) {
+          _lastDocument = querySnapshot.docs.last;
+          _hasMoreData = querySnapshot.docs.length >= _pageSize;
+        } else {
+          _hasMoreData = false;
+        }
         
         return querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
