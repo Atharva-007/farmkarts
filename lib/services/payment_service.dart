@@ -1,331 +1,354 @@
-import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../models/order_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
+import '../models/payment_model.dart';
+import '../models/product_model.dart';
 
 class PaymentService {
-  static final PaymentService _instance = PaymentService._internal();
-  factory PaymentService() => _instance;
-  PaymentService._internal();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Uuid _uuid = const Uuid();
 
-  static const String baseUrl = 'http://localhost:3000/api';
-  late Razorpay _razorpay;
-  Function(String)? onPaymentSuccess;
-  Function(PaymentFailureResponse)? onPaymentError;
-
-  void initialize() {
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-  }
-
-  void dispose() {
-    _razorpay.clear();
-  }
-
-  // Create Razorpay order
-  Future<Map<String, dynamic>?> createRazorpayOrder({
-    required double amount,
-    required String receipt,
-    String currency = 'INR',
-    String? productId,
-    String? buyerId,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/payments/razorpay/create-order'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'amount': amount,
-          'currency': currency,
-          'receipt': receipt,
-          'productId': productId,
-          'buyerId': buyerId,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          return data['data'];
-        }
-      }
-      return null;
-    } catch (e) {
-      print('Error creating Razorpay order: $e');
-      return null;
-    }
-  }
-
-  // Start payment process
-  Future<bool> makePayment({
-    required double amount,
-    required String orderId,
-    required String buyerName,
-    required String buyerEmail,
+  /// Create a new order
+  Future<Order> createOrder({
+    required Product product,
+    required double quantity,
+    required String deliveryAddress,
     required String buyerPhone,
-    required String description,
-    String? razorpayKey,
-  }) async {
-    try {
-      var options = {
-        'key': razorpayKey ?? 'rzp_test_1DP5mmOlF5G5ag', // Replace with your key
-        'amount': (amount * 100).toInt(), // Amount in paise
-        'name': 'FarmKart',
-        'order_id': orderId,
-        'description': description,
-        'timeout': 300, // 5 minutes
-        'prefill': {
-          'contact': buyerPhone,
-          'email': buyerEmail,
-          'name': buyerName,
-        },
-        'theme': {
-          'color': '#4CAF50', // FarmKart green
-        }
-      };
-
-      _razorpay.open(options);
-      return true;
-    } catch (e) {
-      print('Error starting payment: $e');
-      return false;
-    }
-  }
-
-  // Verify payment on backend
-  Future<Map<String, dynamic>?> verifyPayment({
-    required String paymentId,
-    required String orderId,
-    required String signature,
-    required String productId,
-    required String buyerId,
-    required String sellerId,
-    required Map<String, dynamic> orderDetails,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/payments/razorpay/verify'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'razorpay_payment_id': paymentId,
-          'razorpay_order_id': orderId,
-          'razorpay_signature': signature,
-          'productId': productId,
-          'buyerId': buyerId,
-          'sellerId': sellerId,
-          'orderDetails': orderDetails,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data;
-      }
-      return null;
-    } catch (e) {
-      print('Error verifying payment: $e');
-      return null;
-    }
-  }
-
-  // Payment event handlers
-  void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    if (onPaymentSuccess != null) {
-      onPaymentSuccess!(response.paymentId!);
-    }
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    if (onPaymentError != null) {
-      onPaymentError!(response);
-    }
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    print('External wallet selected: ${response.walletName}');
-  }
-
-  // Create complete order with payment
-  Future<OrderModel?> createOrderWithPayment({
-    required String productId,
-    required String productName,
-    required String sellerId,
-    required String sellerName,
-    required String buyerId,
     required String buyerName,
-    required String buyerEmail,
-    required String buyerPhone,
-    required String buyerAddress,
-    required double price,
-    required int quantity,
-    required String unit,
-    String? notes,
-    String deliveryType = 'standard',
   }) async {
     try {
-      // Step 1: Create Razorpay order
-      final amount = price * quantity;
-      final receipt = 'FK_${DateTime.now().millisecondsSinceEpoch}';
-      
-      final razorpayOrder = await createRazorpayOrder(
-        amount: amount,
-        receipt: receipt,
-        productId: productId,
-        buyerId: buyerId,
-      );
-
-      if (razorpayOrder == null) {
-        throw Exception('Failed to create payment order');
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
       }
 
-      // Step 2: Prepare order details
-      final orderDetails = {
-        'productId': productId,
-        'productName': productName,
-        'sellerId': sellerId,
-        'sellerName': sellerName,
-        'buyerId': buyerId,
-        'buyerName': buyerName,
-        'buyerEmail': buyerEmail,
-        'buyerPhone': buyerPhone,
-        'buyerAddress': buyerAddress,
-        'price': price,
-        'quantity': quantity,
-        'unit': unit,
-        'totalAmount': amount,
-        'notes': notes ?? '',
-        'deliveryType': deliveryType,
-      };
+      final orderId = _uuid.v4();
+      final totalAmount = product.price * quantity;
 
-      // Step 3: Start payment
-      final paymentStarted = await makePayment(
-        amount: amount,
-        orderId: razorpayOrder['orderId'],
-        buyerName: buyerName,
-        buyerEmail: buyerEmail,
+      final order = Order(
+        id: orderId,
+        productId: product.id,
+        productName: product.name,
+        buyerId: user.uid,
+        sellerId: product.sellerId,
+        quantity: quantity,
+        pricePerUnit: product.price,
+        totalAmount: totalAmount,
+        status: 'pending',
+        createdAt: DateTime.now(),
+        deliveryAddress: deliveryAddress,
         buyerPhone: buyerPhone,
-        description: 'Payment for $productName',
-        razorpayKey: razorpayOrder['key'],
+        buyerName: buyerName,
       );
 
-      if (!paymentStarted) {
-        throw Exception('Failed to start payment process');
-      }
+      await _firestore.collection('orders').doc(orderId).set(order.toMap());
 
-      return null; // Payment success will be handled in callback
+      return order;
     } catch (e) {
-      print('Error creating order with payment: $e');
-      return null;
+      print('PaymentService: Error creating order: $e');
+      rethrow;
     }
   }
 
-  // Get payment history
-  Future<List<Map<String, dynamic>>> getPaymentHistory(String userId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/orders?buyerId=$userId'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          return List<Map<String, dynamic>>.from(data['data']);
-        }
-      }
-      return [];
-    } catch (e) {
-      print('Error fetching payment history: $e');
-      return [];
-    }
-  }
-
-  // Cancel payment (if supported)
-  Future<bool> cancelPayment(String paymentId) async {
-    try {
-      // Implementation depends on payment gateway capabilities
-      // For now, return true as placeholder
-      return true;
-    } catch (e) {
-      print('Error cancelling payment: $e');
-      return false;
-    }
-  }
-
-  // Refund payment (seller initiated)
-  Future<bool> refundPayment({
-    required String paymentId,
-    required double amount,
-    String? reason,
+  /// Initialize payment for an order
+  Future<Payment> initializePayment({
+    required Order order,
+    required PaymentMethod method,
   }) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/payments/refund'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'paymentId': paymentId,
-          'amount': amount,
-          'reason': reason,
-        }),
+      final paymentId = _uuid.v4();
+
+      final payment = Payment(
+        id: paymentId,
+        orderId: order.id,
+        buyerId: order.buyerId,
+        sellerId: order.sellerId,
+        amount: order.totalAmount,
+        method: method,
+        status: PaymentStatus.pending,
+        createdAt: DateTime.now(),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['success'] ?? false;
-      }
-      return false;
+      await _firestore.collection('payments').doc(paymentId).set(payment.toMap());
+
+      return payment;
     } catch (e) {
-      print('Error processing refund: $e');
-      return false;
+      print('PaymentService: Error initializing payment: $e');
+      rethrow;
     }
   }
 
-  // Get payment details
-  Future<Map<String, dynamic>?> getPaymentDetails(String paymentId) async {
+  /// Process Cash on Delivery
+  Future<Payment> processCashOnDelivery(Order order) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/payments/$paymentId'),
-        headers: {'Content-Type': 'application/json'},
+      final payment = await initializePayment(
+        order: order,
+        method: PaymentMethod.cashOnDelivery,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success']) {
-          return data['data'];
-        }
+      // COD is automatically approved
+      final completedPayment = payment.copyWith(
+        status: PaymentStatus.completed,
+        completedAt: DateTime.now(),
+        transactionId: 'COD-${payment.id.substring(0, 8)}',
+      );
+
+      await _firestore
+          .collection('payments')
+          .doc(payment.id)
+          .update(completedPayment.toMap());
+
+      // Update order status
+      await _firestore.collection('orders').doc(order.id).update({
+        'status': 'confirmed',
+        'paymentId': payment.id,
+      });
+
+      return completedPayment;
+    } catch (e) {
+      print('PaymentService: Error processing COD: $e');
+      rethrow;
+    }
+  }
+
+  /// Process UPI Payment (Simulated)
+  Future<Payment> processUPIPayment({
+    required Order order,
+    required String upiId,
+  }) async {
+    try {
+      final payment = await initializePayment(
+        order: order,
+        method: PaymentMethod.upi,
+      );
+
+      // Update payment with UPI details
+      await _firestore.collection('payments').doc(payment.id).update({
+        'status': PaymentStatus.processing.toString().split('.').last,
+        'metadata': {
+          'upiId': upiId,
+          'processingStarted': DateTime.now().millisecondsSinceEpoch,
+        },
+      });
+
+      // Simulate UPI processing (in real app, integrate with UPI gateway)
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Complete payment
+      final completedPayment = payment.copyWith(
+        status: PaymentStatus.completed,
+        completedAt: DateTime.now(),
+        transactionId: 'UPI-${DateTime.now().millisecondsSinceEpoch}',
+        metadata: {'upiId': upiId},
+      );
+
+      await _firestore
+          .collection('payments')
+          .doc(payment.id)
+          .update(completedPayment.toMap());
+
+      // Update order status
+      await _firestore.collection('orders').doc(order.id).update({
+        'status': 'confirmed',
+        'paymentId': payment.id,
+      });
+
+      return completedPayment;
+    } catch (e) {
+      print('PaymentService: Error processing UPI: $e');
+      
+      // Mark payment as failed
+      await _firestore.collection('payments').doc(payment.id).update({
+        'status': PaymentStatus.failed.toString().split('.').last,
+        'failureReason': e.toString(),
+      });
+      
+      rethrow;
+    }
+  }
+
+  /// Process Card Payment (Simulated)
+  Future<Payment> processCardPayment({
+    required Order order,
+    required String cardNumber,
+    required String cardHolderName,
+    required String expiryDate,
+    required String cvv,
+    bool isCredit = true,
+  }) async {
+    try {
+      final payment = await initializePayment(
+        order: order,
+        method: isCredit ? PaymentMethod.creditCard : PaymentMethod.debitCard,
+      );
+
+      // Update payment with card details (masked)
+      final maskedCard = '****${cardNumber.substring(cardNumber.length - 4)}';
+      
+      await _firestore.collection('payments').doc(payment.id).update({
+        'status': PaymentStatus.processing.toString().split('.').last,
+        'metadata': {
+          'cardNumber': maskedCard,
+          'cardHolderName': cardHolderName,
+          'processingStarted': DateTime.now().millisecondsSinceEpoch,
+        },
+      });
+
+      // Simulate card processing
+      await Future.delayed(const Duration(seconds: 3));
+
+      // Complete payment
+      final completedPayment = payment.copyWith(
+        status: PaymentStatus.completed,
+        completedAt: DateTime.now(),
+        transactionId: 'CARD-${DateTime.now().millisecondsSinceEpoch}',
+        metadata: {
+          'cardNumber': maskedCard,
+          'cardHolderName': cardHolderName,
+        },
+      );
+
+      await _firestore
+          .collection('payments')
+          .doc(payment.id)
+          .update(completedPayment.toMap());
+
+      // Update order status
+      await _firestore.collection('orders').doc(order.id).update({
+        'status': 'confirmed',
+        'paymentId': payment.id,
+      });
+
+      return completedPayment;
+    } catch (e) {
+      print('PaymentService: Error processing card payment: $e');
+      
+      // Mark payment as failed
+      await _firestore.collection('payments').doc(payment.id).update({
+        'status': PaymentStatus.failed.toString().split('.').last,
+        'failureReason': e.toString(),
+      });
+      
+      rethrow;
+    }
+  }
+
+  /// Get payment by ID
+  Future<Payment?> getPayment(String paymentId) async {
+    try {
+      final doc = await _firestore.collection('payments').doc(paymentId).get();
+      
+      if (doc.exists) {
+        return Payment.fromMap(doc.data()!);
       }
+      
       return null;
     } catch (e) {
-      print('Error fetching payment details: $e');
+      print('PaymentService: Error getting payment: $e');
       return null;
     }
   }
-}
 
-// Payment Models
-class PaymentResult {
-  final bool success;
-  final String? paymentId;
-  final String? orderId;
-  final String? trackingId;
-  final String? error;
+  /// Get order by ID
+  Future<Order?> getOrder(String orderId) async {
+    try {
+      final doc = await _firestore.collection('orders').doc(orderId).get();
+      
+      if (doc.exists) {
+        return Order.fromMap(doc.data()!);
+      }
+      
+      return null;
+    } catch (e) {
+      print('PaymentService: Error getting order: $e');
+      return null;
+    }
+  }
 
-  PaymentResult({
-    required this.success,
-    this.paymentId,
-    this.orderId,
-    this.trackingId,
-    this.error,
-  });
-}
+  /// Get user's orders
+  Future<List<Order>> getUserOrders({bool asSeller = false}) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return [];
 
-class PaymentConfig {
-  static const String razorpayKeyId = 'rzp_test_1DP5mmOlF5G5ag'; // Replace with your key
-  static const String companyName = 'FarmKart';
-  static const String companyLogo = 'https://farmkart.com/logo.png'; // Replace with your logo
-  static const String supportEmail = 'support@farmkart.com';
-  static const String supportPhone = '+91-1234567890';
+      final field = asSeller ? 'sellerId' : 'buyerId';
+      
+      final snapshot = await _firestore
+          .collection('orders')
+          .where(field, isEqualTo: user.uid)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Order.fromMap({...doc.data(), 'id': doc.id}))
+          .toList();
+    } catch (e) {
+      print('PaymentService: Error getting user orders: $e');
+      return [];
+    }
+  }
+
+  /// Get user's payments
+  Future<List<Payment>> getUserPayments({bool asSeller = false}) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return [];
+
+      final field = asSeller ? 'sellerId' : 'buyerId';
+      
+      final snapshot = await _firestore
+          .collection('payments')
+          .where(field, isEqualTo: user.uid)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => Payment.fromMap({...doc.data(), 'id': doc.id}))
+          .toList();
+    } catch (e) {
+      print('PaymentService: Error getting user payments: $e');
+      return [];
+    }
+  }
+
+  /// Cancel order
+  Future<void> cancelOrder(String orderId, String reason) async {
+    try {
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': 'cancelled',
+        'cancellationReason': reason,
+        'cancelledAt': DateTime.now().millisecondsSinceEpoch,
+      });
+
+      // Find associated payment and cancel if exists
+      final paymentsSnapshot = await _firestore
+          .collection('payments')
+          .where('orderId', isEqualTo: orderId)
+          .get();
+
+      for (var doc in paymentsSnapshot.docs) {
+        await doc.reference.update({
+          'status': PaymentStatus.cancelled.toString().split('.').last,
+          'failureReason': 'Order cancelled: $reason',
+        });
+      }
+    } catch (e) {
+      print('PaymentService: Error cancelling order: $e');
+      rethrow;
+    }
+  }
+
+  /// Update order status
+  Future<void> updateOrderStatus(String orderId, String status) async {
+    try {
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': status,
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      print('PaymentService: Error updating order status: $e');
+      rethrow;
+    }
+  }
 }
