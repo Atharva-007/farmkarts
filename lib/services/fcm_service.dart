@@ -1,6 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -8,19 +7,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Handling background message: ${message.messageId}');
-  await FCMService().showNotification(message);
 }
 
-/// Firebase Cloud Messaging Service
+/// Firebase Cloud Messaging Service (Simplified version without local notifications)
 class FCMService {
   static final FCMService _instance = FCMService._internal();
   factory FCMService() => _instance;
   FCMService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
-  
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -46,9 +41,6 @@ class FCMService {
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
         
-        // Initialize local notifications
-        await _initializeLocalNotifications();
-
         // Get FCM token
         _fcmToken = await _firebaseMessaging.getToken();
         debugPrint('FCM Token: $_fcmToken');
@@ -83,84 +75,16 @@ class FCMService {
     }
   }
 
-  /// Initialize local notifications
-  Future<void> _initializeLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-    );
-
-    await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
-
-    // Create notification channels for Android
-    await _createNotificationChannels();
-  }
-
-  /// Create Android notification channels
-  Future<void> _createNotificationChannels() async {
-    const orderChannel = AndroidNotificationChannel(
-      'orders',
-      'Orders',
-      description: 'Notifications about order updates',
-      importance: Importance.high,
-      enableVibration: true,
-      playSound: true,
-    );
-
-    const chatChannel = AndroidNotificationChannel(
-      'chats',
-      'Messages',
-      description: 'New chat messages',
-      importance: Importance.max,
-      enableVibration: true,
-      playSound: true,
-    );
-
-    const generalChannel = AndroidNotificationChannel(
-      'general',
-      'General',
-      description: 'General notifications',
-      importance: Importance.defaultImportance,
-      enableVibration: true,
-      playSound: true,
-    );
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(orderChannel);
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(chatChannel);
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(generalChannel);
-  }
-
   /// Save FCM token to Firestore
   Future<void> _saveFCMToken(String token) async {
     try {
       final user = _auth.currentUser;
       if (user == null) return;
 
-      await _firestore.collection('users').doc(user.uid).update({
+      await _firestore.collection('users').doc(user.uid).set({
         'fcmToken': token,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
 
       _fcmToken = token;
       debugPrint('FCM token saved to Firestore');
@@ -172,74 +96,15 @@ class FCMService {
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
     debugPrint('Foreground message received: ${message.messageId}');
-    showNotification(message);
+    debugPrint('Title: ${message.notification?.title}');
+    debugPrint('Body: ${message.notification?.body}');
+    // Notification will be shown automatically by FCM
   }
 
   /// Handle message that opened the app
   void _handleMessageOpenedApp(RemoteMessage message) {
     debugPrint('Message opened app: ${message.messageId}');
     _handleNotificationAction(message.data);
-  }
-
-  /// Handle notification tap
-  void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('Notification tapped: ${response.payload}');
-    if (response.payload != null) {
-      // Parse payload and navigate
-      // Implementation depends on your navigation structure
-    }
-  }
-
-  /// Show local notification
-  Future<void> showNotification(RemoteMessage message) async {
-    final notification = message.notification;
-    final data = message.data;
-
-    if (notification == null) return;
-
-    // Determine channel based on notification type
-    String channelId = 'general';
-    if (data.containsKey('type')) {
-      switch (data['type']) {
-        case 'order':
-          channelId = 'orders';
-          break;
-        case 'chat':
-          channelId = 'chats';
-          break;
-      }
-    }
-
-    final androidDetails = AndroidNotificationDetails(
-      channelId,
-      channelId == 'orders' ? 'Orders' : channelId == 'chats' ? 'Messages' : 'General',
-      channelDescription: 'FarmKarts notifications',
-      importance: Importance.high,
-      priority: Priority.high,
-      ticker: 'ticker',
-      icon: '@mipmap/ic_launcher',
-      enableVibration: true,
-      playSound: true,
-    );
-
-    const iosDetails = DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
-
-    final notificationDetails = NotificationDetails(
-      android: androidDetails,
-      iOS: iosDetails,
-    );
-
-    await _localNotifications.show(
-      message.hashCode,
-      notification.title,
-      notification.body,
-      notificationDetails,
-      payload: data.toString(),
-    );
   }
 
   /// Send notification to specific user
@@ -270,7 +135,6 @@ class FCMService {
       });
 
       // In production, call your backend API to send FCM message
-      // For now, we're using Firestore notifications
       debugPrint('Notification sent to user: $userId');
       
     } catch (e) {
@@ -281,15 +145,7 @@ class FCMService {
   /// Handle notification action (navigation)
   void _handleNotificationAction(Map<String, dynamic> data) {
     // Implement navigation based on notification data
-    // Example:
-    // if (data['type'] == 'order') {
-    //   Navigator.pushNamed(context, '/order', arguments: data['orderId']);
-    // }
-  }
-
-  /// Clear badge count
-  Future<void> clearBadge() async {
-    await _localNotifications.cancelAll();
+    debugPrint('Notification action: $data');
   }
 
   /// Subscribe to topic
