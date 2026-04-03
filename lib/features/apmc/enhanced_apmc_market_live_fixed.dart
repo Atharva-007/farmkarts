@@ -4,7 +4,10 @@ import 'dart:math';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/universal_drawer.dart';
+import '../../widgets/universal_header.dart';
 import '../../services/apmc_api_service.dart';
+import 'apmc_commodity_detail_page.dart';
 
 class EnhancedAPMCMarketLiveFixed extends StatefulWidget {
   const EnhancedAPMCMarketLiveFixed({super.key});
@@ -19,11 +22,13 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   late AnimationController _animationController;
   late Timer _refreshTimer;
   late APMCApiService _apiService;
+  final TextEditingController _searchController = TextEditingController();
   
   String _selectedState = 'All States';
   String _selectedCity = 'All Cities';
   String _selectedCategory = 'All Products';
   String _selectedUnit = 'Original Unit';
+  String _searchQuery = '';
   bool _isLoading = false;
   bool _isInitialLoading = true;
   String? _errorMessage;
@@ -76,12 +81,14 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
 
   Future<void> _initializeData() async {
     try {
+      if (!mounted) return;
       setState(() {
         _isInitialLoading = true;
         _errorMessage = null;
       });
 
       _marketData = await _apiService.fetchMarketRates();
+      if (!mounted) return;
       _filterData();
       _animationController.forward();
 
@@ -89,6 +96,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
         _isInitialLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isInitialLoading = false;
         _errorMessage = 'Failed to load market data: ${e.toString()}';
@@ -108,6 +116,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
     if (_isLoading) return;
     
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -118,12 +127,14 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
         commodity: _selectedCategory == 'All Products' ? null : _selectedCategory,
       );
 
+      if (!mounted) return;
       setState(() {
         _marketData = newData;
         _filterData();
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _errorMessage = 'Failed to refresh data: ${e.toString()}';
@@ -136,41 +147,93 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
       final stateMatch = _selectedState == 'All States' || item.state == _selectedState;
       final districtMatch = _selectedCity == 'All Cities' || item.district.contains(_selectedCity);
       final categoryMatch = _selectedCategory == 'All Products' || item.category == _selectedCategory;
-      return stateMatch && districtMatch && categoryMatch;
+      final searchMatch = _searchQuery.isEmpty || 
+          item.productName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          item.market.toLowerCase().contains(_searchQuery.toLowerCase());
+      return stateMatch && districtMatch && categoryMatch && searchMatch;
     }).toList();
 
     // Sort by modal price (high to low)
     _filteredData.sort((a, b) => b.modalPrice.compareTo(a.modalPrice));
   }
 
+  Widget _buildSearchBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(color: AppTheme.getTextColor(context)),
+        decoration: InputDecoration(
+          hintText: 'Search commodities or markets...',
+          hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.7)),
+          prefixIcon: Icon(Icons.search, color: AppTheme.getPrimaryAccent(context)),
+          suffixIcon: _searchQuery.isNotEmpty 
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                      _filterData();
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: Theme.of(context).cardColor,
+          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppTheme.getPrimaryAccent(context), width: 1.5),
+          ),
+        ),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+            _filterData();
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
-        child: _isInitialLoading
-            ? _buildLoadingState()
-            : _errorMessage != null
-                ? _buildErrorState()
-                : _buildMainContent(),
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      drawer: const UniversalDrawer(currentPage: 'apmc'),
+      body: _isInitialLoading
+          ? _buildLoadingState()
+          : _errorMessage != null
+              ? _buildErrorState()
+              : _buildMainContent(),
       floatingActionButton: _buildRefreshFAB(),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.getPrimaryAccent(context)),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Loading market data...',
             style: TextStyle(
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
               fontSize: 16,
             ),
           ),
@@ -203,8 +266,8 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
             const SizedBox(height: 8),
             Text(
               _errorMessage ?? 'Unknown error occurred',
-              style: const TextStyle(
-                color: AppTheme.textGrey,
+              style: TextStyle(
+                color: AppTheme.getSecondaryTextColor(context),
                 fontSize: 14,
               ),
               textAlign: TextAlign.center,
@@ -215,7 +278,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: AppTheme.getPrimaryAccent(context),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -229,34 +292,75 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   Widget _buildMainContent() {
     return FadeTransition(
       opacity: _animationController,
-      child: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      _buildFiltersSection(),
-                      _buildMarketSummary(),
-                      _buildTabBar(),
-                    ],
-                  ),
-                ),
-                SliverFillRemaining(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildAllProductsTab(),
-                      _buildTrendingTab(),
-                      _buildLocationTab(),
-                      _buildAnalyticsTab(),
-                    ],
-                  ),
-                ),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                _buildSearchBar(),
+                _buildFiltersSection(),
+                _buildMarketSummary(),
+                _buildTabBar(),
               ],
             ),
+          ),
+          SliverFillRemaining(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildAllProductsTab(),
+                _buildTrendingTab(),
+                _buildLocationTab(),
+                _buildAnalyticsTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar() {
+    return UniversalHeader(
+      title: 'APMC Markets',
+      subtitle: 'Live market rates & trends',
+      icon: Icons.business,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+          onPressed: () => _showPriceAlerts(),
+          tooltip: 'Price Alerts',
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          onPressed: () => _initializeData(),
+          tooltip: 'Refresh',
+        ),
+      ],
+    );
+  }
+
+  void _showPriceAlerts() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Price alerts feature coming soon!'),
+        backgroundColor: AppTheme.getPrimaryAccent(context),
+      ),
+    );
+  }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Market Filters'),
+        content: const Text('Filter options coming soon!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
         ],
       ),
@@ -266,9 +370,9 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: AppTheme.primaryGradient,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
@@ -370,7 +474,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
             Icons.inventory_2,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: _buildStatCard(
             'Avg Price',
@@ -378,7 +482,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
             Icons.currency_rupee,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: _buildStatCard(
             'Markets',
@@ -392,20 +496,20 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
 
   Widget _buildStatCard(String label, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.white.withOpacity(0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white, size: 20),
+          Icon(icon, color: Colors.white, size: 18),
           const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -413,7 +517,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
             label,
             style: TextStyle(
               color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
+              fontSize: 10,
             ),
           ),
         ],
@@ -422,253 +526,152 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   }
 
   Widget _buildFiltersSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppTheme.defaultShadow,
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.filter_list, color: AppTheme.primaryGreen, size: 20),
+              Expanded(
+                child: _buildCompactDropdown('State', _selectedState, _states, Icons.location_on),
+              ),
               const SizedBox(width: 8),
-              Text(
-                'Filters',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryGreen,
-                ),
+              Expanded(
+                child: _buildCompactDropdown('Category', _selectedCategory, _categories, Icons.category),
               ),
             ],
-          ),
-          const SizedBox(height: 16),
-          // Use responsive layout to prevent overflow
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 600;
-              return isWide ? _buildWideFilters() : _buildNarrowFilters();
-            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildWideFilters() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildDropdown('State', _selectedState, _states, (value) {
-              setState(() {
-                _selectedState = value!;
-                _filterData();
-              });
-            })),
-            const SizedBox(width: 16),
-            Expanded(child: _buildDropdown('City', _selectedCity, _cities, (value) {
-              setState(() {
-                _selectedCity = value!;
-                _filterData();
-              });
-            })),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _buildDropdown('Category', _selectedCategory, _categories, (value) {
-              setState(() {
-                _selectedCategory = value!;
-                _filterData();
-              });
-            })),
-            const SizedBox(width: 16),
-            Expanded(child: _buildDropdown('Unit', _selectedUnit, _units, (value) {
-              setState(() {
-                _selectedUnit = value!;
-                _filterData();
-              });
-            })),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNarrowFilters() {
-    return Column(
-      children: [
-        _buildDropdown('State', _selectedState, _states, (value) {
-          setState(() {
-            _selectedState = value!;
-            _filterData();
-          });
-        }),
-        const SizedBox(height: 12),
-        _buildDropdown('City', _selectedCity, _cities, (value) {
-          setState(() {
-            _selectedCity = value!;
-            _filterData();
-          });
-        }),
-        const SizedBox(height: 12),
-        _buildDropdown('Category', _selectedCategory, _categories, (value) {
-          setState(() {
-            _selectedCategory = value!;
-            _filterData();
-          });
-        }),
-        const SizedBox(height: 12),
-        _buildDropdown('Unit', _selectedUnit, _units, (value) {
-          setState(() {
-            _selectedUnit = value!;
-            _filterData();
-          });
-        }),
-      ],
-    );
-  }
-
-  Widget _buildDropdown(
-    String label,
-    String value,
-    List<String> items,
-    ValueChanged<String?> onChanged,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textGrey,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.borderGrey),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              items: items.map((item) {
-                return DropdownMenuItem<String>(
-                  value: item,
+  Widget _buildCompactDropdown(String hint, String value, List<String> items, IconData icon) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkHighlight : AppTheme.getBackgroundColor(context),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.getPrimaryAccent(context).withOpacity(0.2)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: value,
+          isExpanded: true,
+          isDense: true,
+          dropdownColor: Theme.of(context).cardColor,
+          style: TextStyle(color: AppTheme.getTextColor(context)),
+          items: items.map((item) => DropdownMenuItem(
+            value: item,
+            child: Row(
+              children: [
+                Icon(icon, size: 14, color: AppTheme.getSecondaryTextColor(context)),
+                const SizedBox(width: 6),
+                Expanded(
                   child: Text(
                     item,
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 12, color: AppTheme.getTextColor(context)),
                     overflow: TextOverflow.ellipsis,
                   ),
-                );
-              }).toList(),
-              onChanged: onChanged,
+                ),
+              ],
             ),
-          ),
+          )).toList(),
+          onChanged: (value) {
+            setState(() {
+              if (hint == 'State') _selectedState = value!;
+              if (hint == 'Category') _selectedCategory = value!;
+              _filterData();
+            });
+          },
+          icon: Icon(Icons.arrow_drop_down, size: 20, color: AppTheme.getSecondaryTextColor(context)),
         ),
-      ],
+      ),
     );
   }
 
   Widget _buildMarketSummary() {
-    final totalProducts = _filteredData.length;
-    final avgPrice = _filteredData.isEmpty 
-        ? 0.0 
-        : _filteredData.map((d) => d.modalPrice).reduce((a, b) => a + b) / totalProducts;
-    final highestPrice = _filteredData.isEmpty ? 0.0 : _filteredData.first.modalPrice;
-    final lowestPrice = _filteredData.isEmpty ? 0.0 : _filteredData.last.modalPrice;
+    if (_filteredData.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final avgPrice = _filteredData.map((d) => d.modalPrice).reduce((a, b) => a + b) / _filteredData.length;
+    final maxPrice = _filteredData.map((r) => r.maxPrice).reduce((a, b) => a > b ? a : b);
+    final minPrice = _filteredData.map((r) => r.minPrice).reduce((a, b) => a < b ? a : b);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(Icons.analytics, color: AppTheme.primaryGreen, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Market Summary',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryGreen,
-                ),
-              ),
-            ],
+          Expanded(
+            child: _buildCompactSummaryCard('Avg', '₹${avgPrice.toStringAsFixed(0)}', Icons.trending_up, AppTheme.getPrimaryAccent(context)),
           ),
-          const SizedBox(height: 16),
-          // Use responsive grid
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
-              return GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: crossAxisCount,
-                childAspectRatio: 2.5,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                children: [
-                  _buildSummaryItem('Total Products', totalProducts.toString(), Icons.inventory),
-                  _buildSummaryItem('Average Price', '₹${avgPrice.toStringAsFixed(0)}', Icons.trending_up),
-                  _buildSummaryItem('Highest Price', '₹${highestPrice.toStringAsFixed(0)}', Icons.arrow_upward),
-                  _buildSummaryItem('Lowest Price', '₹${lowestPrice.toStringAsFixed(0)}', Icons.arrow_downward),
-                ],
-              );
-            },
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildCompactSummaryCard('High', '₹${maxPrice.toStringAsFixed(0)}', Icons.arrow_upward, AppTheme.success),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildCompactSummaryCard('Low', '₹${minPrice.toStringAsFixed(0)}', Icons.arrow_downward, AppTheme.error),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryItem(String title, String value, IconData icon) {
+  Widget _buildCompactSummaryCard(String label, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isDark ? Border.all(color: color.withOpacity(0.3)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: AppTheme.primaryGreen, size: 16),
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
-              color: AppTheme.primaryGreen,
+              color: color,
             ),
-            textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 2),
           Text(
-            title,
-            style: const TextStyle(
+            label,
+            style: TextStyle(
               fontSize: 10,
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -676,24 +679,37 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   }
 
   Widget _buildTabBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 45,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: AppTheme.defaultShadow,
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TabBar(
         controller: _tabController,
-        labelColor: AppTheme.primaryGreen,
-        unselectedLabelColor: AppTheme.textGrey,
-        indicatorColor: AppTheme.primaryGreen,
+        labelColor: AppTheme.getTabLabelColor(context),
+        unselectedLabelColor: AppTheme.getTabUnselectedLabelColor(context),
+        indicator: BoxDecoration(
+          color: AppTheme.getTabIndicatorColor(context),
+          borderRadius: BorderRadius.circular(10),
+        ),
         indicatorSize: TabBarIndicatorSize.tab,
-        indicatorWeight: 3,
-        labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
+        dividerColor: Colors.transparent,
+        labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontSize: 11),
         tabs: const [
-          Tab(text: 'All Products'),
+          Tab(text: 'All'),
           Tab(text: 'Trending'),
           Tab(text: 'Locations'),
           Tab(text: 'Analytics'),
@@ -741,6 +757,8 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
       locationGroups[key] = (locationGroups[key] ?? [])..add(data);
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: ListView.builder(
@@ -751,15 +769,40 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
           final products = locationGroups[location]!;
           final avgPrice = products.map((p) => p.modalPrice).reduce((a, b) => a + b) / products.length;
 
-          return CustomCard(
+          return Card(
             margin: const EdgeInsets.only(bottom: 12),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+            ),
+            color: Theme.of(context).cardColor,
             child: ExpansionTile(
+              shape: const RoundedRectangleBorder(side: BorderSide.none),
+              collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
+              backgroundColor: Colors.transparent,
+              collapsedBackgroundColor: Colors.transparent,
+              iconColor: AppTheme.getPrimaryAccent(context),
+              collapsedIconColor: AppTheme.getSecondaryTextColor(context),
               title: Text(
                 location,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context),
+                ),
               ),
-              subtitle: Text('${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}'),
-              children: products.map((product) => _buildProductCard(product)).toList(),
+              subtitle: Text(
+                '${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}',
+                style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: Column(
+                    children: products.map((product) => _buildProductCard(product)).toList(),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -793,20 +836,20 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
           Icon(
             Icons.search_off,
             size: 64,
-            color: Colors.grey[400],
+            color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.grey[500],
+              color: AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
             ),
           ),
         ],
@@ -816,97 +859,119 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
 
   Widget _buildProductCard(MarketRate data) {
     final priceChange = data.maxPrice - data.minPrice;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    return CustomCard(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _showProductDetails(data),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      _getProductIcon(data.productName),
-                      color: AppTheme.primaryGreen,
-                      size: 24,
-                    ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _navigateToCommodityDetail(data),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppTheme.getIconBackgroundColor(context),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          data.productName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          '${data.market} • Grade ${data.grade}',
-                          style: const TextStyle(
-                            color: AppTheme.textGrey,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          '${data.district}, ${data.state}',
-                          style: const TextStyle(
-                            color: AppTheme.textGrey,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: Icon(
+                    _getProductIcon(data.productName),
+                    color: AppTheme.getPrimaryAccent(context),
+                    size: 24,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '₹${data.modalPrice.toStringAsFixed(2)}',
+                        data.productName,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppTheme.primaryGreen,
+                          fontSize: 15,
                         ),
                       ),
-                      Text(
-                        'per ${data.unit}',
-                        style: const TextStyle(
-                          color: AppTheme.textGrey,
-                          fontSize: 12,
-                        ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 12, color: AppTheme.getSecondaryTextColor(context)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              '${data.market}, ${data.state}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.getSecondaryTextColor(context),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  _buildInfoChip('Min: ₹${data.minPrice.toStringAsFixed(0)}', Icons.trending_down, Colors.red),
-                  _buildInfoChip('Max: ₹${data.maxPrice.toStringAsFixed(0)}', Icons.trending_up, Colors.green),
-                  if (data.arrivals > 0)
-                    _buildInfoChip('Arrivals: ${data.arrivals}', Icons.local_shipping, AppTheme.textGrey),
-                  _buildInfoChip(_formatDate(data.priceDate), Icons.schedule, AppTheme.textGrey),
-                ],
-              ),
-            ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '₹${data.modalPrice.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppTheme.getPrimaryAccent(context),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: priceChange >= 0 ? AppTheme.success.withOpacity(0.1) : AppTheme.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '±₹${priceChange.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: priceChange >= 0 ? AppTheme.success : AppTheme.error,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.arrow_forward_ios, size: 16, color: AppTheme.getSecondaryTextColor(context)),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _navigateToCommodityDetail(MarketRate commodity) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => APMCCommodityDetailPage(marketRate: commodity),
       ),
     );
   }
@@ -942,7 +1007,15 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
       categoryGroups[data.category] = (categoryGroups[data.category] ?? [])..add(data);
     }
 
-    return CustomCard(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -952,32 +1025,32 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
               'Category Analysis',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryGreen,
+                color: AppTheme.getPrimaryAccent(context),
               ),
             ),
             const SizedBox(height: 16),
             ...categoryGroups.entries.map((entry) {
               final avgPrice = entry.value.map((e) => e.modalPrice).reduce((a, b) => a + b) / entry.value.length;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   children: [
                     Expanded(
                       child: Text(
                         entry.key,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        style: TextStyle(fontWeight: FontWeight.w500, color: AppTheme.getTextColor(context)),
                       ),
                     ),
                     Text(
                       '${entry.value.length} items',
-                      style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+                      style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Text(
                       '₹${avgPrice.toStringAsFixed(0)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryGreen,
+                        color: AppTheme.getPrimaryAccent(context),
                       ),
                     ),
                   ],
@@ -1014,7 +1087,15 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
       }
     }
 
-    return CustomCard(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1024,27 +1105,34 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
               'Price Distribution',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryGreen,
+                color: AppTheme.getPrimaryAccent(context),
               ),
             ),
             const SizedBox(height: 16),
             ...priceRanges.entries.map((entry) {
               final percentage = _filteredData.isEmpty ? 0.0 : (entry.value / _filteredData.length) * 100;
               return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(entry.key)),
-                        Text('${entry.value} (${percentage.toStringAsFixed(1)}%)'),
+                        Expanded(child: Text(entry.key, style: TextStyle(color: AppTheme.getTextColor(context)))),
+                        Text(
+                          '${entry.value} (${percentage.toStringAsFixed(1)}%)',
+                          style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    LinearProgressIndicator(
-                      value: percentage / 100,
-                      backgroundColor: Colors.grey[200],
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryGreen),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: percentage / 100,
+                        minHeight: 6,
+                        backgroundColor: isDark ? Colors.white10 : Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.getPrimaryAccent(context)),
+                      ),
                     ),
                   ],
                 ),
@@ -1059,8 +1147,15 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
   Widget _buildMarketActivity() {
     final totalArrivals = _filteredData.fold<int>(0, (sum, item) => sum + item.arrivals);
     final activeMarkets = _filteredData.map((e) => e.market).toSet().length;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return CustomCard(
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1070,7 +1165,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
               'Market Activity',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryGreen,
+                color: AppTheme.getPrimaryAccent(context),
               ),
             ),
             const SizedBox(height: 16),
@@ -1079,7 +1174,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
                 Expanded(
                   child: _buildActivityStat('Total Arrivals', '$totalArrivals', Icons.local_shipping),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: _buildActivityStat('Active Markets', '$activeMarkets', Icons.store),
                 ),
@@ -1095,26 +1190,27 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppTheme.primaryGreen, size: 24),
+          Icon(icon, color: AppTheme.getPrimaryAccent(context), size: 24),
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 20,
+            style: TextStyle(
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primaryGreen,
+              color: AppTheme.getPrimaryAccent(context),
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.textGrey,
+            style: TextStyle(
+              fontSize: 10,
+              color: AppTheme.getSecondaryTextColor(context),
             ),
             textAlign: TextAlign.center,
           ),
@@ -1125,8 +1221,9 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
 
   Widget _buildRefreshFAB() {
     return FloatingActionButton(
+      heroTag: 'apmc_live_refresh_fab',
       onPressed: _refreshData,
-      backgroundColor: AppTheme.primaryGreen,
+      backgroundColor: AppTheme.getPrimaryAccent(context),
       child: _isLoading 
           ? const SizedBox(
               width: 20,
@@ -1147,9 +1244,9 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -1160,7 +1257,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppTheme.getDividerColor(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1171,12 +1268,12 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
+                    color: AppTheme.getIconBackgroundColor(context),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _getProductIcon(data.productName),
-                    color: AppTheme.primaryGreen,
+                    color: AppTheme.getPrimaryAccent(context),
                     size: 32,
                   ),
                 ),
@@ -1193,15 +1290,15 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
                       ),
                       Text(
                         '${data.market}',
-                        style: const TextStyle(
-                          color: AppTheme.textGrey,
+                        style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context),
                           fontSize: 14,
                         ),
                       ),
                       Text(
                         '${data.district}, ${data.state}',
-                        style: const TextStyle(
-                          color: AppTheme.textGrey,
+                        style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context),
                           fontSize: 12,
                         ),
                       ),
@@ -1252,7 +1349,7 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
-            color: AppTheme.primaryGreen,
+            color: AppTheme.getPrimaryAccent(context),
           ),
         ),
         const SizedBox(height: 12),
@@ -1271,8 +1368,8 @@ class _EnhancedAPMCMarketLiveFixedState extends State<EnhancedAPMCMarketLiveFixe
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppTheme.textGrey,
+              style: TextStyle(
+                color: AppTheme.getSecondaryTextColor(context),
                 fontSize: 14,
               ),
             ),

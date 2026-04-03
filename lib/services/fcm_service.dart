@@ -2,12 +2,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-/// Handle background messages
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Handling background message: ${message.messageId}');
-}
+import 'notification_service.dart';
+import '../models/chat_model.dart';
 
 /// Firebase Cloud Messaging Service (Simplified version without local notifications)
 class FCMService {
@@ -18,6 +14,7 @@ class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final NotificationService _notificationService = NotificationService();
 
   String? _fcmToken;
   String? get fcmToken => _fcmToken;
@@ -59,11 +56,6 @@ class FCMService {
         // Handle message opened app
         FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-        // Handle background messages
-        FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler,
-        );
-
         // Check for initial message (app opened from terminated state)
         final initialMessage = await _firebaseMessaging.getInitialMessage();
         if (initialMessage != null) {
@@ -96,9 +88,30 @@ class FCMService {
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
     debugPrint('Foreground message received: ${message.messageId}');
-    debugPrint('Title: ${message.notification?.title}');
-    debugPrint('Body: ${message.notification?.body}');
-    // Notification will be shown automatically by FCM
+    
+    if (message.notification != null) {
+      final user = _auth.currentUser;
+      if (user != null) {
+        _notificationService.sendNotification(
+          userId: user.uid,
+          title: message.notification!.title ?? 'New Notification',
+          body: message.notification!.body ?? '',
+          type: _getNotificationType(message.data['type']),
+          data: Map<String, dynamic>.from(message.data),
+        );
+      }
+    }
+  }
+
+  NotificationType _getNotificationType(String? type) {
+    switch (type) {
+      case 'order': return NotificationType.order;
+      case 'message': return NotificationType.message;
+      case 'bid': return NotificationType.bid;
+      case 'market': return NotificationType.market;
+      case 'weather': return NotificationType.weather;
+      default: return NotificationType.system;
+    }
   }
 
   /// Handle message that opened the app

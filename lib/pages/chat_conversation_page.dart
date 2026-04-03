@@ -117,6 +117,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   Widget build(BuildContext context) {
     if (_currentConversation == null) {
       return Scaffold(
+        backgroundColor: AppTheme.getBackgroundColor(context),
         appBar: AppBar(title: const Text('Chat')),
         body: const Center(
           child: Text('Unable to load conversation'),
@@ -129,10 +130,11 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         : _currentConversation!.buyerName;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppTheme.getPrimaryAccent(context),
         foregroundColor: Colors.white,
+        elevation: 1,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -176,7 +178,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                    child: Text('Error: ${snapshot.error}', style: TextStyle(color: AppTheme.getTextColor(context))),
                   );
                 }
 
@@ -190,12 +192,12 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 64,
-                          color: Colors.grey[400],
+                          color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No messages yet for ${_currentConversation!.productName}',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                         ),
                       ],
                     ),
@@ -227,27 +229,27 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withOpacity(0.1),
+        color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
         border: Border(
-          bottom: BorderSide(color: AppTheme.primaryGreen.withOpacity(0.2)),
+          bottom: BorderSide(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         ),
       ),
       child: Row(
         children: [
-          Icon(Icons.shopping_cart, color: AppTheme.primaryGreen),
+          Icon(Icons.shopping_cart, color: AppTheme.getPrimaryAccent(context)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Discussing: ${_currentConversation!.productName}',
               style: TextStyle(
-                color: AppTheme.primaryGreen,
+                color: AppTheme.getPrimaryAccent(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
           TextButton(
             onPressed: _showProductDetails,
-            child: const Text('View Product'),
+            child: Text('View Product', style: TextStyle(color: AppTheme.getPrimaryAccent(context))),
           ),
         ],
       ),
@@ -255,6 +257,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   }
 
   Widget _buildMessageBubble(Message message, bool isMe) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -264,8 +268,23 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isMe ? AppTheme.primaryGreen : Colors.grey[200],
-          borderRadius: BorderRadius.circular(18),
+          color: isMe 
+              ? AppTheme.getPrimaryAccent(context) 
+              : AppTheme.getCardColor(context),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMe ? 18 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 18),
+          ),
+          border: !isMe ? Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,7 +292,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             Text(
               message.content,
               style: TextStyle(
-                color: isMe ? Colors.white : Colors.black87,
+                color: isMe ? Colors.white : AppTheme.getTextColor(context),
                 fontSize: 16,
               ),
             ),
@@ -281,8 +300,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             Text(
               _formatTime(message.timestamp),
               style: TextStyle(
-                color: isMe ? Colors.white70 : Colors.grey[600],
-                fontSize: 12,
+                color: isMe ? Colors.white70 : AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
+                fontSize: 10,
               ),
             ),
           ],
@@ -292,17 +311,20 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   }
 
   Widget _buildMessageInput() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
         child: Column(
@@ -315,11 +337,12 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   child: OutlinedButton.icon(
                     onPressed: _showMakeOfferDialog,
                     icon: const Icon(Icons.local_offer, size: 18),
-                    label: const Text('Make Offer'),
+                    label: const Text('Make Offer', style: TextStyle(fontWeight: FontWeight.bold)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentOrange,
                       side: BorderSide(color: AppTheme.accentOrange),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -330,28 +353,35 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Type about ${_currentConversation!.productName}...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.getBackgroundColor(context),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
                     ),
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
+                    child: TextField(
+                      controller: _messageController,
+                      style: TextStyle(color: AppTheme.getTextColor(context)),
+                      decoration: InputDecoration(
+                        hintText: 'Type about ${_currentConversation!.productName}...',
+                        hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.6)),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: AppTheme.primaryGreen,
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.getPrimaryAccent(context),
+                    shape: BoxShape.circle,
+                  ),
                   child: IconButton(
                     onPressed: _isSending ? null : _sendMessage,
                     icon: _isSending
@@ -375,29 +405,32 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   }
 
   void _showProductDetails() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Product Details'),
+          backgroundColor: AppTheme.getCardColor(context),
+          title: Text('Product Details', style: TextStyle(color: AppTheme.getTextColor(context))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 _currentConversation!.productName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               if (widget.product != null) ...[
-                Text('Price: ₹${widget.product!.price}/${widget.product!.unit}'),
-                Text('Category: ${widget.product!.category}'),
-                Text('Location: ${widget.product!.location}'),
+                _buildDetailItem('Price', '₹${widget.product!.price}/${widget.product!.unit}'),
+                _buildDetailItem('Category', widget.product!.category),
+                _buildDetailItem('Location', widget.product!.location),
               ] else ...[
-                const Text('Product details not available'),
+                Text('Product details not available', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
               ],
             ],
           ),
@@ -413,7 +446,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   _messageController.text = 'I would like to make a bid offer for this product. ';
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: AppTheme.getPrimaryAccent(context),
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Make Offer'),
@@ -421,6 +454,18 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
+          Text(value, style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+        ],
+      ),
     );
   }
 
@@ -445,155 +490,140 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     final messageController = TextEditingController();
     String selectedUnit = widget.product?.unit ?? 'kg';
     final units = ['kg', 'gram', 'ton', 'piece', 'dozen', 'liter', 'ml'];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
+          backgroundColor: AppTheme.getCardColor(context),
           title: Row(
             children: [
               Icon(Icons.local_offer, color: AppTheme.accentOrange),
               const SizedBox(width: 8),
-              const Expanded(child: Text('Make an Offer')),
+              Expanded(child: Text('Make an Offer', style: TextStyle(color: AppTheme.getTextColor(context)))),
             ],
           ),
           content: SizedBox(
             width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Product info
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.shopping_bag, color: AppTheme.primaryGreen, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _currentConversation!.productName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryGreen,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Bid amount
-                TextField(
-                  controller: bidAmountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Bid Amount (₹)',
-                    prefixIcon: Icon(Icons.currency_rupee, color: AppTheme.primaryGreen),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.primaryGreen),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Quantity and unit
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: TextField(
-                        controller: quantityController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Quantity',
-                          prefixIcon: Icon(Icons.inventory, color: AppTheme.primaryGreen),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppTheme.primaryGreen),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: selectedUnit,
-                        decoration: InputDecoration(
-                          labelText: 'Unit',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppTheme.primaryGreen),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        items: units.map((unit) => DropdownMenuItem(
-                          value: unit,
-                          child: Text(unit),
-                        )).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedUnit = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Optional message
-                TextField(
-                  controller: messageController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    labelText: 'Message (Optional)',
-                    prefixIcon: Icon(Icons.message, color: AppTheme.primaryGreen),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: AppTheme.primaryGreen),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    hintText: 'Add any special requirements or notes...',
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Total calculation preview
-                if (bidAmountController.text.isNotEmpty && quantityController.text.isNotEmpty)
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Product info
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.accentOrange.withOpacity(0.1),
+                      color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Amount:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text(
-                          '₹${(double.tryParse(bidAmountController.text) ?? 0) * (int.tryParse(quantityController.text) ?? 0)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: AppTheme.accentOrange,
+                        Icon(Icons.shopping_bag, color: AppTheme.getPrimaryAccent(context), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _currentConversation!.productName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.getPrimaryAccent(context),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-              ],
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Bid amount
+                  _buildDialogTextField(
+                    controller: bidAmountController,
+                    label: 'Bid Amount (₹)',
+                    icon: Icons.currency_rupee,
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) => setState(() {}),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Quantity and unit
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: _buildDialogTextField(
+                          controller: quantityController,
+                          label: 'Quantity',
+                          icon: Icons.inventory,
+                          keyboardType: TextInputType.number,
+                          onChanged: (v) => setState(() {}),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedUnit,
+                          dropdownColor: AppTheme.getCardColor(context),
+                          style: TextStyle(color: AppTheme.getTextColor(context)),
+                          decoration: InputDecoration(
+                            labelText: 'Unit',
+                            labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+                          ),
+                          items: units.map((unit) => DropdownMenuItem(
+                            value: unit,
+                            child: Text(unit),
+                          )).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedUnit = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Optional message
+                  _buildDialogTextField(
+                    controller: messageController,
+                    label: 'Message (Optional)',
+                    icon: Icons.message,
+                    maxLines: 3,
+                    hintText: 'Add any special requirements...',
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Total calculation preview
+                  if (bidAmountController.text.isNotEmpty && quantityController.text.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentOrange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Total Amount:', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
+                          Text(
+                            '₹${((double.tryParse(bidAmountController.text) ?? 0) * (int.tryParse(quantityController.text) ?? 0)).toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: AppTheme.accentOrange,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -607,16 +637,12 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                 final quantity = int.tryParse(quantityController.text);
                 
                 if (bidAmount == null || bidAmount <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid bid amount')),
-                  );
+                  ToastHelper.showError(context, 'Please enter a valid bid amount');
                   return;
                 }
                 
                 if (quantity == null || quantity <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter a valid quantity')),
-                  );
+                  ToastHelper.showError(context, 'Please enter a valid quantity');
                   return;
                 }
                 
@@ -631,6 +657,37 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               label: const Text('Send Offer'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? hintText,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    void Function(String)? onChanged,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      style: TextStyle(color: AppTheme.getTextColor(context)),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+        hintText: hintText,
+        hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5)),
+        prefixIcon: Icon(icon, color: AppTheme.getPrimaryAccent(context)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppTheme.getPrimaryAccent(context)),
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );

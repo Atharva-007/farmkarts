@@ -53,6 +53,34 @@ class AIResponse {
   }
 }
 
+DateTime _parseDateTime(dynamic value) {
+  if (value == null) return DateTime.now();
+  if (value is DateTime) return value;
+  if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+  if (value is String) return DateTime.parse(value);
+  
+  // Handle Firestore Timestamp specifically
+  try {
+    // In some environments, it's a Map with _seconds or seconds
+    if (value is Map) {
+      final seconds = value['seconds'] ?? value['_seconds'] ?? 0;
+      final nanoseconds = value['nanoseconds'] ?? value['_nanoseconds'] ?? 0;
+      return DateTime.fromMillisecondsSinceEpoch(seconds * 1000 + (nanoseconds / 1000000).round());
+    }
+    
+    // Try calling .toDate() if it exists (Firestore Timestamp method)
+    if (value.runtimeType.toString().contains('Timestamp')) {
+      return value.toDate();
+    }
+    
+    // Fallback: try accessing millisecondsSinceEpoch property
+    return DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch);
+  } catch (e) {
+    print('Warning: Failed to parse timestamp $value: $e');
+    return DateTime.now();
+  }
+}
+
 class AIChatSession {
   final String id;
   final String userId;
@@ -84,8 +112,8 @@ class AIChatSession {
       userId: map['userId'] ?? '',
       title: map['title'] ?? 'Untitled Chat',
       category: map['category'] ?? 'General',
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] ?? 0),
-      lastMessageTime: DateTime.fromMillisecondsSinceEpoch(map['lastMessageTime'] ?? 0),
+      createdAt: _parseDateTime(map['createdAt']),
+      lastMessageTime: _parseDateTime(map['lastMessageTime']),
       lastMessage: map['lastMessage'] ?? '',
       messageCount: map['messageCount'] ?? 0,
       isActive: map['isActive'] ?? true,
@@ -157,23 +185,6 @@ class AIChatMessage {
   factory AIChatMessage.fromMap(String id, Map<String, dynamic> map) {
     print('Creating AIChatMessage from map: $map'); // Debug log
     
-    // Handle timestamp conversion
-    DateTime timestamp;
-    final timestampValue = map['timestamp'];
-    if (timestampValue is int) {
-      timestamp = DateTime.fromMillisecondsSinceEpoch(timestampValue);
-    } else if (timestampValue != null) {
-      // Handle Firestore Timestamp
-      try {
-        timestamp = DateTime.fromMillisecondsSinceEpoch(timestampValue.millisecondsSinceEpoch ?? 0);
-      } catch (e) {
-        print('Error parsing timestamp: $e');
-        timestamp = DateTime.now();
-      }
-    } else {
-      timestamp = DateTime.now();
-    }
-    
     return AIChatMessage(
       id: id,
       sessionId: map['sessionId'] ?? '',
@@ -182,7 +193,7 @@ class AIChatMessage {
         (e) => e.toString().split('.').last == map['type'],
         orElse: () => AIChatMessageType.user,
       ),
-      timestamp: timestamp,
+      timestamp: _parseDateTime(map['timestamp']),
       userId: map['userId'],
       confidence: map['confidence']?.toDouble(),
       sources: map['sources'] != null ? List<String>.from(map['sources']) : null,

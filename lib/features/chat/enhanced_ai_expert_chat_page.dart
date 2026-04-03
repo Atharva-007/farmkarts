@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import '../../models/ai_chat_model.dart';
 import '../../services/ai_chat_service.dart';
+import '../../services/locale_service.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/app_constants.dart';
+import '../../utils/toast_helper.dart';
+import '../../widgets/universal_header.dart';
+import '../../widgets/universal_drawer.dart';
 
 class EnhancedAIExpertChatPage extends StatefulWidget {
   final AIChatSession? session;
@@ -40,94 +45,114 @@ class _EnhancedAIExpertChatPageState extends State<EnhancedAIExpertChatPage>
   String _selectedCategory = AIChatCategory.general;
 
   late AnimationController _typingAnimationController;
-  late AnimationController _fabAnimationController;
-  late Animation<double> _typingAnimation;
-  late Animation<double> _fabAnimation;
+  
+  // Voice Mode State
+  late stt.SpeechToText _speech;
+  late FlutterTts _flutterTts;
+  bool _isListening = false;
+  bool _speechEnabled = false;
+  String _lastWords = '';
+  double _voiceLevel = 0.0;
+  bool _autoSpeak = false;
 
   StreamSubscription<List<AIChatMessage>>? _messagesSubscription;
-  bool _showSuggestions = true;
   bool _isDarkMode = false;
-  bool _showEmojiPanel = false;
-
-  // Quick suggestion categories
-  final List<Map<String, dynamic>> _quickSuggestions = [
-    {
-      'text': '🌾 How can I improve my wheat yield?',
-      'icon': Icons.agriculture,
-      'category': AIChatCategory.crops,
-    },
-    {
-      'text': '💧 What\'s the best irrigation schedule for rice?',
-      'icon': Icons.water_drop,
-      'category': AIChatCategory.irrigation,
-    },
-    {
-      'text': '🐛 How do I identify and control pests?',
-      'icon': Icons.bug_report,
-      'category': AIChatCategory.pestControl,
-    },
-    {
-      'text': '🌱 Which fertilizers should I use for corn?',
-      'icon': Icons.grass,
-      'category': AIChatCategory.fertilizers,
-    },
-    {
-      'text': '🌤️ How does weather affect my crops?',
-      'icon': Icons.wb_cloudy,
-      'category': AIChatCategory.weather,
-    },
-    {
-      'text': '💰 What are current market prices?',
-      'icon': Icons.trending_up,
-      'category': AIChatCategory.market,
-    },
-  ];
 
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
+    _typingAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _initSpeech();
+    _initTts();
     _initializeSession();
     
-    // Add initial prompt if provided
     if (widget.initialPrompt != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _messageController.text = widget.initialPrompt!;
-      });
+      _messageController.text = widget.initialPrompt!;
     }
   }
 
-  void _setupAnimations() {
-    _typingAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
+  Future<void> _initSpeech() async {
+    _speech = stt.SpeechToText();
+    _speechEnabled = await _speech.initialize(
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          setState(() => _isListening = false);
+        }
+      },
+      onError: (error) {
+        setState(() => _isListening = false);
+      },
     );
-    
-    _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
-    _typingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _typingAnimationController, curve: Curves.easeInOut),
-    );
-    
-    _fabAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.elasticOut),
-    );
+    if (mounted) setState(() {});
+  }
 
-    _typingAnimationController.repeat();
-    _fabAnimationController.forward();
+  Future<void> _initTts() async {
+    _flutterTts = FlutterTts();
+    await _flutterTts.setLanguage("en-IN");
+    await _flutterTts.setPitch(1.0);
+    await _flutterTts.setSpeechRate(0.5);
+  }
+
+  void _startListening() async {
+    if (!_speechEnabled) {
+      bool available = await _speech.initialize();
+      if (!available) {
+        ToastHelper.showError(context, 'Speech recognition not available');
+        return;
+      }
+    }
+
+    var status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      ToastHelper.showError(context, 'Microphone permission denied');
+      return;
+    }
+
+    setState(() {
+      _isListening = true;
+      _lastWords = '';
+    });
+
+    await _speech.listen(
+      onResult: (result) {
+        setState(() {
+          _lastWords = result.recognizedWords;
+          if (result.finalResult) {
+            _messageController.text = _lastWords;
+            _isListening = false;
+            _sendMessage();
+          }
+        });
+      },
+      onSoundLevelChange: (level) {
+        setState(() => _voiceLevel = level);
+      },
+    );
+  }
+
+  void _stopListening() async {
+    await _speech.stop();
+    setState(() => _isListening = false);
+  }
+
+  Future<void> _speak(String text) async {
+    if (text.isEmpty) return;
+    String cleanText = text.replaceAll(RegExp(r'[*#_~]'), '');
+    await _flutterTts.speak(cleanText);
   }
 
   @override
   void dispose() {
     _typingAnimationController.dispose();
-    _fabAnimationController.dispose();
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
     _messagesSubscription?.cancel();
+    _flutterTts.stop();
     super.dispose();
   }
 
@@ -146,21 +171,23 @@ class _EnhancedAIExpertChatPageState extends State<EnhancedAIExpertChatPage>
     try {
       final category = widget.initialCategory ?? AIChatCategory.general;
       final session = await _aiChatService.createChatSession(
-        'Agricultural Consultation - $category',
+        'Farming Advice - $category',
         category,
       );
 
-      setState(() {
-        _currentSession = session;
-        _selectedCategory = category;
-        _isLoading = false;
-      });
-
-      _loadMessages();
-      _addSystemMessage('🌾 Welcome to FarmKart AI Agricultural Expert! I\'m here to help you with professional farming advice. What would you like to know?');
+      if (mounted) {
+        setState(() {
+          _currentSession = session;
+          _selectedCategory = category;
+          _isLoading = false;
+        });
+        _loadMessages();
+      }
     } catch (e) {
-      setState(() => _isLoading = false);
-      _showError('Failed to start consultation session. Please try again.');
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ToastHelper.showError(context, 'Failed to start chat session');
+      }
     }
   }
 
@@ -170,13 +197,11 @@ class _EnhancedAIExpertChatPageState extends State<EnhancedAIExpertChatPage>
     _messagesSubscription?.cancel();
     _messagesSubscription = _aiChatService.getSessionMessages(_currentSession!.id).listen(
       (messages) {
-        setState(() {
-          _messages = messages;
-          _showSuggestions = messages.where((m) => m.type != AIChatMessageType.system).isEmpty;
-        });
-        _scrollToBottom();
+        if (mounted) {
+          setState(() => _messages = messages);
+          _scrollToBottom();
+        }
       },
-      onError: (e) => _showError('Connection error: $e'),
     );
   }
 
@@ -195,606 +220,378 @@ class _EnhancedAIExpertChatPageState extends State<EnhancedAIExpertChatPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDarkMode ? Colors.grey[900] : AppTheme.backgroundLight,
-      appBar: _buildEnhancedAppBar(),
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      drawer: const UniversalDrawer(currentPage: 'ai-chat'),
       body: Column(
         children: [
-          if (_currentSession != null) _buildChatHeader(),
-          Expanded(child: _buildMessagesList()),
-          if (_showSuggestions && _messages.where((m) => m.type != AIChatMessageType.system).isEmpty) 
-            _buildQuickSuggestions(),
-          _buildTypingIndicator(),
-          _buildEnhancedMessageInput(),
+          Expanded(
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                _buildHeaderSliver(),
+                if (_messages.isEmpty && !_isLoading)
+                  SliverToBoxAdapter(child: _buildWelcomeScreen()),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => _buildMessageBubble(_messages[index]),
+                      childCount: _messages.length,
+                    ),
+                  ),
+                ),
+                if (_isTyping)
+                  SliverToBoxAdapter(child: _buildTypingIndicator()),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ],
+            ),
+          ),
+          _buildInputArea(),
         ],
       ),
-      floatingActionButton: _buildFloatingActionButtons(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop, // Move to top-right
     );
   }
 
-  PreferredSizeWidget _buildEnhancedAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: _isDarkMode ? Colors.grey[800] : AppTheme.primaryGreen,
-      foregroundColor: Colors.white,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.psychology, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AI Agricultural Expert',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      _currentSession != null 
-                        ? '${_messages.where((m) => m.type != AIChatMessageType.system).length} messages • $_selectedCategory'
-                        : 'Initializing...',
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+  Widget _buildHeaderSliver() {
+    return UniversalHeader(
+      title: 'AI Expert',
+      subtitle: 'Precision Farming Guidance',
+      icon: Icons.psychology_rounded,
+      showBackButton: true,
       actions: [
-        IconButton(
-          icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
-          onPressed: () => setState(() => _isDarkMode = !_isDarkMode),
-          tooltip: 'Toggle theme',
-        ),
-        PopupMenuButton<String>(
-          onSelected: _handleMenuAction,
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'new_chat',
-              child: ListTile(
-                leading: Icon(Icons.add_comment, color: AppTheme.primaryGreen),
-                title: Text('New Consultation'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'export_chat',
-              child: ListTile(
-                leading: Icon(Icons.download, color: AppTheme.primaryGreen),
-                title: Text('Export Chat'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'clear_chat',
-              child: ListTile(
-                leading: Icon(Icons.clear_all, color: AppTheme.warning),
-                title: Text('Clear Messages'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'help',
-              child: ListTile(
-                leading: Icon(Icons.help_outline, color: AppTheme.info),
-                title: Text('Help & Tips'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+        _buildHeaderAction(
+          _autoSpeak ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+          () {
+            setState(() => _autoSpeak = !_autoSpeak);
+            ToastHelper.showInfo(context, _autoSpeak ? 'Auto-speak ON' : 'Auto-speak OFF');
+          },
+          _autoSpeak ? Colors.white : Colors.white60,
         ),
       ],
     );
   }
 
-  Widget _buildChatHeader() {
+  Widget _buildHeaderAction(IconData icon, VoidCallback onTap, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: _isDarkMode ? Colors.grey[800] : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: _isDarkMode ? Colors.grey[700]! : AppTheme.borderGrey,
-            width: 0.5,
-          ),
-        ),
+        color: Colors.white.withOpacity(0.1),
+        shape: BoxShape.circle,
       ),
-      child: Row(
+      child: IconButton(
+        icon: Icon(icon, color: color, size: 20),
+        onPressed: onTap,
+        visualDensity: VisualDensity.compact,
+      ),
+    );
+  }
+
+  Widget _buildWelcomeScreen() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3)),
+          _buildPulsingIcon(),
+          const SizedBox(height: 32),
+          Text(
+            'Ready for Farming Success?',
+            style: TextStyle(
+              fontSize: 24, 
+              fontWeight: FontWeight.w800,
+              color: AppTheme.getTextColor(context),
+              letterSpacing: -0.5,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.circle,
-                  size: 8,
-                  color: AppTheme.success,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Online',
-                  style: TextStyle(
-                    color: AppTheme.primaryGreen,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Ask me anything about crops, soil, market trends, or pest management.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppTheme.getSecondaryTextColor(context), 
+              fontSize: 16,
+              height: 1.5,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Specialized in: ${_selectedCategory}',
-              style: TextStyle(
-                color: _isDarkMode ? Colors.white70 : AppTheme.textGrey,
-                fontSize: 14,
-              ),
-            ),
-          ),
-          _buildCategoryChips(),
+          if (_isListening) ...[
+            const SizedBox(height: 48),
+            _buildVoiceIndicator(),
+          ],
+          if (!_isListening) ...[
+            const SizedBox(height: 40),
+            _buildQuickPrompts(),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildCategoryChips() {
-    return PopupMenuButton<String>(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: AppTheme.accentOrange.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.accentOrange.withOpacity(0.3)),
+  Widget _buildQuickPrompts() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: [
+        'Wheat sowing tips',
+        'Organic pest control',
+        'Market rates for rice',
+        'Soil health booster',
+      ].map((prompt) => ActionChip(
+        label: Text(prompt),
+        labelStyle: TextStyle(
+          color: AppTheme.getPrimaryAccent(context),
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _selectedCategory,
-              style: TextStyle(
-                color: AppTheme.accentOrange,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              color: AppTheme.accentOrange,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
-      onSelected: (category) {
-        setState(() => _selectedCategory = category);
-      },
-      itemBuilder: (context) => [
-        AIChatCategory.general,
-        AIChatCategory.crops,
-        AIChatCategory.weather,
-        AIChatCategory.market,
-        AIChatCategory.irrigation,
-        AIChatCategory.fertilizers,
-        AIChatCategory.pestControl,
-        AIChatCategory.soilHealth,
-      ].map((category) => PopupMenuItem(
-        value: category,
-        child: Text(category),
+        backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.05),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        side: BorderSide(color: AppTheme.getPrimaryAccent(context).withOpacity(0.2)),
+        onPressed: () {
+          _messageController.text = prompt;
+          _sendMessage();
+        },
       )).toList(),
     );
   }
 
-  Widget _buildMessagesList() {
-    if (_isLoading) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppTheme.primaryGreen),
-            const SizedBox(height: 16),
-            Text(
-              'Starting consultation...',
-              style: TextStyle(
-                color: _isDarkMode ? Colors.white70 : AppTheme.textGrey,
+  Widget _buildPulsingIcon() {
+    return AnimatedBuilder(
+      animation: _typingAnimationController,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.getPrimaryAccent(context).withOpacity(0.1 * _typingAnimationController.value),
+                blurRadius: 20,
+                spreadRadius: 10 * _typingAnimationController.value,
               ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: _messages.length,
-      itemBuilder: (context, index) {
-        final message = _messages[index];
-        return _buildMessageBubble(message, index);
+            ],
+          ),
+          child: Icon(
+            Icons.psychology_outlined, 
+            size: 80, 
+            color: AppTheme.getPrimaryAccent(context).withOpacity(0.8),
+          ),
+        );
       },
     );
   }
 
-  Widget _buildMessageBubble(AIChatMessage message, int index) {
-    final isFromUser = message.isFromUser;
-    final isSystemMessage = message.isSystemMessage;
-    
-    if (isSystemMessage) {
-      return _buildSystemMessage(message);
-    }
+  Widget _buildVoiceIndicator() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              height: 15 + (math.Random().nextDouble() * 40 * (_voiceLevel + 10) / 10),
+              width: 5,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppTheme.getPrimaryAccent(context), AppTheme.getPrimaryAccent(context).withOpacity(0.5)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'SPEAK NOW',
+          style: TextStyle(
+            color: AppTheme.getPrimaryAccent(context), 
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+      ],
+    );
+  }
 
-    return Container(
-      margin: EdgeInsets.only(
-        bottom: 16,
-        left: isFromUser ? 50 : 0,
-        right: isFromUser ? 0 : 50,
-      ),
+  Widget _buildMessageBubble(AIChatMessage message) {
+    if (message.isSystemMessage) return _buildSystemMessage(message);
+
+    final isUser = message.isFromUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: isFromUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: isFromUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (!isFromUser) _buildAIAvatar(),
+              if (!isUser) _buildAvatar(Icons.psychology_rounded, AppTheme.getPrimaryAccent(context)),
               const SizedBox(width: 8),
               Flexible(
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isFromUser 
-                      ? AppTheme.primaryGreen 
-                      : (_isDarkMode ? Colors.grey[800] : Colors.white),
+                    color: isUser 
+                        ? AppTheme.getPrimaryAccent(context) 
+                        : AppTheme.getCardColor(context),
                     borderRadius: BorderRadius.circular(20).copyWith(
-                      bottomLeft: isFromUser ? Radius.circular(20) : Radius.circular(4),
-                      bottomRight: isFromUser ? Radius.circular(4) : Radius.circular(20),
+                      bottomRight: isUser ? const Radius.circular(4) : const Radius.circular(20),
+                      bottomLeft: isUser ? const Radius.circular(20) : const Radius.circular(4),
                     ),
-                    boxShadow: AppTheme.defaultShadow,
+                    border: !isUser ? Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)) : null,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), 
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SelectableText(
-                        message.content,
+                      Text(
+                        message.content.trim(),
                         style: TextStyle(
-                          color: isFromUser 
-                            ? Colors.white 
-                            : (_isDarkMode ? Colors.white : AppTheme.textDark),
-                          fontSize: 16,
-                          height: 1.4,
+                          color: isUser ? Colors.white : AppTheme.getTextColor(context),
+                          fontSize: 15,
+                          height: 1.5,
+                          fontWeight: isUser ? FontWeight.w500 : FontWeight.normal,
                         ),
                       ),
-                      if (!isFromUser && message.confidence != null)
-                        _buildConfidenceIndicator(message.confidence!),
-                      if (!isFromUser && message.sources != null && message.sources!.isNotEmpty)
-                        _buildSourcesWidget(message.sources!),
+                      if (!isUser) ...[
+                        const SizedBox(height: 12),
+                        Divider(height: 1, color: AppTheme.getDividerColor(context)),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildActionIcon(Icons.volume_up_rounded, 'Speak', () => _speak(message.content)),
+                            const SizedBox(width: 20),
+                            _buildActionIcon(Icons.copy_rounded, 'Copy', () {
+                              Clipboard.setData(ClipboardData(text: message.content));
+                              ToastHelper.showSuccess(context, 'Copied');
+                            }),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              if (isFromUser) _buildUserAvatar(),
+              if (isUser) _buildAvatar(Icons.person_rounded, AppTheme.accentOrange),
             ],
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: EdgeInsets.only(
+              top: 4, 
+              left: isUser ? 0 : 52, 
+              right: isUser ? 52 : 0
+            ),
             child: Text(
-              _formatMessageTime(message.timestamp),
-              style: TextStyle(
-                color: _isDarkMode ? Colors.white38 : AppTheme.textGrey,
-                fontSize: 11,
-              ),
+              _formatTime(message.timestamp),
+              style: TextStyle(fontSize: 10, color: AppTheme.getSecondaryTextColor(context).withOpacity(0.7)),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    return '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildActionIcon(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          children: [
+            Icon(icon, size: 14, color: AppTheme.getPrimaryAccent(context)),
+            const SizedBox(width: 6),
+            Text(
+              label, 
+              style: TextStyle(
+                fontSize: 12, 
+                color: AppTheme.getPrimaryAccent(context), 
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatar(IconData icon, Color color) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+      ),
+      child: Icon(icon, color: color, size: 18),
     );
   }
 
   Widget _buildSystemMessage(AIChatMessage message) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppTheme.info.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.info.withOpacity(0.3)),
-          ),
-          child: Text(
-            message.content,
-            style: TextStyle(
-              color: AppTheme.info,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.getCardColor(context), 
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAIAvatar() {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.primaryGreen, AppTheme.lightGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        child: Text(
+          message.content, 
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppTheme.getSecondaryTextColor(context)),
         ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Icon(
-        Icons.psychology,
-        color: Colors.white,
-        size: 20,
-      ),
-    );
-  }
-
-  Widget _buildUserAvatar() {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.accentOrange, AppTheme.lightOrange],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Icon(
-        Icons.person,
-        color: Colors.white,
-        size: 20,
-      ),
-    );
-  }
-
-  Widget _buildConfidenceIndicator(double confidence) {
-    final percentage = (confidence * 100).round();
-    Color indicatorColor;
-    
-    if (confidence >= 0.8) {
-      indicatorColor = AppTheme.success;
-    } else if (confidence >= 0.6) {
-      indicatorColor = AppTheme.warning;
-    } else {
-      indicatorColor = AppTheme.error;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: indicatorColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: indicatorColor.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.verified,
-            color: indicatorColor,
-            size: 14,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            '$percentage% Confidence',
-            style: TextStyle(
-              color: indicatorColor,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSourcesWidget(List<String> sources) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Sources:',
-            style: TextStyle(
-              color: _isDarkMode ? Colors.white70 : AppTheme.textGrey,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            children: sources.map((source) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.info.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.info.withOpacity(0.3)),
-              ),
-              child: Text(
-                source,
-                style: TextStyle(
-                  color: AppTheme.info,
-                  fontSize: 10,
-                ),
-              ),
-            )).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickSuggestions() {
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quick suggestions:',
-            style: TextStyle(
-              color: _isDarkMode ? Colors.white70 : AppTheme.textGrey,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _quickSuggestions.length,
-              itemBuilder: (context, index) {
-                final suggestion = _quickSuggestions[index];
-                return Container(
-                  width: 200,
-                  margin: const EdgeInsets.only(right: 12),
-                  child: InkWell(
-                    onTap: () => _sendQuickSuggestion(suggestion['text']),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _isDarkMode ? Colors.grey[800] : Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppTheme.primaryGreen.withOpacity(0.3),
-                        ),
-                        boxShadow: AppTheme.defaultShadow,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                suggestion['icon'],
-                                color: AppTheme.primaryGreen,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  suggestion['category'],
-                                  style: TextStyle(
-                                    color: AppTheme.primaryGreen,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            suggestion['text'],
-                            style: TextStyle(
-                              color: _isDarkMode ? Colors.white : AppTheme.textDark,
-                              fontSize: 12,
-                              height: 1.3,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
     );
   }
 
   Widget _buildTypingIndicator() {
-    if (!_isTyping) return const SizedBox.shrink();
-
-    return Container(
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          _buildAIAvatar(),
+          _buildAvatar(Icons.psychology_rounded, AppTheme.getPrimaryAccent(context)),
           const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: _isDarkMode ? Colors.grey[800] : Colors.white,
+              color: AppTheme.getCardColor(context),
               borderRadius: BorderRadius.circular(20),
-              boxShadow: AppTheme.defaultShadow,
+              border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.3)),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedBuilder(
-                  animation: _typingAnimation,
-                  builder: (context, child) {
-                    return Row(
-                      children: List.generate(3, (index) {
-                        final delay = index * 0.3;
-                        final value = (_typingAnimation.value - delay).clamp(0.0, 1.0);
-                        return Container(
-                          margin: EdgeInsets.only(right: index < 2 ? 4 : 0),
-                          child: Transform.translate(
-                            offset: Offset(0, math.sin(value * 2 * math.pi) * -3),
-                            child: Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryGreen,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    );
-                  },
-                ),
-                const SizedBox(width: 8),
                 Text(
-                  'AI is thinking...',
+                  'Expert is thinking', 
                   style: TextStyle(
-                    color: _isDarkMode ? Colors.white70 : AppTheme.textGrey,
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
+                    color: AppTheme.getSecondaryTextColor(context), 
+                    fontStyle: FontStyle.italic, 
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
+                const SizedBox(width: 8),
+                _buildDotAnimation(),
               ],
             ),
           ),
@@ -803,674 +600,157 @@ class _EnhancedAIExpertChatPageState extends State<EnhancedAIExpertChatPage>
     );
   }
 
-  Widget _buildEnhancedMessageInput() {
+  Widget _buildDotAnimation() {
+    return Row(
+      children: List.generate(3, (index) {
+        return AnimatedBuilder(
+          animation: _typingAnimationController,
+          builder: (context, child) {
+            double delay = index * 0.2;
+            double value = math.sin((_typingAnimationController.value * 2 * math.pi) + delay);
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              height: 4,
+              width: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.getPrimaryAccent(context).withOpacity(0.3 + (value + 1) / 2 * 0.7),
+                shape: BoxShape.circle,
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildInputArea() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24), // Added bottom padding
+      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
       decoration: BoxDecoration(
-        color: _isDarkMode ? Colors.grey[800] : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: _isDarkMode ? Colors.grey[700]! : AppTheme.borderGrey,
-            width: 0.5,
+        color: AppTheme.getCardColor(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.08), 
+            blurRadius: 15, 
+            offset: const Offset(0, -5),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.getBackgroundColor(context),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: AppTheme.getBorderColor(context).withOpacity(0.5),
+                ),
+              ),
+              child: TextField(
+                controller: _messageController,
+                focusNode: _focusNode,
+                style: TextStyle(color: AppTheme.getTextColor(context)),
+                decoration: InputDecoration(
+                  hintText: _isListening ? 'Listening...' : 'Type a farming question...',
+                  hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.6)),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  prefixIcon: IconButton(
+                    icon: Icon(
+                      _isListening ? Icons.mic_rounded : Icons.mic_none_rounded, 
+                      color: _isListening ? Colors.red : AppTheme.getPrimaryAccent(context),
+                    ),
+                    onPressed: _isListening ? _stopListening : _startListening,
+                  ),
+                ),
+                onSubmitted: (_) => _sendMessage(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          _buildSendButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.getPrimaryAccent(context),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.getPrimaryAccent(context).withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _sendMessage,
+          customBorder: const CircleBorder(),
+          child: const Padding(
+            padding: EdgeInsets.all(12),
+            child: Icon(Icons.send_rounded, color: Colors.white, size: 24),
           ),
         ),
       ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end, // Align to bottom
-            children: [
-              Expanded(
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxHeight: 120, // Limit max height
-                  ),
-                  decoration: BoxDecoration(
-                    color: _isDarkMode ? Colors.grey[700] : AppTheme.backgroundLight,
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: _focusNode.hasFocus 
-                        ? AppTheme.primaryGreen 
-                        : (_isDarkMode ? Colors.grey[600]! : AppTheme.borderGrey),
-                    ),
-                  ),
-                  child: TextField(
-                    controller: _messageController,
-                    focusNode: _focusNode,
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Ask me anything about farming...',
-                      hintStyle: TextStyle(
-                        color: _isDarkMode ? Colors.white38 : AppTheme.textGrey,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.emoji_emotions_outlined,
-                              color: _isDarkMode ? Colors.white54 : AppTheme.textGrey,
-                            ),
-                            onPressed: () {
-                              setState(() => _showEmojiPanel = !_showEmojiPanel);
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.attach_file,
-                              color: _isDarkMode ? Colors.white54 : AppTheme.textGrey,
-                            ),
-                            onPressed: _showAttachmentOptions,
-                          ),
-                        ],
-                      ),
-                    ),
-                    style: TextStyle(
-                      color: _isDarkMode ? Colors.white : AppTheme.textDark,
-                    ),
-                    onSubmitted: (_) => _sendMessage(),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Send button with better visibility
-              Container(
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryGreen.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ScaleTransition(
-                  scale: _fabAnimation,
-                  child: FloatingActionButton(
-                    mini: true,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    onPressed: _messageController.text.trim().isEmpty ? null : _sendMessage,
-                    child: Icon(
-                      _isTyping ? Icons.stop : Icons.send,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (_showEmojiPanel) _buildEmojiPanel(),
-        ],
-      ),
     );
-  }
-
-  Widget _buildEmojiPanel() {
-    final emojis = ['🌾', '🚜', '🌱', '🌽', '🍅', '🥕', '🌶️', '🥔', '🌈', '☀️', '🌧️', '⛈️'];
-    
-    return Container(
-      height: 50,
-      margin: const EdgeInsets.only(top: 8),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: emojis.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              _messageController.text += emojis[index];
-              _messageController.selection = TextSelection.fromPosition(
-                TextPosition(offset: _messageController.text.length),
-              );
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _isDarkMode ? Colors.grey[700] : AppTheme.backgroundLight,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                emojis[index],
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFloatingActionButtons() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 100), // Add top padding to move below app bar
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Voice button - primary action
-          Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryGreen.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: FloatingActionButton(
-              heroTag: "voice_input",
-              backgroundColor: AppTheme.primaryGreen,
-              onPressed: _showVoiceInputDialog,
-              child: Icon(Icons.mic, color: Colors.white, size: 24),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Scroll to bottom - secondary action
-          if (_messages.length > 5)
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentOrange.withOpacity(0.3),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: FloatingActionButton.small(
-                heroTag: "scroll_to_bottom",
-                backgroundColor: AppTheme.accentOrange,
-                onPressed: _scrollToBottom,
-                child: Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 20),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  String _formatMessageTime(DateTime timestamp) {
-    final now = DateTime.now();
-    final diff = now.difference(timestamp);
-
-    if (diff.inMinutes < 1) {
-      return 'Just now';
-    } else if (diff.inHours < 1) {
-      return '${diff.inMinutes}m ago';
-    } else if (diff.inDays < 1) {
-      return '${diff.inHours}h ago';
-    } else {
-      return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
-    }
-  }
-
-  void _sendQuickSuggestion(String message) {
-    _messageController.text = message;
-    _sendMessage();
   }
 
   Future<void> _sendMessage() async {
-    final message = _messageController.text.trim();
-    if (message.isEmpty || _currentSession == null) return;
+    final text = _messageController.text.trim();
+    if (text.isEmpty || _currentSession == null) return;
 
-    // Clear input and hide suggestions
+    final localeService = Provider.of<LocaleService>(context, listen: false);
+    final languageCode = localeService.locale.languageCode;
+
     _messageController.clear();
-    setState(() {
-      _showSuggestions = false;
-      _isTyping = true;
-      _showEmojiPanel = false;
-    });
+    setState(() => _isTyping = true);
+    _scrollToBottom();
 
     try {
-      // Add user message
       final userMessage = AIChatMessage(
         id: '',
         sessionId: _currentSession!.id,
-        content: message,
+        content: text,
         type: AIChatMessageType.user,
         timestamp: DateTime.now(),
         userId: FirebaseAuth.instance.currentUser?.uid,
       );
-
-      print('Starting to send message: $message');
       await _aiChatService.addMessageToSession(_currentSession!.id, userMessage);
-      print('User message added successfully');
 
-      // Get AI response
-      print('Getting AI response...');
       final aiResponse = await _aiChatService.askExpert(
-        message,
+        text, 
         context: _selectedCategory,
+        languageCode: languageCode,
       );
-      print('AI response received: ${aiResponse.answer.substring(0, math.min(100, aiResponse.answer.length))}...');
+      
+      String cleanedResponse = aiResponse.answer.trim();
 
-      // Add AI message
       final aiMessage = AIChatMessage(
         id: '',
         sessionId: _currentSession!.id,
-        content: aiResponse.answer,
+        content: cleanedResponse,
         type: AIChatMessageType.ai,
         timestamp: DateTime.now(),
-        confidence: aiResponse.confidence,
-        sources: aiResponse.sources,
       );
-
-      print('Adding AI message to session...');
       await _aiChatService.addMessageToSession(_currentSession!.id, aiMessage);
-      print('AI message added successfully');
 
-    } catch (e) {
-      print('Error sending message: $e');
-      _showError('Failed to send message: ${e.toString()}');
-      
-      // Add error message for user feedback
-      final errorMessage = AIChatMessage(
-        id: '',
-        sessionId: _currentSession!.id,
-        content: 'Sorry, I\'m having trouble connecting right now. Please try again in a moment.',
-        type: AIChatMessageType.ai,
-        timestamp: DateTime.now(),
-        confidence: 0.0,
-      );
-      
-      try {
-        await _aiChatService.addMessageToSession(_currentSession!.id, errorMessage);
-      } catch (e2) {
-        print('Failed to add error message: $e2');
+      if (_autoSpeak) {
+        _speak(cleanedResponse);
       }
-    } finally {
-      setState(() => _isTyping = false);
-    }
-  }
-
-  void _addSystemMessage(String message) async {
-    if (_currentSession == null) return;
-    
-    final systemMessage = AIChatMessage(
-      id: '',
-      sessionId: _currentSession!.id,
-      content: message,
-      type: AIChatMessageType.system,
-      timestamp: DateTime.now(),
-    );
-
-    try {
-      await _aiChatService.addMessageToSession(_currentSession!.id, systemMessage);
     } catch (e) {
-      print('Failed to add system message: $e');
+      ToastHelper.showError(context, 'Expert connection timed out');
+    } finally {
+      if (mounted) setState(() => _isTyping = false);
     }
-  }
-
-  void _handleMenuAction(String action) {
-    switch (action) {
-      case 'new_chat':
-        _startNewChat();
-        break;
-      case 'export_chat':
-        _exportChat();
-        break;
-      case 'clear_chat':
-        _showClearChatDialog();
-        break;
-      case 'help':
-        _showHelpDialog();
-        break;
-    }
-  }
-
-  void _startNewChat() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EnhancedAIExpertChatPage(),
-      ),
-    );
-  }
-
-  void _exportChat() {
-    final chatText = _messages
-        .where((m) => m.type != AIChatMessageType.system)
-        .map((m) => '${m.isFromUser ? "You" : "AI Expert"}: ${m.content}')
-        .join('\n\n');
-    
-    Clipboard.setData(ClipboardData(text: chatText));
-    _showSuccess('Chat exported to clipboard!');
-  }
-
-  void _showClearChatDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Clear Messages'),
-        content: Text('This will remove all messages from this conversation. Are you sure?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _clearChat();
-            },
-            style: TextButton.styleFrom(foregroundColor: AppTheme.error),
-            child: Text('Clear'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _clearChat() {
-    if (_currentSession != null) {
-      _aiChatService.deleteChatSession(_currentSession!.id);
-      Navigator.pop(context);
-    }
-  }
-
-  void _showHelpDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.help_outline, color: AppTheme.info),
-            const SizedBox(width: 8),
-            Text('Help & Tips'),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildHelpItem(
-                '🌾',
-                'Ask specific questions',
-                'Be specific about your crops, location, and problems for better advice.',
-              ),
-              _buildHelpItem(
-                '📷',
-                'Describe symptoms',
-                'Describe plant symptoms, soil conditions, or weather patterns clearly.',
-              ),
-              _buildHelpItem(
-                '🔍',
-                'Use categories',
-                'Change the consultation category for specialized advice.',
-              ),
-              _buildHelpItem(
-                '💬',
-                'Follow up',
-                'Ask follow-up questions to get more detailed guidance.',
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHelpItem(String emoji, String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: TextStyle(fontSize: 20)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: AppTheme.textGrey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAttachmentOptions() {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Add to your message',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildAttachmentOption(
-                  Icons.photo_camera,
-                  'Camera',
-                  () {
-                    Navigator.pop(context);
-                    _showComingSoon('Camera feature');
-                  },
-                ),
-                _buildAttachmentOption(
-                  Icons.photo_library,
-                  'Gallery',
-                  () {
-                    Navigator.pop(context);
-                    _showComingSoon('Gallery feature');
-                  },
-                ),
-                _buildAttachmentOption(
-                  Icons.location_on,
-                  'Location',
-                  () {
-                    Navigator.pop(context);
-                    _addLocationToMessage();
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttachmentOption(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: AppTheme.primaryGreen,
-              size: 30,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _addLocationToMessage() {
-    final locationText = "\n📍 Location: [Your Farm Location]";
-    _messageController.text += locationText;
-    _messageController.selection = TextSelection.fromPosition(
-      TextPosition(offset: _messageController.text.length),
-    );
-  }
-
-  void _showVoiceInputDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.mic, color: AppTheme.primaryGreen),
-            const SizedBox(width: 8),
-            Text('Voice Input'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.mic_none,
-                    size: 48,
-                    color: AppTheme.primaryGreen,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Voice input feature coming soon!',
-                    style: TextStyle(
-                      color: AppTheme.primaryGreen,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'We\'re working on adding voice recognition to make your farming consultations even more convenient.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppTheme.textGrey,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'For now, you can:',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.keyboard, size: 16, color: AppTheme.textGrey),
-                    const SizedBox(width: 8),
-                    Text('Type your questions', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.touch_app, size: 16, color: AppTheme.textGrey),
-                    const SizedBox(width: 8),
-                    Text('Use quick suggestions', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.emoji_emotions, size: 16, color: AppTheme.textGrey),
-                    const SizedBox(width: 8),
-                    Text('Add emojis for context', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Got it'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        backgroundColor: AppTheme.info,
-      ),
-    );
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppTheme.error,
-      ),
-    );
-  }
-
-  void _showSuccess(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppTheme.success,
-      ),
-    );
   }
 }

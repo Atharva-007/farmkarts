@@ -1,13 +1,72 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart';
 import '../models/payment_model.dart';
 import '../models/product_model.dart';
+
+// Conditional imports for payment gateways
+import 'package:razorpay_flutter/razorpay_flutter.dart' if (dart.library.html) '';
+import 'package:upi_india/upi_india.dart' if (dart.library.html) '';
 
 class PaymentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Uuid _uuid = const Uuid();
+  
+  // Razorpay instance (only on mobile)
+  Razorpay? _razorpay;
+  
+  // UPI instance (only on mobile)
+  UpiIndia? _upiIndia;
+  
+  // Razorpay configuration (replace with your actual keys)
+  static const String _razorpayKeyId = 'YOUR_RAZORPAY_KEY_ID';
+  static const String _razorpayKeySecret = 'YOUR_RAZORPAY_KEY_SECRET';
+  
+  PaymentService() {
+    if (!kIsWeb) {
+      _initializePaymentGateways();
+    }
+  }
+  
+  /// Initialize payment gateways for mobile
+  void _initializePaymentGateways() {
+    try {
+      // Initialize Razorpay
+      _razorpay = Razorpay();
+      _razorpay?.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handleRazorpaySuccess);
+      _razorpay?.on(Razorpay.EVENT_PAYMENT_ERROR, _handleRazorpayError);
+      _razorpay?.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+      
+      // Initialize UPI
+      _upiIndia = UpiIndia();
+    } catch (e) {
+      debugPrint('PaymentService: Error initializing payment gateways: $e');
+    }
+  }
+  
+  /// Razorpay success handler
+  void _handleRazorpaySuccess(PaymentSuccessResponse response) {
+    debugPrint('Razorpay Payment Success: ${response.paymentId}');
+    // Handle in the UI layer through callback
+  }
+  
+  /// Razorpay error handler
+  void _handleRazorpayError(PaymentFailureResponse response) {
+    debugPrint('Razorpay Payment Error: ${response.code} - ${response.message}');
+    // Handle in the UI layer through callback
+  }
+  
+  /// External wallet handler
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint('External Wallet: ${response.walletName}');
+  }
+  
+  /// Dispose payment gateway resources
+  void dispose() {
+    _razorpay?.clear();
+  }
 
   /// Create a new order
   Future<Order> createOrder({
@@ -112,41 +171,151 @@ class PaymentService {
     }
   }
 
-  /// Process UPI Payment (Simulated)
-  Future<Payment> processUPIPayment({
+  /// Process Razorpay Payment
+  Future<void> processRazorpayPayment({
     required Order order,
-    required String upiId,
+    required Function(PaymentSuccessResponse) onSuccess,
+    required Function(PaymentFailureResponse) onError,
   }) async {
     try {
+      if (kIsWeb) {
+        throw Exception('Razorpay is not supported on web. Please use UPI or COD.');
+      }
+      
+      final payment = await initializePayment(
+        order: order,
+        method: PaymentMethod.razorpay,
+      );
+      
+      // Prepare Razorpay options
+      final options = {
+        'key': _razorpayKeyId,
+        'amount': (order.totalAmount * 100).toInt(), // Amount in paise
+        'name': 'FarmKarts',
+        'description': 'Payment for ${order.productName}',
+        'order_id': payment.id,
+        'prefill': {
+          'name': order.buyerName,
+          'contact': order.buyerPhone,
+        },
+        'theme': {
+          'color': '#2E7D32',
+        },
+      };
+      
+      // Open Razorpay checkout
+      _razorpay?.open(options);
+      
+      // Store payment info for later verification
+      await _firestore.collection('payments').doc(payment.id).update({
+        'status': PaymentStatus.processing.toString().split('.').last,
+        'metadata': {
+          'razorpayOrderId': payment.id,
+          'processingStarted': DateTime.now().millisecondsSinceEpoch,
+        },
+      });
+      
+    } catch (e) {
+      debugPrint('PaymentService: Error processing Razorpay payment: $e');
+      rethrow;
+    }
+  }
+  
+  /// Verify Razorpay payment signature
+  Future<Payment> verifyRazorpayPayment({
+    required String paymentId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    try {
+      // Verify signature (implement actual verification with your backend)
+      // For now, we'll mark it as completed
+      
+      final paymentDoc = await _firestore.collection('payments').doc(paymentId).get();
+      if (!paymentDoc.exists) {
+        throw Exception('Payment not found');
+      }
+      
+      final payment = Payment.fromMap(paymentId, paymentDoc.data()!);
+      
+      final completedPayment = payment.copyWith(
+        status: PaymentStatus.completed,
+        completedAt: DateTime.now(),
+        transactionId: razorpayPaymentId,
+        metadata: {
+          ...payment.metadata,
+          'razorpayPaymentId': razorpayPaymentId,
+          'razorpaySignature': razorpaySignature,
+        },
+      );
+      
+      await _firestore
+          .collection('payments')
+          .doc(paymentId)
+          .update(completedPayment.toMap());
+      
+      // Update order status
+      await _firestore.collection('orders').doc(payment.orderId).update({
+        'status': 'confirmed',
+        'paymentId': paymentId,
+      });
+      
+      return completedPayment;
+    } catch (e) {
+      debugPrint('PaymentService: Error verifying Razorpay payment: $e');
+      rethrow;
+    }
+  }
+  
+  /// Process UPI Payment using UPI India
+  Future<Payment> processUPIPayment({
+    required Order order,
+    required String upiApp, // 'gpay', 'paytm', 'phonepe', etc.
+  }) async {
+    try {
+      if (kIsWeb) {
+        throw Exception('UPI is not supported on web. Please use COD.');
+      }
+      
       final payment = await initializePayment(
         order: order,
         method: PaymentMethod.upi,
       );
-
-      // Update payment with UPI details
-      await _firestore.collection('payments').doc(payment.id).update({
-        'status': PaymentStatus.processing.toString().split('.').last,
-        'metadata': {
-          'upiId': upiId,
-          'processingStarted': DateTime.now().millisecondsSinceEpoch,
-        },
-      });
-
-      // Simulate UPI processing (in real app, integrate with UPI gateway)
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Complete payment
-      final completedPayment = payment.copyWith(
-        status: PaymentStatus.completed,
-        completedAt: DateTime.now(),
-        transactionId: 'UPI-${DateTime.now().millisecondsSinceEpoch}',
-        metadata: {'upiId': upiId},
+      
+      // Get list of UPI apps
+      final apps = await _upiIndia!.getAllUpiApps();
+      final selectedApp = apps.firstWhere(
+        (app) => app.app.toLowerCase().contains(upiApp.toLowerCase()),
+        orElse: () => apps.first,
       );
-
-      await _firestore
-          .collection('payments')
-          .doc(payment.id)
-          .update(completedPayment.toMap());
+      
+      // Create UPI transaction
+      final response = await _upiIndia!.startTransaction(
+        app: selectedApp.app,
+        receiverUpiId: 'merchant@upi', // Replace with your UPI ID
+        receiverName: 'FarmKarts',
+        transactionRefId: payment.id,
+        transactionNote: 'Payment for ${order.productName}',
+        amount: order.totalAmount,
+      );
+      
+      // Handle response
+      if (response.status == UpiPaymentStatus.SUCCESS) {
+        final completedPayment = payment.copyWith(
+          status: PaymentStatus.completed,
+          completedAt: DateTime.now(),
+          transactionId: response.txnId ?? 'UPI-${DateTime.now().millisecondsSinceEpoch}',
+          metadata: {
+            'upiApp': upiApp,
+            'upiTxnId': response.txnId ?? '',
+            'upiResponseCode': response.responseCode ?? '',
+          },
+        );
+        
+        await _firestore
+            .collection('payments')
+            .doc(payment.id)
+            .update(completedPayment.toMap());
 
       // Update order status
       await _firestore.collection('orders').doc(order.id).update({

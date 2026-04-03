@@ -4,9 +4,11 @@ import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/quick_action_grid.dart';
-import '../../widgets/market_price_ticker.dart';
 import '../../widgets/weather_widget.dart';
+import '../../widgets/live_market_rates_widget.dart';
 import '../../widgets/news_carousel.dart';
+import '../../widgets/universal_drawer.dart';
+import '../../widgets/universal_header.dart';
 
 class DashboardHome extends StatefulWidget {
   final Function(int)? onNavigate;
@@ -65,9 +67,9 @@ class _DashboardHomeState extends State<DashboardHome>
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Dashboard refreshed!'),
-          backgroundColor: AppTheme.primaryGreen,
+        SnackBar(
+          content: const Text('Dashboard refreshed!'),
+          backgroundColor: AppTheme.getSuccessColor(context),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -81,21 +83,19 @@ class _DashboardHomeState extends State<DashboardHome>
     final isMobile = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) => FadeTransition(
-          opacity: _fadeAnimation,
-          child: RefreshIndicator(
-            onRefresh: _refreshData,
-            color: AppTheme.primaryGreen,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                _buildAppBar(userName, isMobile),
-                _buildLiveMarketRates(),
-                _buildMainContent(isMobile),
-              ],
-            ),
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      drawer: const UniversalDrawer(currentPage: 'dashboard'),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          color: AppTheme.getPrimaryAccent(context),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              _buildAppBar(userName, isMobile),
+              _buildMainContent(isMobile),
+            ],
           ),
         ),
       ),
@@ -103,206 +103,117 @@ class _DashboardHomeState extends State<DashboardHome>
   }
 
   Widget _buildAppBar(String userName, bool isMobile) {
-    return SliverAppBar(
-      expandedHeight: ResponsiveHelper.isDesktop(context) ? 180 : 140,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: AppTheme.primaryGreen,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.primaryGreen,
-                AppTheme.lightGreen,
-                AppTheme.darkGreen,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: ResponsiveHelper.getScreenPadding(context),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: Icon(
-                          Icons.wb_sunny,
-                          color: Colors.white,
-                          size: ResponsiveHelper.isDesktop(context) ? 32 : 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getGreeting(),
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: ResponsiveHelper.isDesktop(context) ? 28 : 24,
-                              ),
-                            ),
-                            Text(
-                              userName,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (!ResponsiveHelper.isMobile(context)) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                'Welcome back to your smart farming dashboard',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return UniversalHeader(
+      title: _getGreeting(),
+      subtitle: userName,
+      icon: Icons.dashboard,
+      expandedHeight: ResponsiveHelper.isDesktop(context) ? 180 : 150,
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications_outlined, color: Colors.white),
           onPressed: () => _showNotifications(),
+          tooltip: 'Notifications',
         ),
         IconButton(
-          icon: const Icon(Icons.settings_outlined, color: Colors.white),
-          onPressed: () => widget.onNavigate?.call(6),
+          icon: const Icon(Icons.search, color: Colors.white),
+          onPressed: () => widget.onNavigate?.call(1),
+          tooltip: 'Search',
         ),
+        const SizedBox(width: 4),
       ],
-    );
-  }
-
-  Widget _buildLiveMarketRates() {
-    return SliverToBoxAdapter(
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Container(
-          margin: ResponsiveHelper.getResponsivePadding(context),
-          padding: AppConstants.getResponsivePadding(context),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.trending_up,
-                    color: AppTheme.primaryGreen,
-                    size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Live Market Rates',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.success.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppTheme.success.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppTheme.success,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'LIVE',
-                          style: TextStyle(
-                            color: AppTheme.success,
-                            fontSize: ResponsiveHelper.isDesktop(context) ? 12 : 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-              const MarketPriceTicker(),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildMainContent(bool isMobile) {
     return SliverToBoxAdapter(
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Column(
-          children: [
-            // Quick Actions Section
-            Container(
-              padding: ResponsiveHelper.getResponsivePadding(context),
-              child: QuickActionGrid(onNavigate: widget.onNavigate),
-            ),
+      child: Column(
+        children: [
+          // Market Rates - Compact (Now at the top)
+          _buildCompactMarketRates(),
 
-            // Dashboard Cards Section
-            _buildDashboardCards(),
+          // Quick Actions Section - Compact
+          Container(
+            padding: ResponsiveHelper.getResponsivePadding(context),
+            child: QuickActionGrid(onNavigate: widget.onNavigate),
+          ),
 
-            // News Section
-            Container(
-              padding: ResponsiveHelper.getResponsivePadding(context),
-              child: const NewsCarousel(),
-            ),
+          // Compact Dashboard Stats
+          _buildCompactStats(),
 
-            // Banner Section
-            _buildPromotionalBanner(),
-
-            // Footer padding
-            SizedBox(height: AppConstants.getResponsiveSpacing(context) * 2),
-          ],
-        ),
+          // Footer padding
+          SizedBox(height: AppConstants.getResponsiveSpacing(context) * 2),
+        ],
       ),
+    );
+  }
+
+  Widget _buildCompactStats() {
+    return Container(
+      padding: ResponsiveHelper.getResponsivePadding(context),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildCompactStatCard('12', 'Crops', Icons.agriculture, AppTheme.primaryGreen),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildCompactStatCard('8', 'Sales', Icons.storefront, AppTheme.accentOrange),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildCompactStatCard('₹45K', 'Revenue', Icons.account_balance_wallet, AppTheme.success),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactStatCard(String value, String label, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: isDark ? AppTheme.getPrimaryAccent(context) : color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.getTextColor(context),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.getSecondaryTextColor(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactMarketRates() {
+    return Container(
+      padding: ResponsiveHelper.getResponsivePadding(context),
+      child: const LiveMarketRatesWidget(),
     );
   }
 
@@ -316,7 +227,7 @@ class _DashboardHomeState extends State<DashboardHome>
             children: [
               Icon(
                 Icons.dashboard_outlined,
-                color: AppTheme.primaryGreen,
+                color: AppTheme.getPrimaryAccent(context),
                 size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
               ),
               const SizedBox(width: 12),
@@ -324,7 +235,7 @@ class _DashboardHomeState extends State<DashboardHome>
                 'Farm Overview',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+                  color: AppTheme.getTextColor(context),
                 ),
               ),
             ],
@@ -375,19 +286,21 @@ class _DashboardHomeState extends State<DashboardHome>
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 20 : 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
           BoxShadow(
             color: color.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,7 +316,7 @@ class _DashboardHomeState extends State<DashboardHome>
                 ),
                 child: Icon(
                   icon,
-                  color: color,
+                  color: isDark ? AppTheme.getPrimaryAccent(context) : color,
                   size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
                 ),
               ),
@@ -419,7 +332,7 @@ class _DashboardHomeState extends State<DashboardHome>
             value,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: AppTheme.getTextColor(context),
               fontSize: ResponsiveHelper.isDesktop(context) ? 24 : 20,
             ),
           ),
@@ -427,7 +340,7 @@ class _DashboardHomeState extends State<DashboardHome>
           Text(
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
               fontSize: ResponsiveHelper.isDesktop(context) ? 14 : 12,
             ),
           ),
@@ -516,9 +429,9 @@ class _DashboardHomeState extends State<DashboardHome>
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
@@ -527,7 +440,7 @@ class _DashboardHomeState extends State<DashboardHome>
               height: 4,
               margin: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppTheme.getDividerColor(context),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -537,15 +450,24 @@ class _DashboardHomeState extends State<DashboardHome>
                 itemCount: 5,
                 itemBuilder: (context, index) => ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                    backgroundColor: AppTheme.getIconBackgroundColor(context),
                     child: Icon(
                       Icons.notifications,
-                      color: AppTheme.primaryGreen,
+                      color: AppTheme.getPrimaryAccent(context),
                     ),
                   ),
-                  title: Text('Notification ${index + 1}'),
-                  subtitle: Text('This is a sample notification message'),
-                  trailing: Text('${index + 1}h ago'),
+                  title: Text(
+                    'Notification ${index + 1}',
+                    style: TextStyle(color: AppTheme.getTextColor(context)),
+                  ),
+                  subtitle: Text(
+                    'This is a sample notification message',
+                    style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                  ),
+                  trailing: Text(
+                    '${index + 1}h ago',
+                    style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
+                  ),
                 ),
               ),
             ),

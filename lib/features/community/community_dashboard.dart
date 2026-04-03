@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
-import '../../utils/app_constants.dart';
+import '../../widgets/universal_drawer.dart';
+import '../../widgets/universal_header.dart';
+import '../../services/user_state_service.dart';
+import '../../models/user_model.dart';
+import 'role_based_community_service.dart';
+import '../../services/ai_chat_service.dart';
+import '../../services/trending_video_service.dart';
+import '../../models/trending_video_model.dart';
+import 'crop_chat_page.dart';
+import 'community_group_chat_page.dart';
+import 'video_player_page.dart';
+import 'video_library_page.dart';
 
 class CommunityDashboard extends StatefulWidget {
   const CommunityDashboard({super.key});
@@ -13,22 +28,26 @@ class CommunityDashboard extends StatefulWidget {
 class _CommunityDashboardState extends State<CommunityDashboard> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final RoleBasedCommunityService _communityService = RoleBasedCommunityService();
+  final AIChatService _aiChatService = AIChatService();
+  final TrendingVideoService _videoService = TrendingVideoService();
+  bool _isPosting = false;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _fadeAnimation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeIn,
-    ));
+      curve: Curves.easeOut,
+    );
     _animationController.forward();
+    
+    // Update trending video engine on page load
+    _videoService.updateEngine();
   }
 
   @override
@@ -39,588 +58,515 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppTheme.backgroundLight,
-      child: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: ResponsiveHelper.getMaxWidth(context),
-            ),
-            child: Column(
-              children: [
-                _buildIntegratedHeader(),
-                Expanded(
-                  child: CustomScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    slivers: [
-                      SliverPadding(
-                        padding: ResponsiveHelper.getScreenPadding(context),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate([
-                            _buildCommunityStats(context),
-                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                            _buildRecentDiscussions(context),
-                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                            _buildExpertAdvice(context),
-                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                            _buildSuccessStories(context),
-                            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                          ]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+    return Consumer<UserStateService>(
+      builder: (context, userState, _) {
+        final currentUser = userState.currentUser;
+        final userRole = currentUser?.role ?? UserRole.customer;
+        final userName = currentUser?.fullName ?? 'User';
 
-  Widget _buildIntegratedHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Action buttons row
-          Row(
-            children: [
-              _buildHeaderAction(
-                icon: Icons.add_circle_outline,
-                label: 'New Post',
-                onTap: _showCreatePost,
-                isPrimary: true,
-              ),
-              const SizedBox(width: 12),
-              _buildHeaderAction(
-                icon: Icons.chat_bubble_outline,
-                label: 'Messages',
-                onTap: _showMessages,
-                badge: '7',
-              ),
-              const SizedBox(width: 12),
-              _buildHeaderAction(
-                icon: Icons.group_add,
-                label: 'Join Groups',
-                onTap: _showGroups,
-              ),
-              const Spacer(),
-              _buildHeaderAction(
-                icon: Icons.more_vert,
-                label: 'More',
-                onTap: _showMoreOptions,
-              ),
-            ],
-          ),
-          
-          // Community stats
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildStatChip('2.5k Members', Icons.people),
-              const SizedBox(width: 12),
-              _buildStatChip('150 Posts Today', Icons.article),
-              const SizedBox(width: 12),
-              _buildStatChip('45 Experts', Icons.verified),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    String? badge,
-    bool isPrimary = false,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isPrimary ? AppTheme.primaryGreen : null,
-          border: isPrimary ? null : Border.all(color: AppTheme.borderGrey),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Stack(
-          children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 18,
-                  color: isPrimary ? Colors.white : AppTheme.primaryGreen,
-                ),
-                if (ResponsiveHelper.isDesktop(context)) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isPrimary ? Colors.white : AppTheme.textDark,
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          drawer: const UniversalDrawer(currentPage: 'community'),
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await Future.delayed(const Duration(seconds: 1));
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Community feed updated!'),
+                      backgroundColor: AppTheme.getPrimaryAccent(context),
                     ),
-                  ),
-                ],
-              ],
-            ),
-            if (badge != null)
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: AppTheme.error,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    badge,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: ResponsiveHelper.isDesktop(context) ? 140 : 120,
-      floating: false,
-      pinned: true,
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppTheme.accentOrange, AppTheme.harvest],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: ResponsiveHelper.getScreenPadding(context),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.people,
-                        color: Colors.white,
-                        size: ResponsiveHelper.isDesktop(context) ? 32 : 28,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Farmer Community',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (!ResponsiveHelper.isMobile(context)) ...[
-                        IconButton(
-                          icon: const Icon(Icons.add, color: Colors.white),
-                          onPressed: () {
-                            // Create new post
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.notifications, color: Colors.white),
-                          onPressed: () {
-                            // Notifications
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Connect, share experiences, and get expert advice',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCommunityStats(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: AppConstants.getResponsivePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Community Overview',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                if (ResponsiveHelper.isMobile(context)) {
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: _buildStatCard(context, 'Members', '12,543', Icons.group, AppTheme.primaryGreen)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildStatCard(context, 'Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(child: _buildStatCard(context, 'Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildStatCard(context, 'Experts', '156', Icons.verified, AppTheme.success)),
-                        ],
-                      ),
-                    ],
-                  );
-                } else {
-                  return Row(
-                    children: [
-                      Expanded(child: _buildStatCard(context, 'Members', '12,543', Icons.group, AppTheme.primaryGreen)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard(context, 'Active Today', '847', Icons.people_alt, AppTheme.accentOrange)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard(context, 'Discussions', '2,156', Icons.chat, AppTheme.skyBlue)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _buildStatCard(context, 'Experts', '156', Icons.verified, AppTheme.success)),
-                    ],
                   );
                 }
               },
+              color: AppTheme.getPrimaryAccent(context),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  UniversalHeader(
+                    title: _communityService.getCommunityName(userRole),
+                    subtitle: 'Welcome back, $userName',
+                    icon: Icons.people,
+                    showBackButton: false,
+                    expandedHeight: ResponsiveHelper.isDesktop(context) ? 180 : 150,
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+                        onPressed: () => _showCreatePostDialog(context, currentUser),
+                        tooltip: 'Create Post',
+                      ),
+                    ],
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: ResponsiveHelper.getScreenPadding(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (userRole == UserRole.farmer) ...[
+                            _buildCropChatCard(context),
+                            const SizedBox(height: 24),
+                            _buildSectionHeader(
+                              context, 
+                              'Crop Discussion Groups', 
+                              Icons.groups, 
+                              AppTheme.primaryGreen,
+                              onViewAll: () => _showComingSoon('All Groups'),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildCropGroups(context),
+                            const SizedBox(height: 24),
+                            _buildSectionHeader(
+                              context, 
+                              'Trending', 
+                              Icons.play_circle_filled, 
+                              AppTheme.accentOrange,
+                              onViewAll: () => Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => const VideoLibraryPage()),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildTrendingRefreshment(context),
+                            const SizedBox(height: 24),
+                          ],
+                          
+                          if (userRole == UserRole.vendor || userRole == UserRole.wholesaler) ...[
+                            _buildMarketInsights(context),
+                            const SizedBox(height: 24),
+                          ],
+
+                          _buildSectionHeader(
+                            context, 
+                            'Recent Discussions', 
+                            Icons.forum, 
+                            AppTheme.skyBlue,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildRecentDiscussions(context, userRole),
+                          const SizedBox(height: 24),
+
+                          _buildSectionHeader(
+                            context, 
+                            'Expert Advice', 
+                            Icons.verified, 
+                            AppTheme.success,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildExpertAdvice(context),
+                          const SizedBox(height: 24),
+
+                          _buildSectionHeader(
+                            context, 
+                            'Success Stories', 
+                            Icons.star, 
+                            AppTheme.sunshine,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildSuccessStories(context),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
-          ),
-          SizedBox(height: ResponsiveHelper.isDesktop(context) ? 12 : 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: ResponsiveHelper.getFontSize(context, 18),
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: ResponsiveHelper.getFontSize(context, 12),
-              color: AppTheme.textGrey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    final actions = [
-      {'title': 'Ask Question', 'icon': Icons.help_outline, 'color': AppTheme.skyBlue},
-      {'title': 'Share Experience', 'icon': Icons.share, 'color': AppTheme.primaryGreen},
-      {'title': 'Find Experts', 'icon': Icons.search, 'color': AppTheme.accentOrange},
-      {'title': 'Join Groups', 'icon': Icons.group_add, 'color': AppTheme.success},
-    ];
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: AppConstants.getResponsivePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSectionHeader(BuildContext context, String title, IconData icon, Color color, {VoidCallback? onViewAll}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayColor = isDark ? AppTheme.getPrimaryAccent(context) : color;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
           children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: displayColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: displayColor, size: 22),
+            ),
+            const SizedBox(width: 12),
             Text(
-              'Quick Actions',
+              title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: AppTheme.getTextColor(context),
               ),
-            ),
-            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: ResponsiveHelper.getGridCrossAxisCount(
-                  context,
-                  mobile: 2,
-                  tablet: 4,
-                  desktop: 4,
-                ),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: ResponsiveHelper.getCardAspectRatio(context),
-              ),
-              itemCount: actions.length,
-              itemBuilder: (context, index) {
-                final action = actions[index];
-                return _buildActionCard(
-                  context,
-                  action['title'] as String,
-                  action['icon'] as IconData,
-                  action['color'] as Color,
-                );
-              },
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color) {
-    return Card(
-      elevation: 1,
-      child: InkWell(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$title feature coming soon!')),
-          );
-        },
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: ResponsiveHelper.isDesktop(context) ? 28 : 24,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+        if (onViewAll != null)
+          TextButton(
+            onPressed: onViewAll,
+            child: Text('View All', style: TextStyle(color: displayColor, fontWeight: FontWeight.bold)),
           ),
-        ),
-      ),
+      ],
     );
   }
 
-  Widget _buildRecentDiscussions(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: AppConstants.getResponsivePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Recent Discussions',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('View All'),
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            _buildDiscussionItem(
-              context,
-              'Best practices for organic farming?',
-              'Rajesh Kumar',
-              '23 replies',
-              '2 hours ago',
-              AppTheme.primaryGreen,
-            ),
-            const SizedBox(height: 12),
-            _buildDiscussionItem(
-              context,
-              'Dealing with pest issues in monsoon',
-              'Priya Sharma',
-              '15 replies',
-              '4 hours ago',
-              AppTheme.warning,
-            ),
-            const SizedBox(height: 12),
-            _buildDiscussionItem(
-              context,
-              'Crop insurance claim process help',
-              'Mukesh Singh',
-              '8 replies',
-              '6 hours ago',
-              AppTheme.info,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDiscussionItem(BuildContext context, String title, String author, String replies, String time, Color color) {
+  Widget _buildCropChatCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(Icons.person, size: 16, color: AppTheme.textGrey),
-              const SizedBox(width: 4),
-              Text(
-                author,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
-                ),
-              ),
-              const Spacer(),
-              Icon(Icons.chat_bubble_outline, size: 16, color: color),
-              const SizedBox(width: 4),
-              Text(
-                replies,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            time,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.textGrey,
-            ),
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDark 
+            ? [AppTheme.darkDeepGreen, AppTheme.darkSurface]
+            : [AppTheme.primaryGreen, AppTheme.lightGreen],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.getPrimaryAccent(context).withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CropChatPage(),
+              settings: const RouteSettings(name: 'crop_chat'),
+            ),
+          ),
+          borderRadius: BorderRadius.circular(24),
+          child: const Padding(
+            padding: EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Crop Expert',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Instant solutions for your crop problems',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildExpertAdvice(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: AppConstants.getResponsivePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.verified, color: AppTheme.success),
-                const SizedBox(width: 8),
-                Text(
-                  'Expert Advice',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+  Widget _buildCropGroups(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _communityService.getCropGroups(),
+      builder: (context, snapshot) {
+        final List<Map<String, dynamic>> cropGroups = snapshot.hasData && snapshot.data!.docs.isNotEmpty
+            ? snapshot.data!.docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                return {
+                  'id': doc.id,
+                  'name': data['name'] ?? 'Unknown',
+                  'icon': data['icon'] ?? '🌱',
+                  'members': data['memberCount']?.toString() ?? '0',
+                };
+              }).toList()
+            : [
+                {'id': 'wheat', 'name': 'Wheat', 'icon': '🌾', 'members': '1.2k'},
+                {'id': 'rice', 'name': 'Rice', 'icon': '🍚', 'members': '2.5k'},
+                {'id': 'cotton', 'name': 'Cotton', 'icon': '☁️', 'members': '850'},
+                {'id': 'sugarcane', 'name': 'Sugarcane', 'icon': '🎋', 'members': '1.1k'},
+                {'id': 'maize', 'name': 'Maize', 'icon': '🌽', 'members': '920'},
+              ];
+
+        return SizedBox(
+          height: 160,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: cropGroups.length,
+            itemBuilder: (context, index) {
+              final group = cropGroups[index];
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              
+              return Container(
+                width: 130,
+                margin: const EdgeInsets.only(right: 16),
+                child: Card(
+                  elevation: 4,
+                  shadowColor: Colors.black.withOpacity(0.1),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CommunityGroupChatPage(
+                            groupId: group['id'] as String,
+                            groupName: group['name'] as String,
+                            groupIcon: group['icon'] as String,
+                          ),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              group['icon'] as String,
+                              style: const TextStyle(fontSize: 30),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            group['name'] as String,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: AppTheme.getTextColor(context),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${group['members']} members',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppTheme.getSecondaryTextColor(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            Container(
+              );
+            },
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildTrendingRefreshment(BuildContext context) {
+    return StreamBuilder<List<TrendingVideo>>(
+      stream: _videoService.getTrendingVideos(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: 240,
+            child: Center(child: Text('Error loading videos', style: TextStyle(color: AppTheme.getSecondaryTextColor(context)))),
+          );
+        }
+
+        final videos = snapshot.data ?? [];
+        if (videos.isEmpty) {
+          return SizedBox(
+            height: 240,
+            child: Center(child: Text('No trending videos found', style: TextStyle(color: AppTheme.getSecondaryTextColor(context)))),
+          );
+        }
+
+        return SizedBox(
+          height: 240,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              
+              return Container(
+                width: 260,
+                margin: const EdgeInsets.only(right: 16),
+                child: Card(
+                  elevation: 6,
+                  shadowColor: Colors.black26,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VideoPlayerPage(video: video),
+                        ),
+                      );
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: CachedNetworkImage(
+                                imageUrl: video.thumbnail,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: isDark ? AppTheme.darkHighlight : Colors.grey[300]),
+                                errorWidget: (context, url, error) => Container(
+                                  color: isDark ? AppTheme.darkHighlight : Colors.grey[300],
+                                  child: const Icon(Icons.video_library, size: 40),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black87,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  video.duration,
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                            const Positioned.fill(
+                              child: Center(
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white70,
+                                  radius: 25,
+                                  child: Icon(Icons.play_arrow_rounded, color: AppTheme.accentOrange, size: 40),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                video.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  height: 1.2,
+                                  color: AppTheme.getTextColor(context),
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                video.category == 'Feed' ? 'Shared in Feed' : video.category,
+                                style: TextStyle(
+                                  color: video.category == 'Feed' ? AppTheme.accentOrange : AppTheme.getPrimaryAccent(context),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      }
+    );
+  }
+
+  Future<void> _launchYouTube(String videoId) async {
+    final Uri url = Uri.parse('https://www.youtube.com/watch?v=$videoId');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch YouTube')),
+        );
+      }
+    }
+  }
+
+  Widget _buildRecentDiscussions(BuildContext context, UserRole role) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _communityService.getCommunityFeed(role),
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? [];
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        
+        if (docs.isEmpty) {
+          return _buildEmptySection('No discussions yet. Be the first to start one!');
+        }
+
+        return Column(
+          children: docs.take(3).map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.success.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.success.withValues(alpha: 0.3)),
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+                boxShadow: isDark ? [] : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const CircleAvatar(
-                        backgroundColor: AppTheme.success,
-                        child: Icon(Icons.person, color: Colors.white),
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                        child: Icon(Icons.person, size: 18, color: AppTheme.getPrimaryAccent(context)),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -628,296 +574,684 @@ class _CommunityDashboardState extends State<CommunityDashboard> with SingleTick
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Dr. Agricultural Expert',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              data['userName'] ?? 'Anonymous',
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
+                                color: AppTheme.getTextColor(context),
                               ),
                             ),
                             Text(
-                              'Agriculture Specialist',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textGrey,
-                              ),
+                              'Posted recently',
+                              style: TextStyle(fontSize: 11, color: AppTheme.getSecondaryTextColor(context)),
                             ),
                           ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${data['commentsCount'] ?? 0} replies',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppTheme.getPrimaryAccent(context)),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Tip: Apply nitrogen fertilizer during the early morning or late evening for better absorption and to minimize nutrient loss.',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    data['content'] ?? 'No content',
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: AppTheme.getTextColor(context).withOpacity(0.9),
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
+            );
+          }).toList(),
+        );
+      }
+    );
+  }
+
+  Widget _buildExpertAdvice(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _communityService.getExpertAdvice(),
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? [];
+        
+        if (docs.isEmpty) {
+          return _buildAdviceItem(
+            context,
+            'Dr. Agricultural Expert',
+            'Agriculture Specialist',
+            'Tip: Apply nitrogen fertilizer during the early morning or late evening for better absorption.',
+          );
+        }
+
+        return Column(
+          children: docs.take(2).map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildAdviceItem(
+                context,
+                data['expertName'] ?? 'Expert',
+                data['specialization'] ?? 'Specialist',
+                data['tip'] ?? 'Loading expert tip...',
+              ),
+            );
+          }).toList(),
+        );
+      }
+    );
+  }
+
+  Widget _buildAdviceItem(BuildContext context, String name, String specialization, String tip) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.success.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.success.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: AppTheme.success,
+                radius: 20,
+                child: Icon(Icons.person, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppTheme.getTextColor(context),
+                      ),
+                    ),
+                    Text(
+                      specialization,
+                      style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.format_quote, color: AppTheme.success, size: 30),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            tip,
+            style: TextStyle(
+              fontSize: 15, 
+              height: 1.5,
+              fontStyle: FontStyle.italic,
+              color: AppTheme.getTextColor(context).withOpacity(0.9),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSuccessStories(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: AppConstants.getResponsivePadding(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Success Stories',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('View All'),
-                ),
-              ],
-            ),
-            SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            _buildSuccessStoryItem(
-              context,
-              '40% Increase in Yield with Organic Methods',
-              'Farmer from Punjab shares how switching to organic farming increased crop yield and reduced costs.',
-              Icons.trending_up,
-              AppTheme.success,
-            ),
-            const SizedBox(height: 12),
-            _buildSuccessStoryItem(
-              context,
-              'Water Conservation Success Story',
-              'Drip irrigation system helped save 60% water while maintaining high crop quality.',
-              Icons.water_drop,
-              AppTheme.skyBlue,
-            ),
-          ],
-        ),
-      ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: _communityService.getSuccessStories(),
+      builder: (context, snapshot) {
+        final docs = snapshot.data?.docs ?? [];
+
+        if (docs.isEmpty) {
+          return Column(
+            children: [
+              _buildSuccessStoryItem(
+                context,
+                '40% Increase in Yield with Organic Methods',
+                'Farmer from Punjab shares how switching to organic farming increased crop yield.',
+                Icons.trending_up,
+                AppTheme.success,
+              ),
+              const SizedBox(height: 12),
+              _buildSuccessStoryItem(
+                context,
+                'Water Conservation Success Story',
+                'Drip irrigation system helped save 60% water while maintaining high crop quality.',
+                Icons.water_drop,
+                AppTheme.skyBlue,
+              ),
+            ],
+          );
+        }
+
+        return Column(
+          children: docs.take(3).map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildSuccessStoryItem(
+                context,
+                data['title'] ?? 'Success Story',
+                data['description'] ?? '',
+                Icons.star,
+                AppTheme.accentOrange,
+              ),
+            );
+          }).toList(),
+        );
+      }
     );
   }
 
   Widget _buildSuccessStoryItem(BuildContext context, String title, String description, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: isDark ? Colors.white : AppTheme.textDark,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: TextStyle(
                     color: AppTheme.textGrey,
+                    fontSize: 12,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: AppTheme.textGrey),
+          Icon(Icons.chevron_right, color: color.withOpacity(0.3)),
         ],
       ),
     );
   }
 
-  void _showCreatePost() {
+  Widget _buildMarketInsights(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.skyBlue.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.skyBlue.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.skyBlue.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.analytics, color: AppTheme.skyBlue),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Market Intelligence',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : AppTheme.textDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _buildInsightItem(
+            context,
+            'Current demand for organic wheat is up 15% this week.',
+            Icons.trending_up,
+            AppTheme.success,
+          ),
+          const SizedBox(height: 12),
+          _buildInsightItem(
+            context,
+            'New transport regulations in Maharashtra effective from April.',
+            Icons.info_outline,
+            AppTheme.warning,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInsightItem(BuildContext context, String text, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 5,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white.withOpacity(0.9) : AppTheme.textDark,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreatePostDialog(BuildContext context, UserModel? user) {
+    if (user == null) {
+      _showComingSoon('Please login to create a post');
+      return;
+    }
+
+    final TextEditingController postController = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    String selectedCategory = 'General';
+    final List<String> categories = ['General', 'Question', 'Experience', 'Market', 'Tips'];
+    bool hasImage = false;
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Create New Post',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              decoration: const InputDecoration(
-                hintText: 'What\'s on your mind?',
-                border: OutlineInputBorder(),
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: isDark ? AppTheme.darkBackground : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: isDark ? AppTheme.darkBorder : Colors.grey[200]!)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Text(
+                      'Create Post',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppTheme.textDark,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        final content = postController.text.trim();
+                        if (content.isNotEmpty) {
+                          // 1. Close dialog immediately for "Instant" feel
+                          Navigator.pop(context);
+                          
+                          // 2. Show "Posting" feedback
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Row(
+                                children: [
+                                  SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                                  SizedBox(width: 16),
+                                  Text('Verifying and sharing your post...'),
+                                ],
+                              ),
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+
+                          // 3. Handle validation and upload in background
+                          _handleAsyncPostCreation(content, user, selectedCategory);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      child: const Text('Post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
               ),
-              maxLines: 5,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.photo),
+              
+              // User Info
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                      child: Text(
+                        user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U',
+                        style: const TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.fullName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : AppTheme.textDark,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryGreen.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            user.role.toString().split('.').last.toUpperCase(),
+                            style: const TextStyle(fontSize: 10, color: AppTheme.primaryGreen, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.videocam),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.poll),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+              ),
+              
+              // Input field
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: postController,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: isDark ? Colors.white : AppTheme.textDark,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'What do you want to ask or share?',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (text) => setModalState(() {}),
                   ),
                 ),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Post created!')),
-                      );
-                    },
-                    child: const Text('Post'),
+              ),
+              
+              // Selected Image Preview (Mock)
+              if (hasImage)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Stack(
+                    children: [
+                      Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                          image: const DecorationImage(
+                            image: NetworkImage('https://images.unsplash.com/photo-1592982537447-6f2b6e1666e1?w=800'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () => setModalState(() => hasImage = false),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close, color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
+              
+              // Tool Bar
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkCard : Colors.grey[50],
+                  border: Border(top: BorderSide(color: isDark ? AppTheme.darkBorder : Colors.grey[200]!)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Select Category:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 12)),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: categories.map((cat) {
+                          final isSelected = selectedCategory == cat;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(cat),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                if (selected) setModalState(() => selectedCategory = cat);
+                              },
+                              selectedColor: AppTheme.primaryGreen.withOpacity(0.2),
+                              checkmarkColor: AppTheme.primaryGreen,
+                              labelStyle: TextStyle(
+                                color: isSelected ? AppTheme.primaryGreen : (isDark ? Colors.white : Colors.black87),
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            setModalState(() => hasImage = true);
+                          },
+                          icon: const Icon(Icons.image_outlined, color: AppTheme.primaryGreen),
+                          tooltip: 'Add Photo',
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _showComingSoon('Camera');
+                          },
+                          icon: const Icon(Icons.camera_alt_outlined, color: AppTheme.primaryGreen),
+                          tooltip: 'Take Photo',
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _showComingSoon('Location tag');
+                          },
+                          icon: const Icon(Icons.location_on_outlined, color: AppTheme.primaryGreen),
+                          tooltip: 'Add Location',
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${postController.text.length}/500',
+                          style: TextStyle(
+                            color: postController.text.length > 500 ? AppTheme.error : Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _showMessages() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Messages'),
-        content: const Text('You have 7 unread messages from the community.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('View All'),
+  void _handleAsyncPostCreation(String content, UserModel user, String selectedCategory) async {
+    try {
+      // 1. Validate post content with AI
+      final validation = await _aiChatService.validateCommunityPost(content);
+      
+      if (!validation['isValid']) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(validation['reason']),
+              backgroundColor: AppTheme.error,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 2. Create the post
+      await _communityService.createPost(
+        userId: user.uid,
+        userName: user.fullName,
+        userRole: user.role,
+        content: content,
+        category: selectedCategory.toLowerCase(),
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post verified and shared with community!'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.primaryGreen,
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share post: $e'),
+            backgroundColor: AppTheme.error,
+            behavior: SnackBarBehavior.floating,
           ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 
-  void _showGroups() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Join Groups'),
-        content: const Text('Discover and join farmer groups in your area.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Browse Groups'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showMoreOptions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.event),
-              title: const Text('Events'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Events feature coming soon!')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.business_center),
-              title: const Text('Market Updates'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Market updates available!')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.school),
-              title: const Text('Learning Resources'),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Learning resources available!')),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatChip(String text, IconData icon) {
+  Widget _buildEmptySection(String message) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(32),
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+        color: Colors.black.withOpacity(0.02),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primaryGreen.withValues(alpha: 0.2)),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
         children: [
-          Icon(icon, size: 16, color: AppTheme.primaryGreen),
-          const SizedBox(width: 4),
+          const Icon(Icons.forum_outlined, size: 40, color: Colors.grey),
+          const SizedBox(height: 12),
           Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.primaryGreen,
-              fontWeight: FontWeight.w600,
-            ),
+            message,
+            style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
+  }
+
+  void _showComingSoon(String feature) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$feature feature coming soon!'),
+          backgroundColor: AppTheme.getPrimaryAccent(context),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
   }
 }

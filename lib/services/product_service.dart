@@ -354,6 +354,23 @@ class ProductService {
     }
   }
 
+  // Get stream of products for a specific seller
+  Stream<List<Product>> getSellerProductsStream(String sellerId) {
+    return _firestore
+        .collection('products')
+        .where('sellerId', isEqualTo: sellerId)
+        .snapshots()
+        .map((snapshot) {
+      final products = snapshot.docs.map((doc) {
+        return Product.fromMap(doc.id, doc.data());
+      }).toList();
+      
+      // Sort in memory to avoid index requirements
+      products.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      return products;
+    });
+  }
+
   // Get selling history by user using Firebase
   Future<Map<String, dynamic>> getSellingHistoryByUser(String userId) async {
     try {

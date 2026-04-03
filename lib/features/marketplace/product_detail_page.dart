@@ -5,12 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/product_model.dart';
 import '../../models/order_model.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/toast_helper.dart';
 import '../../utils/responsive_helper.dart';
 import '../../utils/app_constants.dart';
 import '../../services/marketplace_service.dart';
 import '../../services/order_service.dart';
 import '../chat/conversation_list_page.dart';
-import '../orders/order_tracking_page.dart';
+import '../../pages/enhanced_order_tracking_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
@@ -74,7 +75,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: _buildAppBar(),
       body: _buildBody(),
       bottomNavigationBar: _buildBottomBar(),
@@ -84,7 +85,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(widget.product.name),
-      backgroundColor: AppTheme.primaryGreen,
+      backgroundColor: AppTheme.getPrimaryAccent(context),
       foregroundColor: Colors.white,
       elevation: 0,
       actions: [
@@ -181,15 +182,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     final images = widget.product.imageUrls.isNotEmpty 
         ? widget.product.imageUrls 
         : ['https://via.placeholder.com/400x300?text=No+Image'];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       height: _isMobile ? 300 : 400,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: isDark ? AppTheme.darkHighlight : Colors.grey[100],
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -205,11 +207,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 fit: BoxFit.cover,
                 width: double.infinity,
                 placeholder: (context, url) => Container(
-                  color: Colors.grey[200],
+                  color: isDark ? Colors.black26 : Colors.grey[200],
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[200],
+                  color: isDark ? Colors.black26 : Colors.grey[200],
                   child: const Icon(Icons.error, size: 50),
                 ),
               ),
@@ -222,6 +224,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildImageThumbnails(List<String> images) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: 80,
       padding: const EdgeInsets.all(8),
@@ -238,8 +241,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               decoration: BoxDecoration(
                 border: Border.all(
                   color: index == _selectedImageIndex 
-                      ? AppTheme.primaryGreen 
-                      : Colors.grey[300]!,
+                      ? AppTheme.getPrimaryAccent(context) 
+                      : (isDark ? Colors.white10 : Colors.grey[300]!),
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -250,11 +253,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   imageUrl: images[index],
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: Colors.grey[200],
+                    color: isDark ? Colors.black26 : Colors.grey[200],
                     child: const Icon(Icons.image, size: 20),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[200],
+                    color: isDark ? Colors.black26 : Colors.grey[200],
                     child: const Icon(Icons.error, size: 20),
                   ),
                 ),
@@ -267,14 +270,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildProductInfoSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -290,7 +295,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   widget.product.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
+                    color: AppTheme.getTextColor(context),
                   ),
                 ),
               ),
@@ -323,7 +328,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             widget.product.category,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -333,13 +338,13 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 '₹${widget.product.price.toStringAsFixed(0)}',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryGreen,
+                  color: AppTheme.getPrimaryAccent(context),
                 ),
               ),
               Text(
                 ' / ${widget.product.unit}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.textGrey,
+                  color: AppTheme.getSecondaryTextColor(context),
                 ),
               ),
             ],
@@ -349,7 +354,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             Text(
               'Available: ${widget.product.quantity} ${widget.product.unit}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textGrey,
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
           ],
@@ -359,14 +364,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildSellerInfoSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -379,7 +386,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             'Seller Information',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: AppTheme.getTextColor(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -387,7 +394,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: AppTheme.getPrimaryAccent(context),
                 child: Text(
                   widget.product.sellerName[0].toUpperCase(),
                   style: const TextStyle(
@@ -405,17 +412,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       widget.product.sellerName,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppTheme.textDark,
+                        color: AppTheme.getTextColor(context),
                       ),
                     ),
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.amber, size: 16),
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
                         const SizedBox(width: 4),
                         Text(
                           '4.5 (120 reviews)',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textGrey,
+                            color: AppTheme.getSecondaryTextColor(context),
                           ),
                         ),
                       ],
@@ -426,8 +433,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               ElevatedButton(
                 onPressed: _contactSeller,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                  foregroundColor: AppTheme.primaryGreen,
+                  backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                  foregroundColor: AppTheme.getPrimaryAccent(context),
                   elevation: 0,
                 ),
                 child: const Text('Contact'),
@@ -440,14 +447,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildDescriptionSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -460,7 +469,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             'Description',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: AppTheme.getTextColor(context),
             ),
           ),
           const SizedBox(height: 12),
@@ -469,7 +478,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? widget.product.description
                 : 'No description available.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
               height: 1.5,
             ),
           ),
@@ -479,14 +488,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildQuantitySelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -499,7 +510,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             'Quantity',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppTheme.textDark,
+              color: AppTheme.getTextColor(context),
             ),
           ),
           const SizedBox(height: 12),
@@ -507,7 +518,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             children: [
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.borderGrey),
+                  border: Border.all(color: AppTheme.getBorderColor(context)),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -515,7 +526,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     IconButton(
                       onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
                       icon: const Icon(Icons.remove),
-                      color: AppTheme.textGrey,
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -523,13 +534,14 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         _quantity.toString(),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
                     ),
                     IconButton(
                       onPressed: () => setState(() => _quantity++),
                       icon: const Icon(Icons.add),
-                      color: AppTheme.primaryGreen,
+                      color: AppTheme.getPrimaryAccent(context),
                     ),
                   ],
                 ),
@@ -538,7 +550,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               Text(
                 widget.product.unit,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textGrey,
+                  color: AppTheme.getSecondaryTextColor(context),
                 ),
               ),
             ],
@@ -557,12 +569,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             icon: const Icon(Icons.shopping_cart),
             label: const Text('Add to Cart'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-              foregroundColor: AppTheme.primaryGreen,
+              backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+              foregroundColor: AppTheme.getPrimaryAccent(context),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: AppTheme.primaryGreen),
+                side: BorderSide(color: AppTheme.getPrimaryAccent(context)),
               ),
             ),
           ),
@@ -574,7 +586,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             icon: const Icon(Icons.flash_on),
             label: const Text('Buy Now'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: AppTheme.getPrimaryAccent(context),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -589,14 +601,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
 
   Widget _buildBottomBar() {
     if (_isDesktop) return const SizedBox.shrink();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -617,7 +630,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         content: Text(
           _isFavorite ? 'Added to favorites' : 'Removed from favorites',
         ),
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppTheme.getPrimaryAccent(context),
       ),
     );
   }
@@ -633,21 +646,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please login to contact seller')),
-        );
+        ToastHelper.showError(context, 'Please login to contact seller');
         return;
       }
 
       if (user.uid == widget.product.sellerId) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You cannot contact yourself')),
-        );
+        ToastHelper.showError(context, 'You cannot contact yourself');
         return;
       }
 
       final marketplaceService = MarketplaceService();
-      final conversationId = await marketplaceService.contactSeller(
+      await marketplaceService.contactSeller(
         product: widget.product,
         buyerName: user.displayName ?? user.email?.split('@')[0] ?? 'Buyer',
         initialMessage: 'Hi! I\'m interested in your ${widget.product.name}.',
@@ -660,41 +669,25 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         ),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Conversation started with seller')),
-      );
+      ToastHelper.showSuccess(context, 'Conversation started with seller');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to contact seller: $e'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
+      ToastHelper.showError(context, 'Failed to contact seller: $e');
     }
   }
 
   void _addToCart() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Added $_quantity ${widget.product.unit} to cart'),
-        backgroundColor: AppTheme.primaryGreen,
-      ),
-    );
+    ToastHelper.showSuccess(context, 'Added $_quantity ${widget.product.unit} to cart');
   }
 
   void _buyNow() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please login to place order')),
-      );
+      ToastHelper.showError(context, 'Please login to place order');
       return;
     }
 
     if (user.uid == widget.product.sellerId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You cannot buy your own product')),
-      );
+      ToastHelper.showError(context, 'You cannot buy your own product');
       return;
     }
 
@@ -732,7 +725,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
   
-  OrderModels.DeliveryType _deliveryType = OrderModels.DeliveryType.pickup;
+  DeliveryType _deliveryType = DeliveryType.pickup;
   bool _isPlacingOrder = false;
 
   @override
@@ -746,9 +739,11 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
   @override
   Widget build(BuildContext context) {
     final totalAmount = widget.product.price * widget.quantity;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AlertDialog(
-      title: const Text('Place Order'),
+      backgroundColor: AppTheme.getCardColor(context),
+      title: Text('Place Order', style: TextStyle(color: AppTheme.getTextColor(context))),
       content: SizedBox(
         width: double.maxFinite,
         child: Form(
@@ -762,7 +757,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.lightGreen.withOpacity(0.1),
+                    color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -771,7 +766,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryGreen,
+                          color: AppTheme.getPrimaryAccent(context),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Icon(Icons.agriculture, color: Colors.white, size: 20),
@@ -783,16 +778,16 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                           children: [
                             Text(
                               widget.product.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context)),
                             ),
                             Text(
                               '${widget.quantity} ${widget.product.unit} × ₹${widget.product.price}',
-                              style: TextStyle(color: AppTheme.textGrey),
+                              style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
                             ),
                             Text(
                               'Total: ₹${totalAmount.toStringAsFixed(0)}',
                               style: TextStyle(
-                                color: AppTheme.primaryGreen,
+                                color: AppTheme.getPrimaryAccent(context),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -807,9 +802,12 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 // Phone Number
                 TextFormField(
                   controller: _phoneController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: AppTheme.getTextColor(context)),
+                  decoration: InputDecoration(
                     labelText: 'Phone Number *',
-                    prefixIcon: Icon(Icons.phone),
+                    labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                    prefixIcon: Icon(Icons.phone, color: AppTheme.getPrimaryAccent(context)),
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
                   ),
                   keyboardType: TextInputType.phone,
                   validator: (value) {
@@ -822,18 +820,19 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 const SizedBox(height: 16),
 
                 // Delivery Type
-                const Text(
+                Text(
                   'Delivery Option',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.getTextColor(context)),
                 ),
                 const SizedBox(height: 8),
                 Column(
-                  children: OrderModels.DeliveryType.values.map((type) {
-                    return RadioListTile<OrderModels.DeliveryType>(
-                      title: Text(_getDeliveryTypeLabel(type)),
-                      subtitle: Text(_getDeliveryTypeDescription(type)),
+                  children: DeliveryType.values.map((type) {
+                    return RadioListTile<DeliveryType>(
+                      title: Text(_getDeliveryTypeLabel(type), style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14)),
+                      subtitle: Text(_getDeliveryTypeDescription(type), style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12)),
                       value: type,
                       groupValue: _deliveryType,
+                      activeColor: AppTheme.getPrimaryAccent(context),
                       onChanged: (value) {
                         setState(() => _deliveryType = value!);
                       },
@@ -843,17 +842,20 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 ),
 
                 // Address (if delivery selected)
-                if (_deliveryType == OrderModels.DeliveryType.delivery) ...[
+                if (_deliveryType == DeliveryType.delivery) ...[
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _addressController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: AppTheme.getTextColor(context)),
+                    decoration: InputDecoration(
                       labelText: 'Delivery Address *',
-                      prefixIcon: Icon(Icons.location_on),
+                      labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                      prefixIcon: Icon(Icons.location_on, color: AppTheme.getPrimaryAccent(context)),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
                     ),
                     maxLines: 3,
                     validator: (value) {
-                      if (_deliveryType == OrderModels.DeliveryType.delivery &&
+                      if (_deliveryType == DeliveryType.delivery &&
                           (value == null || value.trim().isEmpty)) {
                         return 'Address is required for delivery';
                       }
@@ -867,9 +869,12 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 // Notes
                 TextFormField(
                   controller: _notesController,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: AppTheme.getTextColor(context)),
+                  decoration: InputDecoration(
                     labelText: 'Additional Notes (Optional)',
-                    prefixIcon: Icon(Icons.note),
+                    labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                    prefixIcon: Icon(Icons.note, color: AppTheme.getPrimaryAccent(context)),
+                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
                   ),
                   maxLines: 2,
                 ),
@@ -886,7 +891,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
         ElevatedButton(
           onPressed: _isPlacingOrder ? null : _placeOrder,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryGreen,
+            backgroundColor: AppTheme.getPrimaryAccent(context),
             foregroundColor: Colors.white,
           ),
           child: _isPlacingOrder
@@ -904,24 +909,24 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
     );
   }
 
-  String _getDeliveryTypeLabel(OrderModels.DeliveryType type) {
+  String _getDeliveryTypeLabel(DeliveryType type) {
     switch (type) {
-      case OrderModels.DeliveryType.pickup:
+      case DeliveryType.pickup:
         return 'Pickup';
-      case OrderModels.DeliveryType.delivery:
+      case DeliveryType.delivery:
         return 'Home Delivery';
-      case OrderModels.DeliveryType.courierDelivery:
+      case DeliveryType.courierDelivery:
         return 'Courier Delivery';
     }
   }
 
-  String _getDeliveryTypeDescription(OrderModels.DeliveryType type) {
+  String _getDeliveryTypeDescription(DeliveryType type) {
     switch (type) {
-      case OrderModels.DeliveryType.pickup:
+      case DeliveryType.pickup:
         return 'Collect from seller location';
-      case OrderModels.DeliveryType.delivery:
+      case DeliveryType.delivery:
         return 'Delivered to your address';
-      case OrderModels.DeliveryType.courierDelivery:
+      case DeliveryType.courierDelivery:
         return 'Via courier service';
     }
   }
@@ -940,7 +945,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
         buyerPhone: _phoneController.text.trim(),
         buyerAddress: _addressController.text.trim(),
         deliveryType: _deliveryType,
-        deliveryAddress: _deliveryType == OrderModels.DeliveryType.delivery 
+        deliveryAddress: _deliveryType == DeliveryType.delivery 
             ? _addressController.text.trim() 
             : null,
         notes: _notesController.text.trim().isNotEmpty 
@@ -955,21 +960,23 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Order Placed Successfully!'),
+          backgroundColor: AppTheme.getCardColor(context),
+          title: Text('Order Placed Successfully!', style: TextStyle(color: AppTheme.getTextColor(context))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, color: AppTheme.success, size: 48),
+              const Icon(Icons.check_circle, color: AppTheme.success, size: 48),
               const SizedBox(height: 16),
               Text(
                 'Your order has been placed successfully. The seller will contact you soon.',
                 textAlign: TextAlign.center,
+                style: TextStyle(color: AppTheme.getTextColor(context)),
               ),
               const SizedBox(height: 8),
               Text(
                 'Order ID: ${orderId.substring(0, 8)}...',
                 style: TextStyle(
-                  color: AppTheme.textGrey,
+                  color: AppTheme.getSecondaryTextColor(context),
                   fontSize: 12,
                 ),
               ),
@@ -986,12 +993,12 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const OrderTrackingPage(),
+                    builder: (context) => const EnhancedOrderTrackingPage(),
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: AppTheme.getPrimaryAccent(context),
                 foregroundColor: Colors.white,
               ),
               child: const Text('Track Order'),
@@ -1001,12 +1008,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
       );
 
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to place order: $e'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
+      ToastHelper.showError(context, 'Failed to place order: $e');
     } finally {
       setState(() => _isPlacingOrder = false);
     }

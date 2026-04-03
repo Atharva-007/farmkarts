@@ -27,7 +27,7 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: _buildAppBar(),
       body: _currentUserId == null
           ? _buildLoginPrompt()
@@ -37,15 +37,15 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: const Text(
+      title: Text(
         'Messages',
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: AppTheme.getAppBarTextColor(context),
         ),
       ),
-      backgroundColor: AppTheme.primaryGreen,
-      foregroundColor: Colors.white,
+      backgroundColor: AppTheme.getPrimaryAccent(context),
+      foregroundColor: AppTheme.getAppBarTextColor(context),
       elevation: 1,
       actions: [
         StreamBuilder<int>(
@@ -55,8 +55,9 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
             if (unreadCount == 0) return const SizedBox.shrink();
             
             return Container(
-              margin: const EdgeInsets.only(right: 16, top: 8),
+              margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(12),
@@ -84,14 +85,14 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
           Icon(
             Icons.login,
             size: 64,
-            color: Colors.grey.shade400,
+            color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'Please login to view messages',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey.shade600,
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
         ],
@@ -104,8 +105,8 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
       stream: _chatService.getConversations(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryGreen),
+          return Center(
+            child: CircularProgressIndicator(color: AppTheme.getPrimaryAccent(context)),
           );
         }
 
@@ -117,14 +118,13 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
         
         return RefreshIndicator(
           onRefresh: () async {
-            // Trigger rebuild by calling setState
             setState(() {});
           },
-          color: AppTheme.primaryGreen,
+          color: AppTheme.getPrimaryAccent(context),
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: conversations.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
+            separatorBuilder: (context, index) => Divider(height: 1, color: AppTheme.getDividerColor(context)),
             itemBuilder: (context, index) {
               return _buildConversationTile(conversations[index]);
             },
@@ -142,14 +142,14 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
           Icon(
             Icons.chat_bubble_outline,
             size: 64,
-            color: Colors.grey.shade400,
+            color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'No conversations yet',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey.shade600,
+              color: AppTheme.getSecondaryTextColor(context),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -157,7 +157,7 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
           Text(
             'Start chatting by contacting a seller',
             style: TextStyle(
-              color: Colors.grey.shade500,
+              color: AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
             ),
           ),
         ],
@@ -167,20 +167,23 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
 
   Widget _buildConversationTile(ChatConversation conversation) {
     final isUserSeller = conversation.sellerId == _currentUserId;
-    final otherUserId = isUserSeller ? conversation.buyerId : conversation.sellerId;
     final otherUserName = isUserSeller ? conversation.buyerName : conversation.sellerName;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      tileColor: conversation.unreadCount > 0 
+          ? AppTheme.getPrimaryAccent(context).withOpacity(isDark ? 0.1 : 0.05) 
+          : null,
       leading: Stack(
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
+            backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
             child: Text(
               otherUserName.isNotEmpty ? otherUserName[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                color: AppTheme.primaryGreen,
+              style: TextStyle(
+                color: AppTheme.getPrimaryAccent(context),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -192,19 +195,20 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
               top: 0,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.red,
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.getBackgroundColor(context), width: 2),
                 ),
                 constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
+                  minWidth: 18,
+                  minHeight: 18,
                 ),
                 child: Text(
                   conversation.unreadCount > 9 ? '9+' : conversation.unreadCount.toString(),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -221,6 +225,7 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
               style: TextStyle(
                 fontWeight: conversation.unreadCount > 0 ? FontWeight.bold : FontWeight.w600,
                 fontSize: 16,
+                color: AppTheme.getTextColor(context),
               ),
             ),
           ),
@@ -228,13 +233,13 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Text(
+              child: Text(
                 'Seller',
                 style: TextStyle(
-                  color: AppTheme.primaryGreen,
+                  color: AppTheme.getPrimaryAccent(context),
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
@@ -259,8 +264,8 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
                     errorWidget: (context, url, error) => Container(
                       width: 20,
                       height: 20,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.image, size: 12, color: Colors.grey),
+                      color: AppTheme.getBorderColor(context).withOpacity(0.2),
+                      child: Icon(Icons.image, size: 12, color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5)),
                     ),
                   ),
                 )
@@ -269,13 +274,13 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
                   width: 20,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withValues(alpha: 0.1),
+                    color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.agriculture,
                     size: 12,
-                    color: AppTheme.primaryGreen,
+                    color: AppTheme.getPrimaryAccent(context),
                   ),
                 ),
               const SizedBox(width: 8),
@@ -284,7 +289,7 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
                   conversation.productName,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: AppTheme.getSecondaryTextColor(context),
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -297,7 +302,9 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
           Text(
             conversation.lastMessage,
             style: TextStyle(
-              color: conversation.unreadCount > 0 ? Colors.black87 : Colors.grey.shade600,
+              color: conversation.unreadCount > 0 
+                  ? AppTheme.getTextColor(context) 
+                  : AppTheme.getSecondaryTextColor(context),
               fontWeight: conversation.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
             ),
             maxLines: 1,
@@ -313,7 +320,9 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
             _formatTime(conversation.lastMessageTime),
             style: TextStyle(
               fontSize: 12,
-              color: conversation.unreadCount > 0 ? AppTheme.primaryGreen : Colors.grey.shade500,
+              color: conversation.unreadCount > 0 
+                  ? AppTheme.getPrimaryAccent(context) 
+                  : AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
               fontWeight: conversation.unreadCount > 0 ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -322,11 +331,11 @@ class _ConversationsListPageState extends State<ConversationsListPage> {
             Icon(
               conversation.status == ChatStatus.blocked ? Icons.block : Icons.archive,
               size: 16,
-              color: Colors.grey.shade500,
+              color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
             ),
         ],
       ),
-      onTap: () => _openConversation(conversation, otherUserId, otherUserName),
+      onTap: () => _openConversation(conversation, isUserSeller ? conversation.buyerId : conversation.sellerId, otherUserName),
       onLongPress: () => _showConversationOptions(conversation),
     );
   }

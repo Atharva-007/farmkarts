@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 // Import route modules
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
+const videoRoutes = require('./routes/videoRoutes');
 const roleMiddleware = require('./middleware/roleMiddleware');
 
 // Configure Winston Logger
@@ -101,23 +102,24 @@ try {
 // Get references to Firebase services
 const db = admin.database();
 const firestore = admin.firestore();
-
-// Authentication Middleware
-const authenticateToken = (req, res, next) => {
+// Authentication Middleware using Firebase Admin SDK
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ success: false, error: 'Access token required' });
+    return res.status(401).json({ success: false, error: 'Firebase ID token required' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ success: false, error: 'Invalid token' });
-    }
-    req.user = user;
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
     next();
-  });
+  } catch (error) {
+    logger.error('Firebase token verification failed:', error);
+    return res.status(403).json({ success: false, error: 'Invalid or expired Firebase token' });
+  }
+};
 };
 
 // ============= AI CHAT INTEGRATION =============
@@ -242,6 +244,7 @@ function getFallbackAIResponse(query) {
 // Use the new route modules
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/videos', videoRoutes);
 
 // ============= EXISTING ROUTES CONTINUE BELOW =============
 app.get('/', (req, res) => {

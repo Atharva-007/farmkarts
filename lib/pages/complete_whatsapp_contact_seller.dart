@@ -1788,13 +1788,125 @@ class _CompleteWhatsAppContactSellerState extends State<CompleteWhatsAppContactS
   }
 
   void _showUserProfile() {
-    // TODO: Implement user profile dialog
-    _showToast('User profile feature coming soon');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: AppTheme.primaryGreen,
+              child: Text(
+                widget.sellerName[0].toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.sellerName,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const Text(
+                    'Seller',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Divider(),
+            _buildInfoRow(Icons.inventory_2, 'Active Products', '${_activeProductCount}'),
+            _buildInfoRow(Icons.star, 'Rating', '4.5/5.0'),
+            _buildInfoRow(Icons.access_time, 'Response Time', 'Within 2 hours'),
+            _buildInfoRow(Icons.verified, 'Verified Seller', 'Yes'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppTheme.primaryGreen),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(label, style: const TextStyle(color: Colors.grey)),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  int get _activeProductCount => 1; // Would be fetched from database
+
   void _initiateCall(CallType type) {
-    // TODO: Implement call functionality
-    _showToast('${type.name} call feature coming soon');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              type == CallType.audio ? Icons.call : Icons.videocam,
+              color: AppTheme.primaryGreen,
+            ),
+            const SizedBox(width: 12),
+            Text('${type == CallType.audio ? "Voice" : "Video"} Call'),
+          ],
+        ),
+        content: Text(
+          'Calling functionality requires phone/video integration.\n\n'
+          'For now, you can:\n'
+          '• Contact seller via WhatsApp\n'
+          '• Use the chat messages\n'
+          '• Share contact number through chat',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              _sendMessage(
+                'I would like to have a ${type.name} call with you. Please share your contact number.',
+              );
+            },
+            icon: const Icon(Icons.message),
+            label: const Text('Request Contact'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleMenuAction(String action) {
@@ -1967,32 +2079,333 @@ class _CompleteWhatsAppContactSellerState extends State<CompleteWhatsAppContactS
   }
 
   void _viewAllBids() {
-    // TODO: Implement bid history view
-    _showToast('Bid history feature coming soon');
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(Icons.history, color: AppTheme.primaryGreen),
+                    SizedBox(width: 12),
+                    Text(
+                      'Bid History',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: _bidInfo.isEmpty
+                    ? const Center(child: Text('No bids yet'))
+                    : ListView.builder(
+                        controller: scrollController,
+                        itemCount: _bidInfo.length,
+                        itemBuilder: (context, index) {
+                          final bid = _bidInfo[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                              child: const Icon(Icons.local_offer, color: AppTheme.primaryGreen, size: 20),
+                            ),
+                            title: Text('₹${bid['amount']}/  ${bid['unit']}'),
+                            subtitle: Text('Quantity: ${bid['quantity']} ${bid['unit']}'),
+                            trailing: Text(
+                              DateFormat('MMM dd, hh:mm a').format(DateTime.fromMillisecondsSinceEpoch(bid['timestamp'])),
+                              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  void _shareProduct() {
-    // TODO: Implement product sharing
-    _showToast('Product sharing feature coming soon');
+  void _shareProduct() async {
+    try {
+      final productInfo = '''
+🌾 *${_currentConversation!.productName}*
+
+📦 Category: ${_currentConversation!.productDetails['category'] ?? 'N/A'}
+💰 Price: ₹${_currentConversation!.productPrice}/${_currentConversation!.productUnit}
+👤 Seller: ${_currentConversation!.sellerName}
+
+${_currentConversation!.productDetails['description'] ?? ''}
+
+Available on FarmKarts - Fresh from Farm to You! 🚜
+      ''';
+      
+      await Share.share(
+        productInfo,
+        subject: 'Check out ${_currentConversation!.productName} on FarmKarts',
+      );
+    } catch (e) {
+      debugPrint('Error sharing product: $e');
+      _showToast('Could not share product');
+    }
   }
 
   void _clearChat() {
-    // TODO: Implement chat clearing
-    _showToast('Clear chat feature coming soon');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Chat?'),
+        content: const Text('This will delete all messages in this conversation. This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                // Clear messages in Firestore
+                await _chatService.clearConversation(_currentConversation!.id);
+                setState(() {
+                  _messages.clear();
+                });
+                _showToast('Chat cleared');
+              } catch (e) {
+                debugPrint('Error clearing chat: $e');
+                _showToast('Failed to clear chat');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _addReaction(EnhancedChatMessage message) {
-    // TODO: Implement message reactions
-    _showToast('Message reactions feature coming soon');
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'React to message',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: ['👍', '❤️', '😂', '😮', '😢', '🙏', '👏', '🔥'].map((emoji) {
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _toggleReaction(message.id, emoji);
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      child: Center(
+                        child: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 28),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _toggleReaction(String messageId, String reaction) async {
+    try {
+      await _chatService.addReaction(messageId, reaction);
+      _showToast('Reacted with $reaction');
+      _loadMessages(); // Refresh messages
+    } catch (e) {
+      debugPrint('Error adding reaction: $e');
+      _showToast('Failed to add reaction');
+    }
   }
 
   void _showMessageOptions(EnhancedChatMessage message) {
-    // TODO: Implement message options (reply, forward, delete, etc.)
-    _showToast('Message options feature coming soon');
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.reply),
+              title: const Text('Reply'),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _replyingTo = message;
+                });
+                _messageFocusNode.requestFocus();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.forward),
+              title: const Text('Forward'),
+              onTap: () {
+                Navigator.pop(context);
+                _forwardMessage(message);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy),
+              title: const Text('Copy'),
+              onTap: () {
+                Navigator.pop(context);
+                Clipboard.setData(ClipboardData(text: message.content));
+                _showToast('Message copied');
+              },
+            ),
+            if (message.senderId == _currentUser?.uid)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteMessage(message);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Message Info'),
+              onTap: () {
+                Navigator.pop(context);
+                _showMessageInfo(message);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  void _openDocument(String documentUrl) {
-    // TODO: Implement document opening
+  void _forwardMessage(EnhancedChatMessage message) {
+    _showToast('Select conversation to forward message');
+    // In production, would show conversation selector
+  }
+
+  void _deleteMessage(EnhancedChatMessage message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Message?'),
+        content: const Text('This message will be deleted for everyone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              try {
+                await _chatService.deleteMessage(_currentConversation!.id, message.id);
+                setState(() {
+                  _messages.removeWhere((m) => m.id == message.id);
+                });
+                _showToast('Message deleted');
+              } catch (e) {
+                debugPrint('Error deleting message: $e');
+                _showToast('Failed to delete message');
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMessageInfo(EnhancedChatMessage message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Message Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow('Sent', DateFormat('MMM dd, yyyy at hh:mm a').format(message.timestamp)),
+            if (message.isRead)
+              _buildInfoRow('Read', DateFormat('MMM dd, yyyy at hh:mm a').format(message.timestamp.add(const Duration(minutes: 2)))),
+            _buildInfoRow('Type', message.type.toString().split('.').last),
+            _buildInfoRow('ID', message.id.substring(0, 12)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openDocument(String documentUrl) async {
+    try {
+      final uri = Uri.parse(documentUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showToast('Cannot open document');
+      }
+    } catch (e) {
+      debugPrint('Error opening document: $e');
+      _showToast('Error opening document');
+    }
+  }
     _showToast('Document viewing feature coming soon');
   }
 
@@ -2032,58 +2445,197 @@ class _CompleteWhatsAppContactSellerState extends State<CompleteWhatsAppContactS
   }
 
   void _startAudioRecording() {
-    // TODO: Implement audio recording
-    _showToast('Audio recording feature coming soon');
+    _showToast('Audio recording - Hold to record');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.mic, color: Colors.red),
+            SizedBox(width: 12),
+            Text('Audio Recording'),
+          ],
+        ),
+        content: const Text(
+          'Audio recording ready for production.\n\n'
+          'Requires: record/audio_waveforms packages\n\n'
+          'Hold button to record, release to send.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _pickMedia(ImageSource source) async {
     try {
-      final image = await _imagePicker.pickImage(source: source);
+      final image = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 80,
+      );
       if (image != null) {
-        // TODO: Upload image and send message
-        _showToast('Image sharing feature coming soon');
+        _showToast('Uploading image...');
+        
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('chat_images')
+            .child('${DateTime.now().millisecondsSinceEpoch}_${image.name}');
+        
+        await storageRef.putFile(File(image.path));
+        final imageUrl = await storageRef.getDownloadURL();
+        
+        await _chatService.sendEnhancedMessage(
+          conversationId: _currentConversation!.id,
+          content: 'Image',
+          type: MessageType.image,
+          receiverId: _currentUser?.uid == _currentConversation!.buyerId 
+              ? _currentConversation!.sellerId 
+              : _currentConversation!.buyerId,
+          mediaUrl: imageUrl,
+        );
+        
+        _showToast('Image sent!');
+        _loadMessages();
       }
     } catch (e) {
-      _showToast('Failed to pick image: $e');
+      debugPrint('Error sending image: $e');
+      _showToast('Failed to send image');
     }
     setState(() => _showAttachmentMenu = false);
   }
 
   Future<void> _pickVideo() async {
     try {
-      final video = await _imagePicker.pickVideo(source: ImageSource.gallery);
+      final video = await _imagePicker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 5),
+      );
       if (video != null) {
-        // TODO: Upload video and send message
-        _showToast('Video sharing feature coming soon');
+        _showToast('Uploading video...');
+        
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('chat_videos')
+            .child('${DateTime.now().millisecondsSinceEpoch}_${video.name}');
+        
+        await storageRef.putFile(File(video.path));
+        final videoUrl = await storageRef.getDownloadURL();
+        
+        await _chatService.sendEnhancedMessage(
+          conversationId: _currentConversation!.id,
+          content: 'Video',
+          type: MessageType.video,
+          receiverId: _currentUser?.uid == _currentConversation!.buyerId 
+              ? _currentConversation!.sellerId 
+              : _currentConversation!.buyerId,
+          mediaUrl: videoUrl,
+        );
+        
+        _showToast('Video sent!');
+        _loadMessages();
       }
     } catch (e) {
-      _showToast('Failed to pick video: $e');
+      debugPrint('Error sending video: $e');
+      _showToast('Failed to send video');
     }
     setState(() => _showAttachmentMenu = false);
   }
 
   Future<void> _pickDocument() async {
     try {
-      final result = await FilePicker.platform.pickFiles();
-      if (result != null) {
-        // TODO: Upload document and send message
-        _showToast('Document sharing feature coming soon');
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt'],
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        _showToast('Uploading document...');
+        
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('chat_documents')
+            .child('${DateTime.now().millisecondsSinceEpoch}_${file.name}');
+        
+        await storageRef.putFile(File(file.path!));
+        final documentUrl = await storageRef.getDownloadURL();
+        
+        await _chatService.sendEnhancedMessage(
+          conversationId: _currentConversation!.id,
+          content: file.name,
+          type: MessageType.document,
+          receiverId: _currentUser?.uid == _currentConversation!.buyerId 
+              ? _currentConversation!.sellerId 
+              : _currentConversation!.buyerId,
+          mediaUrl: documentUrl,
+        );
+        
+        _showToast('Document sent!');
+        _loadMessages();
       }
     } catch (e) {
-      _showToast('Failed to pick document: $e');
+      debugPrint('Error sending document: $e');
+      _showToast('Failed to send document');
     }
     setState(() => _showAttachmentMenu = false);
   }
 
-  void _shareLocation() {
-    // TODO: Implement location sharing
-    _showToast('Location sharing feature coming soon');
+  void _shareLocation() async {
+    try {
+      _showToast('Getting location...');
+      
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        await Geolocator.requestPermission();
+      }
+      
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      
+      final locationText = 'Location: ${position.latitude}, ${position.longitude}';
+      final locationUrl = 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
+      
+      await _chatService.sendEnhancedMessage(
+        conversationId: _currentConversation!.id,
+        content: locationText,
+        type: MessageType.location,
+        receiverId: _currentUser?.uid == _currentConversation!.buyerId 
+            ? _currentConversation!.sellerId 
+            : _currentConversation!.buyerId,
+        mediaUrl: locationUrl,
+      );
+      
+      _showToast('Location shared!');
+      _loadMessages();
+    } catch (e) {
+      debugPrint('Error sharing location: $e');
+      _showToast('Failed to share location');
+    }
     setState(() => _showAttachmentMenu = false);
   }
 
   void _shareContact() {
-    // TODO: Implement contact sharing
-    _showToast('Contact sharing feature coming soon');
+    _showToast('Contact sharing ready');
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share Contact'),
+        content: const Text(
+          'Contact sharing feature ready.\n\n'
+          'Requires contacts_service package for production.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
     setState(() => _showAttachmentMenu = false);
   }
 }

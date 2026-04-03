@@ -171,35 +171,89 @@ class OrderService {
   // Get orders for buyer
   Stream<List<OrderModelFile.OrderModel>> getBuyerOrders() {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
+    if (user == null) {
+      return Stream.value([]);
+    }
 
-    return _firestore
-        .collection('orders')
-        .where('buyerId', isEqualTo: user.uid)
-        .orderBy('orderDate', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-      }).toList();
-    });
+    try {
+      return _firestore
+          .collection('orders')
+          .where('buyerId', isEqualTo: user.uid)
+          .orderBy('orderDate', descending: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          try {
+            return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
+          } catch (e) {
+            print('Error parsing order ${doc.id}: $e');
+            // Return a dummy order or skip? Let's skip invalid ones
+            return null;
+          }
+        }).whereType<OrderModelFile.OrderModel>().toList();
+      }).handleError((error) {
+        print('Firestore error in getBuyerOrders: $error');
+        // If index error, try without ordering as fallback
+        if (error.toString().contains('FAILED_PRECONDITION')) {
+           return _firestore
+            .collection('orders')
+            .where('buyerId', isEqualTo: user.uid)
+            .snapshots()
+            .map((snapshot) {
+              final list = snapshot.docs.map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data())).toList();
+              list.sort((a, b) => b.orderDate.compareTo(a.orderDate));
+              return list;
+            });
+        }
+        return Stream.value(<OrderModelFile.OrderModel>[]);
+      });
+    } catch (e) {
+      print('Exception in getBuyerOrders: $e');
+      return Stream.value([]);
+    }
   }
 
   // Get orders for seller
   Stream<List<OrderModelFile.OrderModel>> getSellerOrders() {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
+    if (user == null) {
+      return Stream.value([]);
+    }
 
-    return _firestore
-        .collection('orders')
-        .where('sellerId', isEqualTo: user.uid)
-        .orderBy('orderDate', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-      }).toList();
-    });
+    try {
+      return _firestore
+          .collection('orders')
+          .where('sellerId', isEqualTo: user.uid)
+          .orderBy('orderDate', descending: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          try {
+            return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
+          } catch (e) {
+            print('Error parsing order ${doc.id}: $e');
+            return null;
+          }
+        }).whereType<OrderModelFile.OrderModel>().toList();
+      }).handleError((error) {
+        print('Firestore error in getSellerOrders: $error');
+        if (error.toString().contains('FAILED_PRECONDITION')) {
+           return _firestore
+            .collection('orders')
+            .where('sellerId', isEqualTo: user.uid)
+            .snapshots()
+            .map((snapshot) {
+              final list = snapshot.docs.map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data())).toList();
+              list.sort((a, b) => b.orderDate.compareTo(a.orderDate));
+              return list;
+            });
+        }
+        return Stream.value(<OrderModelFile.OrderModel>[]);
+      });
+    } catch (e) {
+      print('Exception in getSellerOrders: $e');
+      return Stream.value([]);
+    }
   }
 
   // Get order by ID

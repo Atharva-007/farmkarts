@@ -4,7 +4,11 @@ import '../theme/app_theme.dart';
 import '../utils/responsive_helper.dart';
 import '../services/user_state_service.dart';
 import '../models/user_model.dart';
-import '../settings_page.dart';
+import '../pages/settings_page.dart';
+import '../pages/main_app_layout.dart';
+import '../pages/orders_page.dart';
+import '../pages/contacted_sellers_page.dart';
+import '../features/chat/enhanced_ai_expert_chat_page.dart';
 
 class BaseLayoutWrapper extends StatelessWidget {
   final Widget child;
@@ -32,6 +36,42 @@ class BaseLayoutWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = ResponsiveHelper.isDesktop(context);
+    
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        body: Row(
+          children: [
+            // Fixed Side Navigation for Desktop
+            SizedBox(
+              width: 280,
+              child: _buildDrawer(context),
+            ),
+            const VerticalDivider(width: 1, thickness: 1),
+            // Main Content Area
+            Expanded(
+              child: Column(
+                children: [
+                  if (showAppBar) _buildAppBar(context),
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 1200),
+                        child: child,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: floatingActionButton,
+      );
+    }
+
+    // Standard Mobile/Tablet Layout
     return Scaffold(
       appBar: showAppBar ? _buildAppBar(context) : null,
       body: child,
@@ -164,88 +204,98 @@ class BaseLayoutWrapper extends StatelessWidget {
               ),
               Expanded(
                 child: ListView(
+                  padding: const EdgeInsets.only(bottom: 100), // Added padding to prevent overlap with bottom UI
                   children: [
                     _buildDrawerItem(
                       context,
                       icon: Icons.dashboard,
                       title: 'Dashboard',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(context, 0);
-                      },
+                      onTap: () => _navigateToPage(context, 0),
                     ),
                     _buildDrawerItem(
                       context,
                       icon: Icons.storefront,
                       title: 'Marketplace',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(context, 1);
-                      },
+                      onTap: () => _navigateToPage(context, 1),
                     ),
                     _buildDrawerItem(
                       context,
                       icon: Icons.people,
                       title: 'Community',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _navigateToPage(context, 2);
-                      },
+                      onTap: () => _navigateToPage(context, 2),
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.agriculture,
+                      title: 'Crops',
+                      onTap: () => _navigateToPage(context, 3),
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.wb_sunny,
+                      title: 'Weather',
+                      onTap: () => _navigateToPage(context, 4),
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.business,
+                      title: 'APMC Market',
+                      onTap: () => _navigateToPage(context, 5),
                     ),
                     _buildDrawerItem(
                       context,
                       icon: Icons.person,
                       title: 'Profile',
+                      onTap: () => _navigateToPage(context, 6),
+                    ),
+                    
+                    const Divider(),
+                    
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.shopping_bag,
+                      title: 'My Orders',
                       onTap: () {
                         Navigator.pop(context);
-                        _navigateToPage(context, 3);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const OrdersPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.chat_bubble,
+                      title: 'Contacted Sellers',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ContactedSellersPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.psychology,
+                      title: 'AI Expert Chat',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EnhancedAIExpertChatPage(),
+                          ),
+                        );
                       },
                     ),
                     
-                    // Role-specific menu items
-                    if (user?.role == UserRole.farmer) ...[
-                      const Divider(),
-                      _buildDrawerItem(
-                        context,
-                        icon: Icons.landscape,
-                        title: 'My Farm',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon(context, 'My Farm Management');
-                        },
-                      ),
-                      _buildDrawerItem(
-                        context,
-                        icon: Icons.schedule,
-                        title: 'Crop Calendar',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon(context, 'Crop Calendar');
-                        },
-                      ),
-                    ] else if (user?.role == UserRole.addat) ...[
-                      const Divider(),
-                      _buildDrawerItem(
-                        context,
-                        icon: Icons.inventory,
-                        title: 'My Inventory',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showComingSoon(context, 'Inventory Management');
-                        },
-                      ),
-                      _buildDrawerItem(
-                        context,
-                        icon: Icons.verified,
-                        title: 'License Status',
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showLicenseStatus(context, user);
-                        },
-                      ),
-                    ],
-                    
                     const Divider(),
+                    
                     _buildDrawerItem(
                       context,
                       icon: Icons.settings,
@@ -319,20 +369,27 @@ class BaseLayoutWrapper extends StatelessWidget {
 
   void _handleNavigation(BuildContext context, int index) {
     // Navigate back to main app layout with the selected index
-    if (ModalRoute.of(context)?.settings.name == '/home') {
-      // Already on main layout, let parent handle
-      if (onNavItemTapped != null) {
-        onNavItemTapped!(index);
-      }
-    } else {
-      // Navigate to main layout
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-    }
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainAppLayout(initialIndex: index),
+      ),
+      (route) => false,
+    );
   }
 
   void _navigateToPage(BuildContext context, int index) {
+    // Close drawer first
+    Navigator.pop(context);
+    
     // Navigate back to main app layout with the selected index
-    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainAppLayout(initialIndex: index),
+      ),
+      (route) => false,
+    );
   }
 
   void _showComingSoon(BuildContext context, String feature) {

@@ -19,7 +19,6 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   
   String _searchQuery = '';
   bool _isSearching = false;
-  String _selectedCategory = 'All';
   Map<String, dynamic>? _stats;
 
   @override
@@ -52,11 +51,11 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
         children: [
           _buildHeader(),
           if (_stats != null) _buildStatistics(),
-          _buildCategoryFilter(),
           Expanded(child: _buildSessionsList()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'ai_chat_new_fab',
         onPressed: _createNewChat,
         backgroundColor: AppTheme.primaryGreen,
         child: const Icon(Icons.add, color: Colors.white),
@@ -174,47 +173,40 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
 
   Widget _buildStatistics() {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Your Chat Statistics',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _buildStatCard(
-                'Total Chats',
-                _stats!['totalSessions'].toString(),
-                Icons.chat_bubble_outline,
-                AppTheme.primaryGreen,
-              ),
-              const SizedBox(width: 12),
-              _buildStatCard(
-                'Active Chats',
-                _stats!['activeSessions'].toString(),
-                Icons.chat,
-                AppTheme.success,
-              ),
-              const SizedBox(width: 12),
-              _buildStatCard(
-                'Messages',
-                _stats!['totalMessages'].toString(),
-                Icons.message,
-                AppTheme.info,
-              ),
-            ],
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildStatCard(
+            'Chats',
+            _stats!['totalSessions'].toString(),
+            Icons.chat_bubble_outline,
+            AppTheme.primaryGreen,
+          ),
+          const SizedBox(width: 8),
+          _buildStatCard(
+            'Active',
+            _stats!['activeSessions'].toString(),
+            Icons.bolt,
+            AppTheme.success,
+          ),
+          const SizedBox(width: 8),
+          _buildStatCard(
+            'Messages',
+            _stats!['totalMessages'].toString(),
+            Icons.message_outlined,
+            AppTheme.info,
           ),
         ],
       ),
@@ -224,67 +216,39 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withOpacity(0.05),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
             Text(
               title,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 color: AppTheme.textGrey,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryFilter() {
-    final categories = ['All', ...AIChatCategory.allCategories];
-    
-    return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          final isSelected = category == _selectedCategory;
-          
-          return Container(
-            margin: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              selected: isSelected,
-              label: Text(category),
-              onSelected: (selected) {
-                setState(() => _selectedCategory = category);
-              },
-              selectedColor: AppTheme.primaryGreen.withOpacity(0.2),
-              checkmarkColor: AppTheme.primaryGreen,
-              labelStyle: TextStyle(
-                color: isSelected ? AppTheme.primaryGreen : AppTheme.textGrey,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -306,11 +270,6 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
         }
 
         List<AIChatSession> sessions = snapshot.data ?? [];
-
-        // Filter by category
-        if (_selectedCategory != 'All') {
-          sessions = sessions.where((s) => s.category == _selectedCategory).toList();
-        }
 
         if (sessions.isEmpty) {
           return _buildEmptyState();

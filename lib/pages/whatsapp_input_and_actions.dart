@@ -1,10 +1,12 @@
   Widget _buildWhatsAppMessageInput() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF202C33) : Colors.white,
         border: Border(
-          top: BorderSide(color: Colors.grey[300]!),
+          top: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!),
         ),
       ),
       child: SafeArea(
@@ -17,12 +19,12 @@
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.1),
+                  color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.attach_file,
-                  color: AppTheme.primaryGreen,
+                  color: AppTheme.getPrimaryAccent(context),
                   size: 20,
                 ),
               ),
@@ -34,9 +36,9 @@
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: isDark ? const Color(0xFF2A3942) : Colors.grey[100],
                   borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: isDark ? Colors.white10 : Colors.grey[300]!),
                 ),
                 child: Row(
                   children: [
@@ -44,9 +46,10 @@
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
-                          hintStyle: TextStyle(color: Colors.grey[500]),
+                          hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.grey[500]),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -67,7 +70,7 @@
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Icon(
                           Icons.emoji_emotions_outlined,
-                          color: AppTheme.primaryGreen,
+                          color: isDark ? Colors.white60 : AppTheme.primaryGreen,
                           size: 24,
                         ),
                       ),
@@ -80,7 +83,7 @@
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Icon(
                           Icons.camera_alt,
-                          color: AppTheme.primaryGreen,
+                          color: isDark ? Colors.white60 : AppTheme.primaryGreen,
                           size: 24,
                         ),
                       ),
@@ -101,7 +104,7 @@
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen,
+                  color: AppTheme.getPrimaryAccent(context),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -120,6 +123,8 @@
   }
 
   Widget _buildEnhancedBidCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Positioned(
       left: 16,
       top: 100,
@@ -139,13 +144,13 @@
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.1),
+                      isDark ? Colors.black.withOpacity(0.6) : Colors.white.withOpacity(0.2),
+                      isDark ? Colors.black.withOpacity(0.4) : Colors.white.withOpacity(0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
+                    color: isDark ? Colors.white10 : Colors.white.withOpacity(0.2),
                     width: 1,
                   ),
                   boxShadow: [
@@ -171,6 +176,8 @@
   }
 
   Widget _buildCompactBidCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,7 +204,7 @@
                   Text(
                     'Bidding Info',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -205,7 +212,7 @@
                   Text(
                     'Tap to expand',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -214,7 +221,7 @@
             ),
             Icon(
               Icons.expand_more,
-              color: Colors.white.withOpacity(0.7),
+              color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
               size: 20,
             ),
           ],
@@ -239,14 +246,14 @@
                   Text(
                     'Highest Bid',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
                   Text(
                     '₹${_currentConversation!.currentHighestBid!.toStringAsFixed(2)}',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -267,7 +274,7 @@
               Text(
                 'No bids yet',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: isDark ? Colors.white70 : Colors.white.withOpacity(0.8),
                   fontSize: 14,
                 ),
               ),
@@ -289,7 +296,7 @@
             Text(
               '${_currentConversation?.totalBids ?? 0} bids total',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: isDark ? Colors.white70 : Colors.white.withOpacity(0.8),
                 fontSize: 13,
               ),
             ),
@@ -327,6 +334,7 @@
 
   Widget _buildExpandedBidCard() {
     final recentBids = _currentConversation?.recentBids ?? [];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,7 +359,7 @@
               child: Text(
                 'Bidding Details',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
+                  color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -361,7 +369,7 @@
               onTap: () => setState(() => _isCardExpanded = false),
               child: Icon(
                 Icons.expand_less,
-                color: Colors.white.withOpacity(0.7),
+                color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                 size: 20,
               ),
             ),
@@ -380,7 +388,7 @@
                   Text(
                     'Highest',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                       fontSize: 11,
                     ),
                   ),
@@ -390,7 +398,7 @@
                         ? '₹${_currentConversation!.currentHighestBid!.toStringAsFixed(2)}'
                         : '₹0.00',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -405,14 +413,14 @@
                   Text(
                     'Total Bids',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                       fontSize: 11,
                     ),
                   ),
                   Text(
                     '${_currentConversation?.totalBids ?? 0}',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
@@ -430,7 +438,7 @@
           Text(
             'Recent Bids',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
               fontSize: 13,
               fontWeight: FontWeight.w600,
             ),
@@ -464,7 +472,7 @@
                             Text(
                               '₹${bid.amount.toStringAsFixed(2)}',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
+                                color: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -472,7 +480,7 @@
                             Text(
                               '${bid.quantity} ${bid.unit}',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
+                                color: isDark ? Colors.white60 : Colors.white.withOpacity(0.7),
                                 fontSize: 10,
                               ),
                             ),
@@ -482,7 +490,7 @@
                       Text(
                         _formatBidTime(bid.createdAt),
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.6),
+                          color: isDark ? Colors.white38 : Colors.white.withOpacity(0.6),
                           fontSize: 10,
                         ),
                       ),
@@ -501,14 +509,14 @@
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: Colors.white.withOpacity(0.5),
+                    color: isDark ? Colors.white38 : Colors.white.withOpacity(0.5),
                     size: 32,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'No bids yet',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: isDark ? Colors.white38 : Colors.white.withOpacity(0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -549,9 +557,9 @@
               child: OutlinedButton(
                 onPressed: _showDetailedBidDialog,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white.withOpacity(0.9),
+                  foregroundColor: isDark ? Colors.white : Colors.white.withOpacity(0.9),
                   side: BorderSide(
-                    color: Colors.white.withOpacity(0.5),
+                    color: isDark ? Colors.white30 : Colors.white.withOpacity(0.5),
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),

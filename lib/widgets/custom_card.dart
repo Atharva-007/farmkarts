@@ -39,10 +39,12 @@ class CustomCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? Colors.white,
+        color: color ?? Theme.of(context).cardColor,
         borderRadius: borderRadius ?? BorderRadius.circular(16),
-        boxShadow: boxShadow ?? AppTheme.defaultShadow,
-        border: border,
+        boxShadow: boxShadow ?? (Theme.of(context).brightness == Brightness.dark ? [] : AppTheme.defaultShadow),
+        border: border ?? (Theme.of(context).brightness == Brightness.dark 
+            ? Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.1)) 
+            : null),
       ),
       child: child,
     );

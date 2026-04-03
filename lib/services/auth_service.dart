@@ -54,16 +54,16 @@ class AuthService {
 
       print('Starting upload task with timeout...');
       
-      // Track upload progress for debugging
+      // Tracking upload progress
       uploadTask.snapshotEvents.listen((event) {
         double progress = event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
         print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
       });
 
-      // Simplified timeout handling
+      // Increased timeout for better resilience on slower networks
       final snapshot = await uploadTask.timeout(
-        const Duration(seconds: 30), // Reduced timeout
-        onTimeout: () => throw Exception('Image upload timed out. Please check your internet connection and try again.'),
+        const Duration(seconds: 60),
+        onTimeout: () => throw Exception('Upload timed out. Your connection might be too slow for this image size. Please try again or use a smaller image.'),
       );
 
       if (snapshot.state == TaskState.success) {
@@ -185,7 +185,12 @@ class AuthService {
 
   Future<UserModel?> getUserProfile(String uid) async {
     try {
-      final doc = await _firestore.collection('users').doc(uid).get();
+      // Add a 15-second timeout to profile fetching
+      final doc = await _firestore
+          .collection('users')
+          .doc(uid)
+          .get()
+          .timeout(const Duration(seconds: 15));
       
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
@@ -269,7 +274,7 @@ class AuthService {
       final user = _auth.currentUser;
       if (user == null) throw Exception('No user logged in');
       
-      await user.updateEmail(newEmail);
+      await user.verifyBeforeUpdateEmail(newEmail);
       
       // Update email in user profile
       final userProfile = await getUserProfile(user.uid);

@@ -145,6 +145,33 @@ class OrderModel {
     );
   }
 
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is DateTime) return value;
+    if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+    if (value is String) return DateTime.parse(value);
+    
+    // Handle Firestore Timestamp specifically
+    try {
+      if (value is Map) {
+        final seconds = value['seconds'] ?? value['_seconds'] ?? 0;
+        final nanoseconds = value['nanoseconds'] ?? value['_nanoseconds'] ?? 0;
+        return DateTime.fromMillisecondsSinceEpoch(seconds * 1000 + (nanoseconds / 1000000).round());
+      }
+      
+      // Try calling .toDate() if it exists (Firestore Timestamp method)
+      if (value.runtimeType.toString().contains('Timestamp')) {
+        return value.toDate();
+      }
+      
+      // Fallback: try accessing millisecondsSinceEpoch property
+      return DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch);
+    } catch (e) {
+      print('Warning: Failed to parse order timestamp $value: $e');
+      return DateTime.now();
+    }
+  }
+
   factory OrderModel.fromMap(String id, Map<String, dynamic> map) {
     return OrderModel(
       id: id,
@@ -176,22 +203,12 @@ class OrderModel {
         orElse: () => DeliveryType.pickup,
       ),
       deliveryAddress: map['deliveryAddress'],
-      orderDate: DateTime.fromMillisecondsSinceEpoch(map['orderDate'] ?? 0),
-      createdAt: map['createdAt'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
-          : DateTime.now(),
-      confirmedDate: map['confirmedDate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['confirmedDate'])
-          : null,
-      shippedDate: map['shippedDate'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(map['shippedDate'])
-          : null,
-      deliveredDate: map['deliveredDate'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(map['deliveredDate'])
-          : null,
-      cancelledDate: map['cancelledDate'] != null 
-          ? DateTime.fromMillisecondsSinceEpoch(map['cancelledDate'])
-          : null,
+      orderDate: _parseDateTime(map['orderDate']),
+      createdAt: _parseDateTime(map['createdAt']),
+      confirmedDate: map['confirmedDate'] != null ? _parseDateTime(map['confirmedDate']) : null,
+      shippedDate: map['shippedDate'] != null ? _parseDateTime(map['shippedDate']) : null,
+      deliveredDate: map['deliveredDate'] != null ? _parseDateTime(map['deliveredDate']) : null,
+      cancelledDate: map['cancelledDate'] != null ? _parseDateTime(map['cancelledDate']) : null,
       cancellationReason: map['cancellationReason'],
       statusUpdates: (map['statusUpdates'] as List<dynamic>?)
               ?.map((item) => OrderStatusUpdate.fromMap(Map<String, dynamic>.from(item)))

@@ -1,14 +1,14 @@
 buildscript {
-    ext.kotlin_version = '1.9.20'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0'
+        classpath 'com.android.tools.build:gradle:8.7.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -17,14 +17,47 @@ allprojects {
         google()
         mavenCentral()
     }
+    
+    // Enforce Java 17 for all subprojects to fix obsolete source/target warnings
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << '-Xlint:-options'
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
-    project.evaluationDependsOn(':app')
+    
+    if (project.name != 'app') {
+        project.evaluationDependsOn(':app')
+    }
+    
+    // Fix for "Namespace not specified" error in older plugins (AGP 8+ compatibility)
+    def fixNamespace = { p ->
+        if (p.hasProperty('android')) {
+            try {
+                if (p.android.getNamespace() == null) {
+                    def defaultNamespace = p.group.toString()
+                    if (defaultNamespace == null || defaultNamespace.isEmpty() || defaultNamespace == "unspecified") {
+                        defaultNamespace = "com.farmkarts.${p.name.replace('-', '.')}"
+                    }
+                    p.android.namespace = defaultNamespace
+                }
+            } catch (Exception e) {
+                // If getNamespace() is not available yet or fails
+                def defaultNamespace = "com.farmkarts.${p.name.replace('-', '.')}"
+                p.android.namespace = defaultNamespace
+            }
+        }
+    }
+
+    if (project.state.executed) {
+        fixNamespace(project)
+    } else {
+        project.afterEvaluate { fixNamespace(it) }
+    }
 }
 
 tasks.register("clean", Delete) {

@@ -26,18 +26,18 @@ class QuickActionGrid extends StatelessWidget {
         onTap: () => onNavigate?.call(1),
       ),
       _QuickAction(
+        icon: Icons.wb_sunny,
+        title: 'Weather',
+        subtitle: 'Live farm updates',
+        color: AppTheme.skyBlue,
+        onTap: () => onNavigate?.call(2),
+      ),
+      _QuickAction(
         icon: Icons.agriculture,
         title: 'Crops',
         subtitle: 'Manage your crops',
         color: AppTheme.lightGreen,
         onTap: () => onNavigate?.call(3),
-      ),
-      _QuickAction(
-        icon: Icons.people,
-        title: 'Community',
-        subtitle: 'Connect with farmers',
-        color: AppTheme.deepGreen,
-        onTap: () => onNavigate?.call(2),
       ),
       _QuickAction(
         icon: Icons.trending_up,

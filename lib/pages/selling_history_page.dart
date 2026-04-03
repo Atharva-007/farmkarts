@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../utils/toast_helper.dart';
-import '../services/marketplace_service.dart';
+import '../services/product_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
 
 class SellingHistoryPage extends StatefulWidget {
-  const SellingHistoryPage({super.key});
+  const SellingHistoryPage({Key? key}) : super(key: key);
 
   @override
   State<SellingHistoryPage> createState() => _SellingHistoryPageState();
@@ -15,24 +13,37 @@ class SellingHistoryPage extends StatefulWidget {
 
 class _SellingHistoryPageState extends State<SellingHistoryPage> 
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
-  final MarketplaceService _marketplaceService = MarketplaceService();
-  List<Map<String, dynamic>> _sellingHistory = [];
+  final ProductService _productService = ProductService();
+  final ScrollController _scrollController = ScrollController();
+  
+  List<dynamic> _sellingHistory = [];
   Map<String, dynamic> _summary = {};
   bool _isLoading = true;
-  String? _error;
+  bool _hasError = false;
+  String _errorMessage = '';
+  String? _selectedStatus;
+  String? _selectedCategory;
   
-  String _selectedFilter = 'all';
-  final List<String> _filterOptions = [
-    'all', 'active', 'sold_out', 'paused', 'removed'
+  final List<String> _statusFilters = [
+    'All',
+    'active',
+    'sold_out',
+    'expired', 
+    'removed',
+    'paused'
   ];
 
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
+    _loadSellingHistory();
+  }
+
+  void _setupAnimations() {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -44,288 +55,63 @@ class _SellingHistoryPageState extends State<SellingHistoryPage>
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
     _animationController.forward();
-    _loadSellingHistory();
+  }
+
+  Future<void> _loadSellingHistory() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final result = await _productService.getSellingHistoryByUser(user.uid);
+      
+      if (mounted) {
+        setState(() {
+          _sellingHistory = result['history'] ?? [];
+          _summary = result['summary'] ?? {};
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading selling history: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  List<dynamic> _getFilteredHistory() {
+    List<dynamic> filtered = List.from(_sellingHistory);
+    
+    if (_selectedStatus != null && _selectedStatus != 'All') {
+      filtered = filtered.where((item) => item['status'] == _selectedStatus).toList();
+    }
+    
+    if (_selectedCategory != null && _selectedCategory != 'All') {
+      filtered = filtered.where((item) => item['category'] == _selectedCategory).toList();
+    }
+    
+    return filtered;
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadSellingHistory() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        setState(() {
-          _error = 'Please login to view selling history';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Use MarketplaceService method
-      final history = await _marketplaceService.getSellingHistoryByUser(user.uid);
-      
-      // Filter by selected filter
-      List<Map<String, dynamic>> filteredHistory = history;
-      if (_selectedFilter != 'all') {
-        filteredHistory = history.where((item) => item['status'] == _selectedFilter).toList();
-      }
-
-      // Calculate summary
-      final totalRevenue = history.fold<double>(
-        0, (sum, item) => sum + ((item['totalRevenue'] ?? 0).toDouble())
-      );
-      final totalListings = history.length;
-      final activeListings = history.where((item) => item['status'] == 'active').length;
-      final soldOutListings = history.where((item) => item['status'] == 'sold_out').length;
-
-      setState(() {
-        _sellingHistory = filteredHistory;
-        _summary = {
-          'totalRevenue': totalRevenue,
-          'totalListings': totalListings,
-          'activeListings': activeListings,
-          'soldOutListings': soldOutListings,
-          'avgRevenuePerListing': totalListings > 0 ? totalRevenue / totalListings : 0.0,
-        };
-        _isLoading = false;
-      });
-
-    } catch (e) {
-      print('Error loading selling history: $e');
-      setState(() {
-        _error = 'Failed to load selling history: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _showProductDetails(Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildProductDetailsSheet(item),
-    );
-  }
-
-  Widget _buildProductDetailsSheet(Map<String, dynamic> item) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGreen,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item['productName'] ?? 'Product Details',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDetailRow('Product ID', item['productId'] ?? 'N/A'),
-                  _buildDetailRow('Category', item['category'] ?? 'N/A'),
-                  _buildDetailRow('Status', _getStatusText(item['status'] ?? 'unknown')),
-                  _buildDetailRow('Initial Price', '₹${item['initialPrice']?.toString() ?? '0'}'),
-                  _buildDetailRow('Current Price', '₹${item['currentPrice']?.toString() ?? '0'}'),
-                  _buildDetailRow('Total Quantity', '${item['totalQuantity']?.toString() ?? '0'}'),
-                  _buildDetailRow('Sold Quantity', '${item['soldQuantity']?.toString() ?? '0'}'),
-                  _buildDetailRow('Available Quantity', '${item['availableQuantity']?.toString() ?? '0'}'),
-                  _buildDetailRow('Total Revenue', '₹${item['totalRevenue']?.toString() ?? '0'}'),
-                  _buildDetailRow('Total Views', '${item['totalViews']?.toString() ?? '0'}'),
-                  _buildDetailRow('Total Inquiries', '${item['totalInquiries']?.toString() ?? '0'}'),
-                  _buildDetailRow('Listed Date', _formatDate(item['listedDate'])),
-                  if (item['lastSoldDate'] != null)
-                    _buildDetailRow('Last Sold Date', _formatDate(item['lastSoldDate'])),
-                  const SizedBox(height: 20),
-                  _buildPerformanceMetrics(item),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPerformanceMetrics(Map<String, dynamic> item) {
-    final totalQuantity = (item['totalQuantity'] ?? 0).toDouble();
-    final soldQuantity = (item['soldQuantity'] ?? 0).toDouble();
-    final totalViews = (item['totalViews'] ?? 0).toDouble();
-    final totalInquiries = (item['totalInquiries'] ?? 0).toDouble();
-
-    final sellThroughRate = totalQuantity > 0 ? (soldQuantity / totalQuantity) * 100 : 0.0;
-    final inquiryRate = totalViews > 0 ? (totalInquiries / totalViews) * 100 : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryGreen.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Performance Metrics',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: AppTheme.primaryGreen,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildMetricRow('Sell-through Rate', '${sellThroughRate.toStringAsFixed(1)}%'),
-          _buildMetricRow('Inquiry Rate', '${inquiryRate.toStringAsFixed(1)}%'),
-          _buildMetricRow('Revenue per Unit', totalQuantity > 0 
-            ? '₹${((item['totalRevenue'] ?? 0) / totalQuantity).toStringAsFixed(2)}' 
-            : '₹0.00'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetricRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 14)),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryGreen,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(String? dateString) {
-    if (dateString == null) return 'N/A';
-    try {
-      final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
-    } catch (e) {
-      return 'Invalid Date';
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'active':
-        return 'Active';
-      case 'sold_out':
-        return 'Sold Out';
-      case 'paused':
-        return 'Paused';
-      case 'removed':
-        return 'Removed';
-      default:
-        return 'Unknown';
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'active':
-        return AppTheme.success;
-      case 'sold_out':
-        return AppTheme.warning;
-      case 'paused':
-        return AppTheme.info;
-      case 'removed':
-        return AppTheme.error;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'active':
-        return Icons.check_circle;
-      case 'sold_out':
-        return Icons.inventory_2;
-      case 'paused':
-        return Icons.pause_circle;
-      case 'removed':
-        return Icons.remove_circle;
-      default:
-        return Icons.help;
-    }
   }
 
   @override
@@ -333,40 +119,14 @@ class _SellingHistoryPageState extends State<SellingHistoryPage>
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: const Text('My Selling History'),
+        title: const Text('My Products'),
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: _loadSellingHistory,
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filter',
-            onSelected: (value) {
-              setState(() {
-                _selectedFilter = value;
-              });
-              _loadSellingHistory();
-            },
-            itemBuilder: (context) => _filterOptions.map((filter) {
-              return PopupMenuItem(
-                value: filter,
-                child: Row(
-                  children: [
-                    if (_selectedFilter == filter)
-                      Icon(Icons.check, color: AppTheme.primaryGreen, size: 20)
-                    else
-                      const SizedBox(width: 20),
-                    const SizedBox(width: 8),
-                    Text(_getStatusText(filter)),
-                  ],
-                ),
-              );
-            }).toList(),
+            onPressed: _loadSellingHistory,
           ),
         ],
       ),
@@ -379,350 +139,530 @@ class _SellingHistoryPageState extends State<SellingHistoryPage>
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return _buildLoadingWidget();
+    }
+    
+    if (_hasError) {
+      return _buildErrorWidget();
     }
 
-    if (_error != null) {
-      return Center(
+    if (_sellingHistory.isEmpty) {
+      return _buildEmptyStateWidget();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadSellingHistory,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSummaryCard(),
+            const SizedBox(height: 16),
+            _buildFiltersCard(),
+            const SizedBox(height: 16),
+            _buildHistoryList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: AppTheme.primaryGreen,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Loading your products...',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppTheme.textGrey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: AppTheme.error),
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppTheme.error,
+            ),
             const SizedBox(height: 16),
             Text(
-              'Error',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              'Failed to load selling history',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: AppTheme.error,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              _error!,
+              _errorMessage,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textGrey,
+              ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
+            const SizedBox(height: 24),
+            ElevatedButton(
               onPressed: _loadSellingHistory,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGreen,
                 foregroundColor: Colors.white,
               ),
+              child: const Text('Try Again'),
             ),
           ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    if (_sellingHistory.isEmpty) {
-      return Center(
+  Widget _buildEmptyStateWidget() {
+    return Center(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 96,
+              color: AppTheme.textGrey,
+            ),
+            const SizedBox(height: 24),
             Text(
-              'No Products Listed Yet',
-              style: TextStyle(
-                fontSize: 20,
+              'No Products Listed',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+                color: AppTheme.textDark,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Start selling by adding your first product',
-              style: TextStyle(color: Colors.grey[500]),
+              'You haven\'t listed any products yet.\nStart by adding your first product!',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppTheme.textGrey,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.pushNamed(context, '/add_product');
+                // Navigate to add product page
+                // This should be handled by parent widget or navigation
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Product'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGreen,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
+              icon: const Icon(Icons.add),
+              label: const Text('Add Your First Product'),
             ),
           ],
         ),
-      );
-    }
-
-    return Column(
-      children: [
-        _buildSummaryCard(),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _loadSellingHistory,
-            color: AppTheme.primaryGreen,
-            child: ListView.builder(
-              padding: AppConstants.defaultPadding,
-              itemCount: _sellingHistory.length,
-              itemBuilder: (context, index) {
-                final item = _sellingHistory[index];
-                return _buildSellingHistoryCard(item);
-              },
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildSummaryCard() {
-    return Container(
-      margin: AppConstants.defaultPadding,
-      child: Card(
-        child: Padding(
-          padding: AppConstants.defaultPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Summary',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+    return Card(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Summary',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Total Revenue',
+                    '₹${_summary['totalRevenue']?.toStringAsFixed(2) ?? '0.00'}',
+                    Icons.attach_money,
+                    AppTheme.success,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSummaryItem(
-                      'Total Revenue',
-                      '₹${_summary['totalRevenue']?.toStringAsFixed(2) ?? '0.00'}',
-                      Icons.currency_rupee,
-                      AppTheme.success,
-                    ),
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Total Products',
+                    '${_summary['totalListings'] ?? 0}',
+                    Icons.inventory,
+                    AppTheme.primaryBlue,
                   ),
-                  Expanded(
-                    child: _buildSummaryItem(
-                      'Total Listings',
-                      '${_summary['totalListings'] ?? 0}',
-                      Icons.inventory,
-                      AppTheme.primaryGreen,
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Active',
+                    '${_summary['activeListings'] ?? 0}',
+                    Icons.trending_up,
+                    AppTheme.primaryGreen,
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSummaryItem(
-                      'Active',
-                      '${_summary['activeListings'] ?? 0}',
-                      Icons.check_circle,
-                      AppTheme.success,
-                    ),
+                ),
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Sold Out',
+                    '${_summary['soldOutListings'] ?? 0}',
+                    Icons.check_circle,
+                    AppTheme.warning,
                   ),
-                  Expanded(
-                    child: _buildSummaryItem(
-                      'Sold Out',
-                      '${_summary['soldOutListings'] ?? 0}',
-                      Icons.inventory_2,
-                      AppTheme.warning,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildSummaryItem(String title, String value, IconData icon, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color: color.withAlpha(30),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: color,
           ),
-        ),
-      ],
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppTheme.textGrey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSellingHistoryCard(Map<String, dynamic> item) {
-    final status = item['status'] ?? 'unknown';
-    final statusColor = _getStatusColor(status);
-    final statusIcon = _getStatusIcon(status);
-
+  Widget _buildFiltersCard() {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () => _showProductDetails(item),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      item['productName'] ?? 'Unknown Product',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(statusIcon, size: 12, color: statusColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          _getStatusText(status),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: statusColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Filters',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 8),
-              Text(
-                item['category'] ?? 'Unknown Category',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: _statusFilters.map((status) {
+                      return DropdownMenuItem(
+                        value: status == 'All' ? null : status,
+                        child: Text(status == 'All' ? 'All Statuses' : status.toUpperCase()),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedStatus = value;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoColumn(
-                      'Price',
-                      '₹${item['currentPrice']?.toString() ?? '0'}',
-                      Icons.currency_rupee,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('All Categories')),
+                      ...['Vegetables', 'Fruits', 'Grains', 'Seeds', 'Equipment', 'Dairy', 'Spices', 'Other']
+                          .map((category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              )),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value;
+                      });
+                    },
                   ),
-                  Expanded(
-                    child: _buildInfoColumn(
-                      'Available',
-                      '${item['availableQuantity']?.toString() ?? '0'}',
-                      Icons.inventory,
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildInfoColumn(
-                      'Revenue',
-                      '₹${item['totalRevenue']?.toString() ?? '0'}',
-                      Icons.trending_up,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.visibility, size: 14, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${item['totalViews'] ?? 0} views',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.message, size: 14, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${item['totalInquiries'] ?? 0} inquiries',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Listed ${_formatDate(item['listedDate'])}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoColumn(String title, String value, IconData icon) {
+  Widget _buildHistoryList() {
+    final filteredHistory = _getFilteredHistory();
+    
+    if (filteredHistory.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: AppConstants.defaultPadding,
+          child: Center(
+            child: Text(
+              'No products match the selected filters',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppTheme.textGrey,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 14, color: Colors.grey[500]),
-            const SizedBox(width: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
         Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+          'Products (${filteredHistory.length})',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 12),
+        ...filteredHistory.map((item) => _buildHistoryItem(item)),
       ],
     );
+  }
+
+  Widget _buildHistoryItem(Map<String, dynamic> item) {
+    final performanceMetrics = item['performanceMetrics'] ?? {};
+    final status = item['status'] ?? 'unknown';
+    final statusColor = _getStatusColor(status);
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                // Product Image or Placeholder
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: AppTheme.lightGreen.withAlpha(100),
+                  ),
+                  child: item['imageUrl'] != null && item['imageUrl'].isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            item['imageUrl'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.image, color: AppTheme.textGrey);
+                            },
+                          ),
+                        )
+                      : const Icon(Icons.agriculture, color: AppTheme.primaryGreen, size: 30),
+                ),
+                const SizedBox(width: 12),
+                
+                // Product Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item['productName'] ?? 'Unknown Product',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${item['category']} • ₹${item['currentPrice']?.toStringAsFixed(2)}/unit',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Status Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withAlpha(50),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Performance Metrics
+            Row(
+              children: [
+                _buildMetricChip(
+                  'Views',
+                  '${performanceMetrics['totalViews'] ?? 0}',
+                  Icons.visibility,
+                ),
+                const SizedBox(width: 8),
+                _buildMetricChip(
+                  'Inquiries',
+                  '${performanceMetrics['totalInquiries'] ?? 0}',
+                  Icons.question_answer,
+                ),
+                const SizedBox(width: 8),
+                _buildMetricChip(
+                  'Revenue',
+                  '₹${performanceMetrics['totalRevenue']?.toStringAsFixed(0) ?? '0'}',
+                  Icons.currency_rupee,
+                ),
+                const SizedBox(width: 8),
+                _buildMetricChip(
+                  'Days Listed',
+                  '${performanceMetrics['daysListed'] ?? 0}',
+                  Icons.calendar_today,
+                ),
+              ],
+            ),
+            
+            // Progress Bar for Sold Quantity
+            if (item['originalQuantity'] != null && item['originalQuantity'] > 0) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    'Sold: ${item['soldQuantity'] ?? 0}/${item['originalQuantity']}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textGrey,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      value: (item['soldQuantity'] ?? 0) / item['originalQuantity'],
+                      backgroundColor: AppTheme.lightGreen.withAlpha(100),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        performanceMetrics['sellThroughRate'] != null && 
+                        performanceMetrics['sellThroughRate'] > 80
+                            ? AppTheme.success
+                            : AppTheme.primaryGreen,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${performanceMetrics['sellThroughRate']?.toStringAsFixed(0) ?? '0'}%',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricChip(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.lightGreen.withAlpha(50),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppTheme.primaryGreen),
+          const SizedBox(width: 4),
+          Text(
+            '$label: $value',
+            style: TextStyle(
+              fontSize: 10,
+              color: AppTheme.textDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return AppTheme.success;
+      case 'sold_out':
+        return AppTheme.warning;
+      case 'expired':
+        return AppTheme.error;
+      case 'removed':
+        return AppTheme.textGrey;
+      case 'paused':
+        return AppTheme.primaryBlue;
+      default:
+        return AppTheme.textGrey;
+    }
   }
 }

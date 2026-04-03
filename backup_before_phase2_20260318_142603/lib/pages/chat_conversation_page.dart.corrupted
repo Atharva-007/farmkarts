@@ -1,0 +1,584 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../models/conversation_model.dart';
+import '../models/product_model.dart';
+import '../services/chat_service.dart';
+import '../theme/app_theme.dart';
+
+/// Chat Conversation Page for buyer-seller communication
+class ChatConversationPage extends StatefulWidget {
+  final Conversation? conversation;
+  final Product? product;
+  final String? conversationId;
+  final String? otherUserId;
+  final String? otherUserName;
+
+  const ChatConversationPage({
+    super.key,
+    this.conversation,
+    this.product,
+    this.conversationId,
+    this.otherUserId,
+    this.otherUserName,
+  });
+
+  @override
+  State<ChatConversationPage> createState() => _ChatConversationPageState();
+}
+
+class _ChatConversationPageState extends State<ChatConversationPage> {
+  final ChatService _chatService = ChatService();
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  
+  bool _isSending = false;
+  User? _currentUser;
+  Conversation? _currentConversation;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUser = FirebaseAuth.instance.currentUser;
+    _initializeConversation();
+  }
+
+  void _initializeConversation() {
+    // If we have a conversation object, use it
+    if (widget.conversation != null) {
+      _currentConversation = widget.conversation;
+    } else if (widget.conversationId != null) {
+      // Create a conversation object from the provided data
+      _currentConversation = Conversation(
+        id: widget.conversationId!,
+        productId: widget.product?.id ?? '',
+        productName: widget.product?.name ?? 'Product',
+        buyerId: _currentUser?.uid ?? '',
+        buyerName: _currentUser?.displayName ?? _currentUser?.email ?? 'Buyer',
+        sellerId: widget.otherUserId ?? '',
+        sellerName: widget.otherUserName ?? 'Seller',
+        lastMessage: 'Starting conversation...',
+        lastMessageTime: DateTime.now(),
+        lastMessageSenderId: _currentUser?.uid ?? '',
+        createdAt: DateTime.now(),
+      );
+    }
+  }
+    
+    // Mark conversation as read when opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _chatService.markAsRead(_currentConversation!.id);
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+
+    final content = _messageController.text.trim();
+    _messageController.clear();
+
+    setState(() {
+      _isSending = true;
+    });
+
+    try {
+      await _chatService.sendMessage(
+        conversationId: _currentConversation!.id,
+        content: content,
+      );
+
+      // Scroll to bottom after sending
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Failed to send message: $e',
+        backgroundColor: AppTheme.error,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isSending = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_currentConversation == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Chat')),
+        body: const Center(
+          child: Text('Unable to load conversation'),
+        ),
+      );
+    }
+
+    final otherUserName = _currentUser?.uid == _currentConversation!.buyerId
+        ? _currentConversation!.sellerName
+        : _currentConversation!.buyerName;
+
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryGreen,
+        foregroundColor: Colors.white,
+        elevation: 1,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              otherUserName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              _currentConversation!.productName,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: _showProductDetails,
+            icon: const Icon(Icons.info_outline),
+            tooltip: 'Product Info',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Product Info Banner
+          _buildProductBanner(),
+          
+          // Messages
+          Expanded(
+            child: StreamBuilder<List<Message>>(
+              stream: _chatService.getMessages(_currentConversation!.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 64, color: AppTheme.error),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Failed to load messages',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppTheme.error,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          snapshot.error.toString(),
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final messages = snapshot.data ?? [];
+
+                if (messages.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Start the conversation by sending a message!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  reverse: true,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    final isMe = message.senderId == _currentUser?.uid;
+                    
+                    return _buildMessageBubble(message, isMe);
+                  },
+                );
+              },
+            ),
+          ),
+          
+          // Message Input
+          _buildMessageInput(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProductBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      color: AppTheme.primaryGreen.withOpacity(0.1),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.info_outline,
+            size: 20,
+            color: Colors.grey,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Discussing: ${_currentConversation!.productName}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _showProductDetails,
+            child: const Text('View Product'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(Message message, bool isMe) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!isMe) ...[
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primaryGreen,
+              child: Text(
+                message.senderName.isNotEmpty 
+                    ? message.senderName[0].toUpperCase()
+                    : 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+          
+          Flexible(
+            child: Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.75,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isMe ? AppTheme.primaryGreen : Colors.white,
+                borderRadius: BorderRadius.circular(16).copyWith(
+                  bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+                  bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.type == MessageType.priceQuote)
+                    _buildBidOfferMessage(message, isMe)
+                  else
+                    Text(
+                      message.content,
+                      style: TextStyle(
+                        color: isMe ? Colors.white : Colors.black87,
+                        fontSize: 16,
+                        height: 1.4,
+                      ),
+                    ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatTime(message.timestamp),
+                        style: TextStyle(
+                          color: isMe ? Colors.white70 : Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          message.isRead ? Icons.done_all : Icons.done,
+                          size: 16,
+                          color: message.isRead ? Colors.blue[300] : Colors.white70,
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          if (isMe) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppTheme.primaryGreen,
+              child: Text(
+                message.senderName.isNotEmpty 
+                    ? message.senderName[0].toUpperCase()
+                    : 'M',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBidOfferMessage(Message message, bool isMe) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: (isMe ? Colors.white : AppTheme.primaryGreen).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: (isMe ? Colors.white : AppTheme.primaryGreen).withOpacity(0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.local_offer,
+                size: 16,
+                color: isMe ? AppTheme.primaryGreen : Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'BID OFFER',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isMe ? AppTheme.primaryGreen : Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message.content,
+            style: TextStyle(
+              color: isMe ? Colors.white : Colors.black87,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageInput() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message...',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _showBidDialog,
+                    icon: Icon(
+                      Icons.local_offer,
+                      color: AppTheme.primaryGreen,
+                    ),
+                    tooltip: 'Send Bid Offer',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGreen,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: _isSending ? null : _sendMessage,
+              icon: _isSending
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showProductDetails() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Product Details'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _currentConversation!.productName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'This is the product you are discussing in this conversation.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBidDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Send Bid Offer'),
+        content: const Text(
+          'Bid functionality will be implemented here. For now, you can send a regular message with your offer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _messageController.text = 'I would like to make a bid offer for this product. ';
+            },
+            child: const Text('Add Bid Text'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (messageDate == today) {
+      // Today - show time
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      return '$hour:$minute';
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      // Yesterday
+      return 'Yesterday';
+    } else {
+      // Older - show date
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
+}

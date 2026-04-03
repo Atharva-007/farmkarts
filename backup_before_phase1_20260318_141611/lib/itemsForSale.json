@@ -1,0 +1,22 @@
+{
+  "itemsForSale": {
+    "item1": {
+      "productName": "Tomatoes",
+      "description": "Fresh organic tomatoes",
+      "price": "20",
+      "timestamp": 1715840000000
+    },
+    "item2": {
+      "productName": "Wheat",
+      "description": "High-quality wheat grains",
+      "price": "35",
+      "timestamp": 1715843600000
+    },
+    "item3": {
+      "productName": "Mangoes",
+      "description": "Sweet Alphonso mangoes",
+      "price": "100",
+      "timestamp": 1715847200000
+    }
+  }
+}

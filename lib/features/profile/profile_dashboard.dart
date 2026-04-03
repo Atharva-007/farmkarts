@@ -5,6 +5,8 @@ import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
 import '../../services/user_state_service.dart';
+import '../../widgets/universal_drawer.dart';
+import '../../widgets/universal_header.dart';
 import 'license_management_page.dart';
 
 class ProfileDashboard extends StatefulWidget {
@@ -49,50 +51,49 @@ class _ProfileDashboardState extends State<ProfileDashboard>
       builder: (context, userState, child) {
         final user = userState.currentUser;
         
-        return Container(
-          color: AppTheme.backgroundLight,
-          child: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await userState.initializeUser();
-                },
-                color: AppTheme.primaryGreen,
-                child: CustomScrollView(
-                  slivers: [
-                    _buildAppBar(user),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: AppConstants.defaultPadding,
-                        child: Column(
-                          children: [
-                            if (userState.isLoading) ...[
-                              const SizedBox(height: 100),
-                              const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.primaryGreen,
-                                ),
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          drawer: const UniversalDrawer(currentPage: 'profile'),
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await userState.initializeUser();
+              },
+              color: AppTheme.getPrimaryAccent(context),
+              child: CustomScrollView(
+                slivers: [
+                  _buildAppBar(user),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: AppConstants.defaultPadding,
+                      child: Column(
+                        children: [
+                          if (userState.isLoading) ...[
+                            const SizedBox(height: 100),
+                            Center(
+                              child: CircularProgressIndicator(
+                                color: AppTheme.getPrimaryAccent(context),
                               ),
-                            ] else if (user != null) ...[
-                              _buildProfileHeader(user),
-                              const SizedBox(height: 24),
-                              _buildRoleSpecificInfo(user),
-                              const SizedBox(height: 24),
-                              _buildQuickStats(user),
-                              const SizedBox(height: 24),
-                              _buildMenuSections(user),
-                              const SizedBox(height: 24),
-                              _buildAccountActions(),
-                            ] else ...[
-                              _buildLoginPrompt(),
-                            ],
+                            ),
+                          ] else if (user != null) ...[
+                            _buildProfileHeader(user),
+                            const SizedBox(height: 24),
+                            _buildRoleSpecificInfo(user),
+                            const SizedBox(height: 24),
+                            _buildQuickStats(user),
+                            const SizedBox(height: 24),
+                            _buildMenuSections(user),
+                            const SizedBox(height: 24),
+                            _buildAccountActions(),
+                          ] else ...[
+                            _buildLoginPrompt(),
                           ],
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -102,154 +103,93 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   Widget _buildAppBar(UserModel? user) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: AppConstants.defaultPadding,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        user?.role == UserRole.farmer ? Icons.agriculture : Icons.store,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Profile',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.white),
-                        onPressed: _editProfile,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.white),
-                        onPressed: _openSettings,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    final userName = user?.fullName ?? 'User';
+    return UniversalHeader(
+      title: userName,
+      subtitle: 'Profile',
+      icon: Icons.person,
+      alignRight: true,
+      actions: [],
     );
   }
 
   Widget _buildProfileHeader(UserModel user) {
-    return Card(
-      elevation: 8,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Container(
-        padding: AppConstants.largePadding,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: [
-              Colors.white,
-              AppTheme.primaryGreen.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
-        child: Column(
-          children: [
-            // Profile Avatar
-            Stack(
+        ],
+      ),
+      child: Row(
+        children: [
+          // Avatar
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: AppTheme.getIconBackgroundColor(context),
+            child: Icon(
+              user.role == UserRole.farmer ? Icons.agriculture : Icons.store,
+              size: 22,
+              color: AppTheme.getPrimaryAccent(context),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // User Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                  child: Icon(
-                    user.role == UserRole.farmer ? Icons.agriculture : Icons.store,
-                    size: 60,
-                    color: AppTheme.primaryGreen,
+                Text(
+                  user.fullName,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.getTextColor(context),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: user.role == UserRole.farmer ? AppTheme.success : AppTheme.info,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: Icon(
-                      user.role == UserRole.farmer ? Icons.verified : Icons.business,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                const SizedBox(height: 2),
+                Text(
+                  user.email,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.getSecondaryTextColor(context),
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            
-            // User Details
-            Text(
-              user.fullName,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+          ),
+          const SizedBox(width: 8),
+          // Role Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              _getRoleDisplayName(user.role),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.getPrimaryAccent(context),
               ),
             ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: user.role == UserRole.farmer 
-                    ? AppTheme.success.withOpacity(0.1)
-                    : AppTheme.info.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                user.role == UserRole.farmer ? 'Farmer' : 'Vendor/Addat',
-                style: TextStyle(
-                  color: user.role == UserRole.farmer ? AppTheme.success : AppTheme.info,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              user.email,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textGrey,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              user.mobileNo,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textGrey,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -264,7 +204,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
             children: [
               Row(
                 children: [
-                  Icon(Icons.landscape, color: AppTheme.primaryGreen),
+                  Icon(Icons.landscape, color: AppTheme.getPrimaryAccent(context)),
                   const SizedBox(width: 8),
                   Text(
                     'Farm Information',
@@ -306,7 +246,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
             children: [
               Row(
                 children: [
-                  Icon(Icons.store, color: AppTheme.primaryGreen),
+                  Icon(Icons.store, color: AppTheme.getPrimaryAccent(context)),
                   const SizedBox(width: 8),
                   Text(
                     'Business Information',
@@ -362,7 +302,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                               color: AppTheme.success,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
+                            child: const Text(
                               'VERIFIED',
                               style: TextStyle(
                                 color: Colors.white,
@@ -377,7 +317,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                     Text(
                       _getLicenseStatusMessage(user),
                       style: TextStyle(
-                        color: AppTheme.textGrey,
+                        color: AppTheme.getSecondaryTextColor(context),
                         fontSize: 14,
                         height: 1.4,
                       ),
@@ -387,7 +327,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                       Text(
                         'Uploaded: ${_formatDate(user.licenseUploadedAt!)}',
                         style: TextStyle(
-                          color: AppTheme.textGrey,
+                          color: AppTheme.getSecondaryTextColor(context),
                           fontSize: 12,
                         ),
                       ),
@@ -418,7 +358,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                 ),
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -449,12 +389,12 @@ class _ProfileDashboardState extends State<ProfileDashboard>
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: AppTheme.textGrey),
+            Icon(icon, size: 16, color: AppTheme.getSecondaryTextColor(context)),
             const SizedBox(width: 4),
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppTheme.textGrey,
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
           ],
@@ -464,7 +404,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
           value,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w600,
-            color: valueColor ?? AppTheme.textDark,
+            color: valueColor ?? AppTheme.getTextColor(context),
           ),
         ),
       ],
@@ -549,7 +489,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textGrey,
+            color: AppTheme.getSecondaryTextColor(context),
           ),
           textAlign: TextAlign.center,
         ),
@@ -624,10 +564,10 @@ class _ProfileDashboardState extends State<ProfileDashboard>
             ),
           ),
           ...options.map((option) => ListTile(
-            leading: Icon(option.icon, color: AppTheme.primaryGreen),
-            title: Text(option.title),
-            subtitle: Text(option.subtitle),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(option.icon, color: AppTheme.getPrimaryAccent(context)),
+            title: Text(option.title, style: TextStyle(color: AppTheme.getTextColor(context))),
+            subtitle: Text(option.subtitle, style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
             onTap: option.onTap,
           )),
         ],
@@ -641,14 +581,14 @@ class _ProfileDashboardState extends State<ProfileDashboard>
         children: [
           ListTile(
             leading: Icon(Icons.help_outline, color: AppTheme.info),
-            title: const Text('Help & Support'),
-            trailing: const Icon(Icons.chevron_right),
+            title: Text('Help & Support', style: TextStyle(color: AppTheme.getTextColor(context))),
+            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
             onTap: _openHelp,
           ),
           ListTile(
-            leading: Icon(Icons.logout, color: AppTheme.error),
-            title: const Text('Logout'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: const Icon(Icons.logout, color: AppTheme.error),
+            title: Text('Logout', style: TextStyle(color: AppTheme.getTextColor(context))),
+            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
             onTap: _logout,
           ),
         ],
@@ -657,8 +597,11 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   Widget _buildLoginPrompt() {
-    return const Center(
-      child: Text('Please log in to view your profile'),
+    return Center(
+      child: Text(
+        'Please log in to view your profile',
+        style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+      ),
     );
   }
 
@@ -668,39 +611,27 @@ class _ProfileDashboardState extends State<ProfileDashboard>
 
   // Action methods
   void _editProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit Profile coming soon!')),
-    );
+    _showComingSoon('Edit Profile');
   }
 
   void _openSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Settings coming soon!')),
-    );
+    _showComingSoon('Settings');
   }
 
   void _openSecurity() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Security settings coming soon!')),
-    );
+    _showComingSoon('Security settings');
   }
 
   void _openFarmDetails() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Farm details coming soon!')),
-    );
+    _showComingSoon('Farm details');
   }
 
   void _openCropCalendar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Crop calendar coming soon!')),
-    );
+    _showComingSoon('Crop calendar');
   }
 
   void _openInventory() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Inventory management coming soon!')),
-    );
+    _showComingSoon('Inventory management');
   }
 
   void _openLicenseManagement() {
@@ -755,6 +686,35 @@ class _ProfileDashboardState extends State<ProfileDashboard>
     if (mounted) {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
     }
+  }
+
+  void _showComingSoon(String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$feature coming soon!'),
+        backgroundColor: AppTheme.getPrimaryAccent(context),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _getRoleDisplayName(UserRole role) {
+    switch (role) {
+      case UserRole.farmer:
+        return 'Farmer';
+      case UserRole.addat:
+        return 'Vendor/Addat';
+      default:
+        return 'User';
+    }
+  }
+
+  void _openOrders() {
+    _showComingSoon('Orders');
+  }
+
+  void _openProducts() {
+    _showComingSoon('My Products');
   }
 }
 
@@ -827,7 +787,7 @@ class StatItemWithData extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: AppTheme.getSecondaryTextColor(context),
               ),
               textAlign: TextAlign.center,
             ),

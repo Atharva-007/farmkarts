@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
-import '../models/product_model.dart';
+import '../services/weather_service.dart';
 
 class WeatherForecastCard extends StatelessWidget {
   final DailyForecast forecast;
@@ -14,62 +14,86 @@ class WeatherForecastCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 100,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
+      width: 110,
+      margin: const EdgeInsets.only(right: 12, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceWhite,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.borderGrey),
-        boxShadow: AppTheme.defaultShadow,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            _formatDate(forecast.date),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderGrey.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-          _getWeatherIcon(forecast.condition),
-          Column(
-            children: [
-              Text(
-                '${forecast.maxTemp.round()}°',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _formatDate(forecast.date),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textGrey,
               ),
-              Text(
-                '${forecast.minTemp.round()}°',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            _getWeatherIcon(forecast.condition),
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${forecast.maxTemp.round()}°',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${forecast.minTemp.round()}°',
+                    style: TextStyle(
+                      color: AppTheme.textGrey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (forecast.rainfall > 0) ...[
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.water_drop,
+                      size: 10,
+                      color: AppTheme.skyBlue,
+                    ),
+                    Text(
+                      '${forecast.rainfall.round()}mm',
+                      style: TextStyle(
+                        color: AppTheme.skyBlue,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          if (forecast.rainfall > 0)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.water_drop,
-                  size: 12,
-                  color: AppTheme.skyBlue,
-                ),
-                const SizedBox(width: 2),
-                Text(
-                  '${forecast.rainfall.round()}mm',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.skyBlue,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:lottie/lottie.dart';
 import '../models/product_model.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
-import 'order_tracking_page.dart';
+import 'enhanced_order_tracking_page.dart';
 
 class OrderSuccessPage extends StatefulWidget {
   final String paymentId;
@@ -434,12 +434,13 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
           height: 50,
           child: ElevatedButton(
             onPressed: () {
-              if (widget.trackingId != null) {
+              if (widget.trackingId != null || widget.orderId != null) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => OrderTrackingPage(
-                      trackingId: widget.trackingId!,
+                    builder: (context) => EnhancedOrderTrackingPage(
+                      trackingId: widget.trackingId,
+                      orderId: widget.orderId,
                     ),
                   ),
                 );

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/enhanced_chat_models.dart';
@@ -202,7 +202,7 @@ class MediaService {
       //   onImageSelected(File(image.path));
       // }
     } catch (e) {
-      _showErrorDialog(context, 'Failed to capture image: \');
+      _showErrorDialog(context, 'Failed to capture image: $e');
     }
   }
 
@@ -225,7 +225,7 @@ class MediaService {
       //   onVideoSelected(File(video.path));
       // }
     } catch (e) {
-      _showErrorDialog(context, 'Failed to capture video: \');
+      _showErrorDialog(context, 'Failed to capture video: $e');
     }
   }
 
@@ -248,7 +248,7 @@ class MediaService {
       //   onImageSelected(File(image.path));
       // }
     } catch (e) {
-      _showErrorDialog(context, 'Failed to pick image: \');
+      _showErrorDialog(context, 'Failed to pick image: $e');
     }
   }
 
@@ -270,7 +270,7 @@ class MediaService {
       //   onDocumentSelected(File(result.files.single.path!));
       // }
     } catch (e) {
-      _showErrorDialog(context, 'Failed to pick document: \');
+      _showErrorDialog(context, 'Failed to pick document: $e');
     }
   }
 
@@ -279,7 +279,7 @@ class MediaService {
       print('Location sharing initiated');
       // Implement location sharing
     } catch (e) {
-      _showErrorDialog(context, 'Failed to share location: \');
+      _showErrorDialog(context, 'Failed to share location: $e');
     }
   }
 
@@ -288,7 +288,7 @@ class MediaService {
       print('Contact sharing initiated');
       // Implement contact sharing
     } catch (e) {
-      _showErrorDialog(context, 'Failed to share contact: \');
+      _showErrorDialog(context, 'Failed to share contact: $e');
     }
   }
 
@@ -310,9 +310,9 @@ class MediaService {
       }
       
       // Return simulated download URL
-      return 'https://example.com/uploads/\';
+      return 'https://example.com/uploads/';
     } catch (e) {
-      throw Exception('Failed to upload file: \');
+      throw Exception('Failed to upload file: $e');
     }
   }
 
@@ -320,9 +320,9 @@ class MediaService {
   Future<String> generateVideoThumbnail(String videoPath) async {
     try {
       // Simulate thumbnail generation - replace with actual video thumbnail
-      return 'https://example.com/thumbnails/\';
+      return 'https://example.com/thumbnails/';
     } catch (e) {
-      throw Exception('Failed to generate thumbnail: \');
+      throw Exception('Failed to generate thumbnail: $e');
     }
   }
 
@@ -360,7 +360,7 @@ class MediaService {
         ),
       );
     } catch (e) {
-      _showErrorDialog(context, 'Failed to initiate call: \');
+      _showErrorDialog(context, 'Failed to initiate call: $e');
     }
   }
 
@@ -369,7 +369,7 @@ class MediaService {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Permission Required'),
-        content: Text('\ permission is required for this feature.'),
+        content: Text('$permission permission is required for this feature.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -573,7 +573,7 @@ class _CallScreenState extends State<CallScreen> {
           final duration = DateTime.now().difference(_callStartTime!);
           final minutes = duration.inMinutes;
           final seconds = duration.inSeconds % 60;
-          return '\:\';
+          return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
         }
         return 'Connected';
       default:

@@ -1,0 +1,487 @@
+// Enhanced Marketplace Service for FarmKart
+// Handles selling history, buyer interests, price offers, and comprehensive marketplace operations
+// Updated to use Firebase directly instead of backend API
+
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
+import '../models/product_model.dart';
+import '../models/marketplace_models.dart';
+
+class EnhancedMarketplaceService {
+  static final EnhancedMarketplaceService _instance = EnhancedMarketplaceService._internal();
+  factory EnhancedMarketplaceService() => _instance;
+  EnhancedMarketplaceService._internal();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Get current authenticated user
+  User? _getCurrentUser() {
+    return FirebaseAuth.instance.currentUser;
+  }
+
+  // Selling History Management using Firebase
+  Future<List<SellingHistoryItem>> getSellingHistory(String userId) async {
+    try {
+      print('EnhancedMarketplaceService: Fetching selling history for user: $userId');
+      
+      final user = _getCurrentUser();
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final query = _firestore
+          .collection('selling_history')
+          .where('sellerId', isEqualTo: userId);
+
+      final QuerySnapshot querySnapshot = await query.get();
+
+      final historyList = querySnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        
+        // Convert Firebase data to SellingHistoryItem format
+        return SellingHistoryItem(
+          id: doc.id,
+          productId: data['productId'] ?? '',
+          productName: data['productName'] ?? '',
+          sellerId: data['sellerId'] ?? '',
+          sellerName: data['sellerName'] ?? '',
+          category: data['category'] ?? '',
+          initialPrice: (data['initialPrice'] ?? 0).toDouble(),
+          currentPrice: (data['currentPrice'] ?? 0).toDouble(),
+          totalQuantity: data['totalQuantity'] ?? 0,
+          soldQuantity: data['soldQuantity'] ?? 0,
+          availableQuantity: data['availableQuantity'] ?? 0,
+          totalRevenue: (data['totalRevenue'] ?? 0).toDouble(),
+          totalViews: data['totalViews'] ?? 0,
+          totalInquiries: data['totalInquiries'] ?? 0,
+          status: data['status'] ?? 'active',
+          isActive: data['isActive'] ?? true,
+          listedDate: data['listedDate'] != null 
+            ? (data['listedDate'] as Timestamp).toDate()
+            : DateTime.now(),
+          lastSoldDate: data['lastSoldDate'] != null
+            ? (data['lastSoldDate'] as Timestamp).toDate()
+            : null,
+        );
+      }).toList();
+
+      print('EnhancedMarketplaceService: Found ${historyList.length} selling history records');
+      return historyList;
+      
+    } catch (e) {
+      print('EnhancedMarketplaceService: Error fetching selling history: $e');
+      throw Exception('Failed to fetch selling history: $e');
+    }
+  }
+
+  // User Statistics using Firebase
+  Future<UserStatistics> getUserStatistics(String userId) async {
+    try {
+      print('EnhancedMarketplaceService: Fetching user statistics for: $userId');
+      
+      final user = _getCurrentUser();
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get selling history to calculate stats
+      final sellingHistory = await getSellingHistory(userId);
+      
+      // Get user's products
+      final productsQuery = await _firestore
+          .collection('products')
+          .where('sellerId', isEqualTo: userId)
+          .get();
+
+      final products = productsQuery.docs;
+
+      // Calculate statistics
+      double totalRevenue = 0;
+      int totalSold = 0;
+      int activeProducts = 0;
+      int totalViews = 0;
+      int totalInquiries = 0;
+
+      for (final item in sellingHistory) {
+        totalRevenue += item.totalRevenue;
+        totalSold += item.soldQuantity;
+        if (item.isActive) activeProducts++;
+        totalViews += item.totalViews;
+        totalInquiries += item.totalInquiries;
+      }
+
+      final stats = UserStatistics(
+        userId: userId,
+        totalProducts: products.length,
+        activeProducts: activeProducts,
+        totalSold: totalSold,
+        totalRevenue: totalRevenue,
+        totalViews: totalViews,
+        totalInquiries: totalInquiries,
+        averageRating: 4.5, // Default rating - can be calculated from reviews
+        totalReviews: 0, // Can be calculated from reviews collection
+        joinDate: DateTime.now(), // Can be fetched from user profile
+        lastActive: DateTime.now(),
+      );
+
+      print('EnhancedMarketplaceService: User statistics calculated successfully');
+      return stats;
+      
+    } catch (e) {
+      print('EnhancedMarketplaceService: Error fetching user statistics: $e');
+      throw Exception('Failed to fetch user statistics: $e');
+    }
+  }
+
+  // Buyer Interest Management using Firebase
+  Future<String> showInterestInProduct({
+    required String productId,
+    required String message,
+    required int interestedQuantity,
+    String contactPreference = 'email',
+  }) async {
+    try {
+      print('EnhancedMarketplaceService: Registering interest in product: $productId');
+      
+      final user = _getCurrentUser();
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final interestData = {
+        'productId': productId,
+        'buyerId': user.uid,
+        'buyerName': user.displayName ?? user.email ?? 'Unknown Buyer',
+        'message': message,
+        'interestedQuantity': interestedQuantity,
+        'contactPreference': contactPreference,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      final docRef = await _firestore.collection('buyer_interests').add(interestData);
+      
+      print('EnhancedMarketplaceService: Interest registered successfully with ID: ${docRef.id}');
+      return docRef.id;
+      
+    } catch (e) {
+      print('EnhancedMarketplaceService: Error registering interest: $e');
+      throw Exception('Failed to register interest: $e');
+    }
+  }
+
+  Future<List<BuyerInterest>> getProductInterests(String productId) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/products/$productId/interests'),
+        headers: headers,
+      );
+
+      print('Product Interests Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> interestsList = data['data'] ?? [];
+          return interestsList.map((item) => BuyerInterest.fromMap(item)).toList();
+        } else {
+          throw Exception(data['error'] ?? 'Failed to fetch interests');
+        }
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching product interests: $e');
+      throw Exception('Failed to fetch product interests: $e');
+    }
+  }
+
+  // Price Offer Management
+  Future<String> makePriceOffer({
+    required String productId,
+    required double offeredPrice,
+    required int quantity,
+    required String message,
+    DateTime? validUntil,
+  }) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final body = {
+        'offeredPrice': offeredPrice,
+        'quantity': quantity,
+        'message': message,
+        if (validUntil != null) 'validUntil': validUntil.toIso8601String(),
+      };
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/products/$productId/offers'),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('Price Offer Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data']['id'];
+        } else {
+          throw Exception(data['error'] ?? 'Failed to create price offer');
+        }
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Failed to create price offer');
+      }
+    } catch (e) {
+      print('Error creating price offer: $e');
+      throw Exception('Failed to create price offer: $e');
+    }
+  }
+
+  Future<List<PriceOffer>> getProductOffers(String productId) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/products/$productId/offers'),
+        headers: headers,
+      );
+
+      print('Product Offers Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> offersList = data['data'] ?? [];
+          return offersList.map((item) => PriceOffer.fromMap(item)).toList();
+        } else {
+          throw Exception(data['error'] ?? 'Failed to fetch offers');
+        }
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching product offers: $e');
+      throw Exception('Failed to fetch product offers: $e');
+    }
+  }
+
+  // Offer Management (Accept/Reject)
+  Future<PriceOffer> respondToOffer({
+    required String offerId,
+    required String status, // 'accepted' or 'rejected'
+    String? response,
+  }) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final body = {
+        'status': status,
+        if (response != null) 'response': response,
+      };
+
+      final httpResponse = await http.put(
+        Uri.parse('$_baseUrl/offers/$offerId'),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('Offer Response: ${httpResponse.statusCode} - ${httpResponse.body}');
+
+      if (httpResponse.statusCode == 200) {
+        final data = jsonDecode(httpResponse.body);
+        if (data['success'] == true) {
+          return PriceOffer.fromMap(data['data']);
+        } else {
+          throw Exception(data['error'] ?? 'Failed to respond to offer');
+        }
+      } else {
+        final errorData = jsonDecode(httpResponse.body);
+        throw Exception(errorData['error'] ?? 'Failed to respond to offer');
+      }
+    } catch (e) {
+      print('Error responding to offer: $e');
+      throw Exception('Failed to respond to offer: $e');
+    }
+  }
+
+  // Enhanced Product Management
+  Future<Product> getProductDetails(String productId) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/products/$productId'),
+        headers: headers,
+      );
+
+      print('Product Details Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return Product.fromMap(data['data']);
+        } else {
+          throw Exception(data['error'] ?? 'Failed to fetch product details');
+        }
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching product details: $e');
+      throw Exception('Failed to fetch product details: $e');
+    }
+  }
+
+  Future<List<Product>> getProducts({
+    String? category,
+    String? sellerId,
+    String? excludeSeller,
+    int limit = 20,
+    int page = 1,
+    bool? isAvailable,
+    double? minPrice,
+    double? maxPrice,
+    bool? isOrganic,
+    String? location,
+    String sortBy = 'createdAt',
+    String sortOrder = 'desc',
+    String? search,
+  }) async {
+    try {
+      final headers = await _getAuthHeaders();
+      
+      // Build query parameters
+      final queryParams = <String, String>{
+        'limit': limit.toString(),
+        'page': page.toString(),
+        'sortBy': sortBy,
+        'sortOrder': sortOrder,
+      };
+      
+      if (category != null) queryParams['category'] = category;
+      if (sellerId != null) queryParams['sellerId'] = sellerId;
+      if (excludeSeller != null) queryParams['excludeSeller'] = excludeSeller;
+      if (isAvailable != null) queryParams['isAvailable'] = isAvailable.toString();
+      if (minPrice != null) queryParams['minPrice'] = minPrice.toString();
+      if (maxPrice != null) queryParams['maxPrice'] = maxPrice.toString();
+      if (isOrganic != null) queryParams['isOrganic'] = isOrganic.toString();
+      if (location != null) queryParams['location'] = location;
+      if (search != null) queryParams['search'] = search;
+
+      final uri = Uri.parse('$_baseUrl/products').replace(queryParameters: queryParams);
+      final response = await http.get(uri, headers: headers);
+
+      print('Products Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> productsList = data['data'] ?? [];
+          return productsList.map((item) => Product.fromMap(item)).toList();
+        } else {
+          throw Exception(data['error'] ?? 'Failed to fetch products');
+        }
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+      throw Exception('Failed to fetch products: $e');
+    }
+  }
+
+  // User Management
+  Future<Map<String, dynamic>> createOrUpdateUser({
+    required String fullName,
+    required String email,
+    required String role,
+    String? mobileNo,
+    double? acresLand,
+    String? dukanName,
+  }) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final body = {
+        'fullName': fullName,
+        'email': email,
+        'role': role,
+        if (mobileNo != null) 'mobileNo': mobileNo,
+        if (acresLand != null) 'acresLand': acresLand,
+        if (dukanName != null) 'dukanName': dukanName,
+      };
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/users'),
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('User Creation Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'];
+        } else {
+          throw Exception(data['error'] ?? 'Failed to create user');
+        }
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? 'Failed to create user');
+      }
+    } catch (e) {
+      print('Error creating user: $e');
+      throw Exception('Failed to create user: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/$userId'),
+        headers: headers,
+      );
+
+      print('User Profile Response: ${response.statusCode} - ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'];
+        } else {
+          throw Exception(data['error'] ?? 'Failed to fetch user profile');
+        }
+      } else {
+        throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      throw Exception('Failed to fetch user profile: $e');
+    }
+  }
+
+  // Utility Methods
+  Future<bool> checkBackendHealth() async {
+    try {
+      final response = await http.get(Uri.parse('$_baseUrl/health'));
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Backend health check failed: $e');
+      return false;
+    }
+  }
+
+  // Error Handling Helper
+  String _parseErrorMessage(String responseBody) {
+    try {
+      final errorData = jsonDecode(responseBody);
+      return errorData['error'] ?? 'Unknown error occurred';
+    } catch (e) {
+      return responseBody.isNotEmpty ? responseBody : 'Unknown error occurred';
+    }
+  }
+}

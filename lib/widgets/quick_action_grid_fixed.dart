@@ -4,8 +4,8 @@ import '../utils/responsive_helper.dart';
 import '../features/marketplace/marketplace_home.dart';
 import '../features/community/community_dashboard.dart';
 import '../features/profile/profile_dashboard.dart';
-import '../sell_page.dart';
-import '../settings_page.dart';
+import '../pages/sell_page.dart';
+import '../pages/settings_page.dart';
 
 class QuickActionGrid extends StatelessWidget {
   final Function(int)? onNavigate;

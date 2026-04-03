@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 enum ChatStatus { active, archived, blocked }
 enum MessageType { text, image, bid, system }
 enum BidStatus { pending, accepted, rejected, expired, withdrawn }
-enum NotificationType { message, bid, rating, order, system }
+enum NotificationType { message, bid, rating, order, system, market, weather }
 
 /// Chat conversation model
 class ChatConversation {

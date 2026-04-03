@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 
 class ToastHelper {
   static void showSuccess(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -21,6 +22,7 @@ class ToastHelper {
   }
 
   static void showError(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -31,6 +33,7 @@ class ToastHelper {
           label: 'OK',
           textColor: Colors.white,
           onPressed: () {
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
         ),
@@ -39,6 +42,7 @@ class ToastHelper {
   }
 
   static void showInfo(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -49,6 +53,7 @@ class ToastHelper {
           label: 'OK',
           textColor: Colors.white,
           onPressed: () {
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
         ),
@@ -57,6 +62,7 @@ class ToastHelper {
   }
 
   static void showWarning(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -67,6 +73,7 @@ class ToastHelper {
           label: 'OK',
           textColor: Colors.white,
           onPressed: () {
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
           },
         ),

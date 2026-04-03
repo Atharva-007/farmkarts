@@ -258,23 +258,24 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
   Widget _buildScrollingContent() {
     return SizedBox(
       height: 60,
-      child: AnimatedBuilder(
-        animation: _scrollController,
-        builder: (context, child) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final totalWidth = _calculateTotalWidth();
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = _calculateTotalWidth();
+          
+          return AnimatedBuilder(
+            animation: _scrollController,
+            builder: (context, child) {
               final offset = _scrollController.value * (totalWidth + constraints.maxWidth);
-              
               return Transform.translate(
                 offset: Offset(constraints.maxWidth - offset, 0),
-                child: Row(
-                  children: _marketRates
-                      .map((rate) => _buildMarketItem(rate))
-                      .toList(),
-                ),
+                child: child,
               );
             },
+            child: Row(
+              children: _marketRates
+                  .map((rate) => _buildMarketItem(rate))
+                  .toList(),
+            ),
           );
         },
       ),

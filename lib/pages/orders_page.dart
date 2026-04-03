@@ -4,10 +4,12 @@ import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive_helper.dart';
-import 'order_tracking_page.dart';
+import '../widgets/universal_drawer.dart';
+import 'enhanced_order_tracking_page.dart';
 
 class OrdersPage extends StatefulWidget {
-  const OrdersPage({super.key});
+  final String initialFilter;
+  const OrdersPage({super.key, this.initialFilter = 'all'});
 
   @override
   State<OrdersPage> createState() => _OrdersPageState();
@@ -20,13 +22,14 @@ class _OrdersPageState extends State<OrdersPage>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   
-  String _selectedFilter = 'all';
+  late String _selectedFilter;
   List<OrderModel> _orders = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _selectedFilter = widget.initialFilter;
     _setupAnimations();
     _loadOrders();
   }
@@ -113,10 +116,11 @@ class _OrdersPageState extends State<OrdersPage>
     final isMobile = ResponsiveHelper.isMobile(context);
     
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      drawer: const UniversalDrawer(currentPage: 'orders'),
       appBar: AppBar(
         title: const Text('My Orders'),
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppTheme.getPrimaryAccent(context),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -127,26 +131,40 @@ class _OrdersPageState extends State<OrdersPage>
           ),
         ],
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: Column(
-            children: [
-              // Filter Tabs
-              _buildFilterTabs(),
-              
-              // Orders List
-              Expanded(
-                child: _isLoading
-                    ? _buildLoadingState()
-                    : _filteredOrders.isEmpty
+      body: StreamBuilder<List<OrderModel>>(
+        stream: _orderService.getBuyerOrders(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildLoadingState();
+          }
+
+          if (snapshot.hasError) {
+            return _buildErrorState(snapshot.error.toString());
+          }
+
+          _orders = snapshot.data ?? [];
+          final filteredOrders = _filteredOrders;
+
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Column(
+                children: [
+                  // Filter Tabs
+                  _buildFilterTabs(),
+                  
+                  // Orders List
+                  Expanded(
+                    child: filteredOrders.isEmpty
                         ? _buildEmptyState()
-                        : _buildOrdersList(isMobile),
+                        : _buildOrdersList(isMobile, filteredOrders),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -161,17 +179,20 @@ class _OrdersPageState extends State<OrdersPage>
       {'key': 'cancelled', 'label': 'Cancelled', 'icon': Icons.cancel},
     ];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
+        color: Theme.of(context).cardColor,
+        boxShadow: isDark ? [] : [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
+        border: isDark ? Border(bottom: BorderSide(color: AppTheme.getBorderColor(context))) : null,
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -191,7 +212,7 @@ class _OrdersPageState extends State<OrdersPage>
                       Icon(
                         filter['icon'] as IconData,
                         size: 16,
-                        color: isSelected ? Colors.white : AppTheme.primaryGreen,
+                        color: isSelected ? Colors.white : AppTheme.getPrimaryAccent(context),
                       ),
                       const SizedBox(width: 4),
                       Text(filter['label'] as String),
@@ -202,10 +223,10 @@ class _OrdersPageState extends State<OrdersPage>
                       _selectedFilter = filter['key'] as String;
                     });
                   },
-                  selectedColor: AppTheme.primaryGreen,
-                  backgroundColor: Colors.grey[100],
+                  selectedColor: AppTheme.getPrimaryAccent(context),
+                  backgroundColor: isDark ? AppTheme.darkHighlight : Colors.grey[100],
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppTheme.primaryGreen,
+                    color: isSelected ? Colors.white : AppTheme.getPrimaryAccent(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -222,12 +243,12 @@ class _OrdersPageState extends State<OrdersPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.primaryGreen),
+          CircularProgressIndicator(color: AppTheme.getPrimaryAccent(context)),
           const SizedBox(height: 16),
           Text(
             'Loading your orders...',
             style: TextStyle(
-              color: AppTheme.textGrey,
+              color: AppTheme.getSecondaryTextColor(context),
               fontSize: 16,
             ),
           ),
@@ -244,17 +265,17 @@ class _OrdersPageState extends State<OrdersPage>
           Icon(
             Icons.shopping_bag_outlined,
             size: 64,
-            color: Colors.grey[400],
+            color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             _selectedFilter == 'all'
                 ? 'No orders yet'
                 : 'No ${_selectedFilter} orders',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.grey,
+              color: AppTheme.getTextColor(context),
             ),
           ),
           const SizedBox(height: 8),
@@ -264,7 +285,7 @@ class _OrdersPageState extends State<OrdersPage>
                 : 'No orders with this status found',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: AppTheme.getSecondaryTextColor(context),
             ),
           ),
           if (_selectedFilter == 'all') ...[
@@ -274,7 +295,7 @@ class _OrdersPageState extends State<OrdersPage>
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
+                backgroundColor: AppTheme.getPrimaryAccent(context),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -286,31 +307,31 @@ class _OrdersPageState extends State<OrdersPage>
     );
   }
 
-  Widget _buildOrdersList(bool isMobile) {
-    return RefreshIndicator(
-      onRefresh: _loadOrders,
-      color: AppTheme.primaryGreen,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _filteredOrders.length,
-        itemBuilder: (context, index) {
-          final OrderModel = _filteredOrders[index];
-          return AnimatedContainer(
-            duration: Duration(milliseconds: 300 + (index * 50)),
-            curve: Curves.easeOutBack,
-            child: _buildOrderCard(OrderModel, isMobile),
-          );
-        },
-      ),
+  Widget _buildOrdersList(bool isMobile, List<OrderModel> orders) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        return AnimatedContainer(
+          duration: Duration(milliseconds: 300 + (index * 50)),
+          curve: Curves.easeOutBack,
+          child: _buildOrderCard(order, isMobile),
+        );
+      },
     );
   }
 
   Widget _buildOrderCard(OrderModel orderItem, bool isMobile) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
+        side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -330,16 +351,17 @@ class _OrdersPageState extends State<OrdersPage>
                       children: [
                         Text(
                           'OrderModel #${orderItem.id.substring(0, 8)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
+                            color: AppTheme.getTextColor(context),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           orderItem.productName,
                           style: TextStyle(
-                            color: AppTheme.textGrey,
+                            color: AppTheme.getSecondaryTextColor(context),
                             fontSize: 14,
                           ),
                         ),
@@ -383,8 +405,8 @@ class _OrdersPageState extends State<OrdersPage>
                       icon: const Icon(Icons.visibility, size: 16),
                       label: const Text('View Details'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.primaryGreen,
-                        side: BorderSide(color: AppTheme.primaryGreen),
+                        foregroundColor: AppTheme.getPrimaryAccent(context),
+                        side: BorderSide(color: AppTheme.getPrimaryAccent(context)),
                       ),
                     ),
                   ),
@@ -395,7 +417,7 @@ class _OrdersPageState extends State<OrdersPage>
                       icon: const Icon(Icons.track_changes, size: 16),
                       label: const Text('Track OrderModel'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGreen,
+                        backgroundColor: AppTheme.getPrimaryAccent(context),
                         foregroundColor: Colors.white,
                       ),
                     ),
@@ -502,7 +524,7 @@ class _OrdersPageState extends State<OrdersPage>
                   color: isCancelled 
                       ? AppTheme.error 
                       : isActive 
-                          ? AppTheme.primaryGreen 
+                          ? AppTheme.getPrimaryAccent(context) 
                           : Colors.grey[300],
                   shape: BoxShape.circle,
                 ),
@@ -523,7 +545,7 @@ class _OrdersPageState extends State<OrdersPage>
                     color: isCancelled 
                         ? AppTheme.error 
                         : isActive 
-                            ? AppTheme.primaryGreen 
+                            ? AppTheme.getPrimaryAccent(context) 
                             : Colors.grey[300],
                   ),
                 ),
@@ -541,16 +563,17 @@ class _OrdersPageState extends State<OrdersPage>
         Text(
           label,
           style: TextStyle(
-            color: AppTheme.textGrey,
+            color: AppTheme.getSecondaryTextColor(context),
             fontSize: 12,
           ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 14,
+            color: AppTheme.getTextColor(context),
           ),
         ),
       ],
@@ -577,9 +600,9 @@ class _OrdersPageState extends State<OrdersPage>
       minChildSize: 0.5,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: Column(
             children: [
@@ -589,7 +612,7 @@ class _OrdersPageState extends State<OrdersPage>
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppTheme.getDividerColor(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -605,7 +628,7 @@ class _OrdersPageState extends State<OrdersPage>
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
                     ),
@@ -676,7 +699,7 @@ class _OrdersPageState extends State<OrdersPage>
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
+            color: AppTheme.getTextColor(context),
           ),
         ),
         const SizedBox(height: 12),
@@ -696,7 +719,7 @@ class _OrdersPageState extends State<OrdersPage>
             child: Text(
               label,
               style: TextStyle(
-                color: AppTheme.textGrey,
+                color: AppTheme.getSecondaryTextColor(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -705,7 +728,7 @@ class _OrdersPageState extends State<OrdersPage>
             child: Text(
               value,
               style: TextStyle(
-                color: AppTheme.textDark,
+                color: AppTheme.getTextColor(context),
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -719,7 +742,41 @@ class _OrdersPageState extends State<OrdersPage>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => OrderTrackingPage(order: orderItem),
+        builder: (context) => EnhancedOrderTrackingPage(orderId: orderItem.id),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline, size: 64, color: AppTheme.error),
+          const SizedBox(height: 16),
+          Text(
+            'Error Loading Orders',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.getTextColor(context),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              error,
+              style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => setState(() {}),
+            child: const Text('Retry'),
+          ),
+        ],
       ),
     );
   }

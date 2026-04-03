@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
 import '../../utils/app_constants.dart';
-import '../../models/product_model.dart';
+import '../../services/weather_service.dart';
 import '../../widgets/weather_forecast_card.dart';
+import '../../widgets/universal_drawer.dart';
+import '../../widgets/universal_header.dart';
 
 class WeatherDashboard extends StatefulWidget {
   const WeatherDashboard({super.key});
@@ -21,49 +21,12 @@ class _WeatherDashboardState extends State<WeatherDashboard>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
+  final WeatherService _weatherService = WeatherService();
   WeatherData? _currentWeather;
   Position? _currentPosition;
   bool _isLoading = true;
-  String _locationName = 'Unknown Location';
-  
-  // Sample weather data for demonstration
-  final WeatherData _sampleWeather = WeatherData(
-    temperature: 28.5,
-    humidity: 65.0,
-    windSpeed: 12.0,
-    condition: 'Sunny',
-    description: 'Clear sky, perfect for farming',
-    icon: 'sunny',
-    visibility: 10.0,
-    pressure: 1013.25,
-    timestamp: DateTime.now(),
-    forecast: [
-      DailyForecast(
-        date: DateTime.now().add(const Duration(days: 1)),
-        maxTemp: 30,
-        minTemp: 22,
-        condition: 'Partly Cloudy',
-        icon: 'partly_cloudy',
-        rainfall: 0.0,
-      ),
-      DailyForecast(
-        date: DateTime.now().add(const Duration(days: 2)),
-        maxTemp: 29,
-        minTemp: 21,
-        condition: 'Light Rain',
-        icon: 'rain',
-        rainfall: 5.2,
-      ),
-      DailyForecast(
-        date: DateTime.now().add(const Duration(days: 3)),
-        maxTemp: 31,
-        minTemp: 23,
-        condition: 'Sunny',
-        icon: 'sunny',
-        rainfall: 0.0,
-      ),
-    ],
-  );
+  String _locationName = 'Loading...';
+  List<Map<String, dynamic>> _agriInsights = [];
 
   @override
   void initState() {
@@ -92,7 +55,9 @@ class _WeatherDashboardState extends State<WeatherDashboard>
   Future<void> _initializeWeather() async {
     await _getLocation();
     await _fetchWeatherData();
-    _animationController.forward();
+    if (mounted) {
+      _animationController.forward();
+    }
   }
 
   Future<void> _getLocation() async {
@@ -107,28 +72,41 @@ class _WeatherDashboardState extends State<WeatherDashboard>
         });
       } else {
         setState(() {
-          _locationName = 'Delhi, India'; // Default location
+          _locationName = 'Delhi, India'; // Default
         });
       }
     } catch (e) {
       setState(() {
-        _locationName = 'Delhi, India'; // Default location
+        _locationName = 'Delhi, India';
       });
     }
   }
 
   Future<void> _fetchWeatherData() async {
+    if (!mounted) return;
+    setState(() => _isLoading = true);
+    
     try {
-      // For now, use sample data
-      setState(() {
-        _currentWeather = _sampleWeather;
-        _isLoading = false;
-      });
+      double lat = _currentPosition?.latitude ?? 28.6139;
+      double lon = _currentPosition?.longitude ?? 77.2090;
+      
+      final data = await _weatherService.fetchWeather(lat, lon);
+      final insights = _weatherService.getAgriInsights(data);
+      
+      if (mounted) {
+        setState(() {
+          _currentWeather = data;
+          _agriInsights = insights;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _currentWeather = _sampleWeather;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching weather: $e')),
+        );
+      }
     }
   }
 
@@ -136,47 +114,106 @@ class _WeatherDashboardState extends State<WeatherDashboard>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: RefreshIndicator(
-            onRefresh: _refreshWeatherData,
-            color: AppTheme.primaryGreen,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: ResponsiveHelper.getMaxWidth(context),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: RefreshIndicator(
+          onRefresh: _refreshWeatherData,
+          color: AppTheme.primaryGreen,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              _buildAppBar(),
+              SliverPadding(
+                padding: ResponsiveHelper.getScreenPadding(context),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    if (_isLoading) ...[
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                      const Center(
+                        child: CircularProgressIndicator(
+                          color: AppTheme.primaryGreen,
+                        ),
+                      ),
+                    ] else if (_currentWeather != null) ...[
+                      _buildCurrentWeatherCard(),
+                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                      _buildAgriInsightsSection(),
+                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                      _buildWeatherMetrics(),
+                      SizedBox(height: AppConstants.getResponsiveSpacing(context)),
+                      _buildForecastSection(),
+                      const SizedBox(height: 100), // Space for bottom nav
+                    ],
+                  ]),
+                ),
               ),
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  _buildAppBar(),
-                  SliverPadding(
-                    padding: ResponsiveHelper.getScreenPadding(context),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        if (_isLoading) ...[
-                          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                          const Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryGreen,
-                            ),
-                          ),
-                        ] else if (_currentWeather != null) ...[
-                          _buildCurrentWeatherCard(),
-                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                          _buildWeatherMetrics(),
-                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                          _buildForecastSection(),
-                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                          _buildWeatherHistory(),
-                          SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-                        ],
-                      ]),
-                    ),
-                  ),
-                ],
-              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAgriInsightsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'Agricultural Insights',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppTheme.primaryGreen,
             ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ..._agriInsights.map((insight) => _buildInsightCard(insight)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildInsightCard(Map<String, dynamic> insight) {
+    Color cardColor;
+    IconData iconData;
+    
+    switch (insight['type']) {
+      case 'warning':
+        cardColor = Colors.orange;
+        iconData = Icons.warning_amber_rounded;
+        break;
+      case 'success':
+        cardColor = AppTheme.primaryGreen;
+        iconData = Icons.check_circle_outline;
+        break;
+      default:
+        cardColor = AppTheme.primaryBlue;
+        iconData = Icons.info_outline;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: cardColor.withOpacity(0.3), width: 1),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(16),
+        leading: CircleAvatar(
+          backgroundColor: cardColor.withOpacity(0.1),
+          child: Icon(iconData, color: cardColor),
+        ),
+        title: Text(
+          insight['title'],
+          style: TextStyle(fontWeight: FontWeight.bold, color: cardColor),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            insight['desc'],
+            style: const TextStyle(fontSize: 13, height: 1.4),
           ),
         ),
       ),
@@ -184,71 +221,19 @@ class _WeatherDashboardState extends State<WeatherDashboard>
   }
 
   Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: ResponsiveHelper.isDesktop(context) ? 140 : 120,
-      floating: false,
-      pinned: true,
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: AppTheme.skyGradient,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: ResponsiveHelper.getScreenPadding(context),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.cloud,
-                        color: Colors.white,
-                        size: ResponsiveHelper.isDesktop(context) ? 32 : 28,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Weather Dashboard',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (!ResponsiveHelper.isMobile(context)) ...[
-                        IconButton(
-                          icon: const Icon(Icons.location_on, color: Colors.white),
-                          onPressed: _showLocationDialog,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.settings, color: Colors.white),
-                          onPressed: _showWeatherSettings,
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.white70, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        _locationName,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+    return UniversalHeader(
+      title: 'Weather',
+      subtitle: _locationName,
+      icon: Icons.wb_sunny,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh, color: Colors.white),
+          onPressed: () {
+            _initializeWeather();
+          },
+          tooltip: 'Refresh',
         ),
-      ),
+      ],
     );
   }
 
@@ -491,7 +476,7 @@ class _WeatherDashboardState extends State<WeatherDashboard>
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             SizedBox(
-              height: ResponsiveHelper.isDesktop(context) ? 140 : 120,
+              height: ResponsiveHelper.isDesktop(context) ? 180 : 160,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),

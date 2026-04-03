@@ -5,6 +5,7 @@ import '../../services/conversation_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import 'ai_chat_sessions_page.dart';
+import 'chat_screen.dart';
 
 class ConversationListPage extends StatefulWidget {
   const ConversationListPage({super.key});
@@ -122,7 +123,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Ask our AI expert about crops, weather, market prices, farming techniques, and get personalized recommendations instantly!',
+            'Ask our AI expert about crops, weather, market prices, farming techniques, and get personalized recommendations instantly',
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: 14,
@@ -519,7 +520,15 @@ class _ConversationListPageState extends State<ConversationListPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatPage(conversation: conversation),
+        builder: (context) => ChatScreen(
+          conversationId: conversation.id,
+          otherUserId: conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
+              ? conversation.sellerId
+              : conversation.buyerId,
+          otherUserName: conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
+              ? conversation.sellerName
+              : conversation.buyerName,
+        ),
       ),
     );
   }

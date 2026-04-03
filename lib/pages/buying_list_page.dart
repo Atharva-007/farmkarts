@@ -1,44 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/marketplace_service.dart';
+import '../services/product_service.dart';
 import '../models/product_model.dart';
-import '../models/user_model.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
-import 'product_detail_page.dart';
+import 'enhanced_product_detail_page.dart';
 
 class BuyingListPage extends StatefulWidget {
-  const BuyingListPage({super.key});
+  const BuyingListPage({Key? key}) : super(key: key);
 
   @override
   State<BuyingListPage> createState() => _BuyingListPageState();
 }
 
-class _BuyingListPageState extends State<BuyingListPage>
+class _BuyingListPageState extends State<BuyingListPage> 
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
-  final MarketplaceService _marketplaceService = MarketplaceService();
+  final ProductService _productService = ProductService();
+  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   
   List<Product> _products = [];
   List<Product> _filteredProducts = [];
+  List<String> _categories = [];
   bool _isLoading = true;
-  String? _error;
+  bool _hasError = false;
+  String _errorMessage = '';
   String _selectedCategory = 'All';
-  String _sortBy = 'timestamp';
+  String _searchQuery = '';
   bool _showOnlyOrganic = false;
+  String _sortBy = 'latest';
   
-  final List<String> _categories = [
-    'All', 'Vegetables', 'Fruits', 'Grains', 'Seeds', 'Equipment',
-    'Dairy', 'Spices', 'Fertilizers', 'Organic', 'Other'
-  ];
-
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
+    _loadCategories();
+    _loadProducts();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _setupAnimations() {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -50,281 +54,140 @@ class _BuyingListPageState extends State<BuyingListPage>
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
     _animationController.forward();
-    _loadProducts();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await _productService.getCategories();
+      if (mounted) {
+        setState(() {
+          _categories = ['All', ...categories];
+        });
+      }
+    } catch (e) {
+      print('Error loading categories: $e');
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    if (!mounted) return;
     
-    _searchController.addListener(_filterProducts);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      
+      final products = await _productService.getProducts(
+        category: _selectedCategory == 'All' ? null : _selectedCategory,
+        excludeSeller: user?.uid, // Exclude current user's products
+        isAvailable: true,
+        isOrganic: _showOnlyOrganic ? true : null,
+        sortBy: _getSortByField(),
+        sortOrder: 'desc',
+      );
+      
+      if (mounted) {
+        setState(() {
+          _products = products;
+          _applyFilters();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading products: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _getSortByField() {
+    switch (_sortBy) {
+      case 'price_low':
+      case 'price_high':
+        return 'price';
+      case 'name':
+        return 'name';
+      default:
+        return 'createdAt';
+    }
+  }
+
+  void _applyFilters() {
+    List<Product> filtered = List.from(_products);
+    
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((product) {
+        final searchLower = _searchQuery.toLowerCase();
+        return product.name.toLowerCase().contains(searchLower) ||
+               product.description.toLowerCase().contains(searchLower) ||
+               product.tags.any((tag) => tag.toLowerCase().contains(searchLower));
+      }).toList();
+    }
+    
+    // Apply sorting
+    switch (_sortBy) {
+      case 'price_low':
+        filtered.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'price_high':
+        filtered.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case 'name':
+        filtered.sort((a, b) => a.name.compareTo(b.name));
+        break;
+      case 'latest':
+      default:
+        filtered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        break;
+    }
+    
+    _filteredProducts = filtered;
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text;
+      _applyFilters();
+    });
+  }
+
+  void _onCategoryChanged(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+    _loadProducts();
+  }
+
+  void _onOrganicFilterChanged(bool value) {
+    setState(() {
+      _showOnlyOrganic = value;
+    });
+    _loadProducts();
+  }
+
+  void _onSortChanged(String sortBy) {
+    setState(() {
+      _sortBy = sortBy;
+      _applyFilters();
+    });
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadProducts() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final products = await _marketplaceService.getProducts(
-        category: _selectedCategory == 'All' ? null : _selectedCategory,
-        userRole: UserRole.farmer,
-        excludeCurrentUser: true, // Exclude current user's products
-        forceRefresh: true,
-      );
-
-      setState(() {
-        _products = products;
-        _filteredProducts = products;
-        _isLoading = false;
-      });
-
-      _filterProducts();
-
-    } catch (e) {
-      print('Error loading products: $e');
-      setState(() {
-        _error = 'Failed to load products: ${e.toString()}';
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _filterProducts() {
-    setState(() {
-      _filteredProducts = _products.where((product) {
-        // Search filter
-        final matchesSearch = _searchController.text.isEmpty ||
-            product.name.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-            product.description.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-            product.tags.any((tag) => tag.toLowerCase().contains(_searchController.text.toLowerCase()));
-
-        // Organic filter
-        final matchesOrganic = !_showOnlyOrganic || product.isOrganic;
-
-        // Availability filter
-        final isAvailable = product.isAvailable;
-
-        return matchesSearch && matchesOrganic && isAvailable;
-      }).toList();
-
-      // Sort products
-      _filteredProducts.sort((a, b) {
-        switch (_sortBy) {
-          case 'price_low':
-            return a.price.compareTo(b.price);
-          case 'price_high':
-            return b.price.compareTo(a.price);
-          case 'name':
-            return a.name.compareTo(b.name);
-          case 'timestamp':
-          default:
-            return b.timestamp.compareTo(a.timestamp);
-        }
-      });
-    });
-  }
-
-  void _showFilterBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _buildFilterBottomSheet(),
-    );
-  }
-
-  Widget _buildFilterBottomSheet() {
-    return StatefulBuilder(
-      builder: (context, setSheetState) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.6,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Filter & Sort',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Category',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _categories.map((category) {
-                          final isSelected = _selectedCategory == category;
-                          return FilterChip(
-                            label: Text(category),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setSheetState(() {
-                                _selectedCategory = category;
-                              });
-                            },
-                            selectedColor: AppTheme.primaryGreen.withOpacity(0.2),
-                            checkmarkColor: AppTheme.primaryGreen,
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Sort By',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Column(
-                        children: [
-                          RadioListTile<String>(
-                            title: const Text('Latest First'),
-                            value: 'timestamp',
-                            groupValue: _sortBy,
-                            activeColor: AppTheme.primaryGreen,
-                            onChanged: (value) {
-                              setSheetState(() {
-                                _sortBy = value!;
-                              });
-                            },
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('Price: Low to High'),
-                            value: 'price_low',
-                            groupValue: _sortBy,
-                            activeColor: AppTheme.primaryGreen,
-                            onChanged: (value) {
-                              setSheetState(() {
-                                _sortBy = value!;
-                              });
-                            },
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('Price: High to Low'),
-                            value: 'price_high',
-                            groupValue: _sortBy,
-                            activeColor: AppTheme.primaryGreen,
-                            onChanged: (value) {
-                              setSheetState(() {
-                                _sortBy = value!;
-                              });
-                            },
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('Name A-Z'),
-                            value: 'name',
-                            groupValue: _sortBy,
-                            activeColor: AppTheme.primaryGreen,
-                            onChanged: (value) {
-                              setSheetState(() {
-                                _sortBy = value!;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        title: const Text('Show Only Organic'),
-                        subtitle: const Text('Filter organic products'),
-                        value: _showOnlyOrganic,
-                        activeColor: AppTheme.success,
-                        onChanged: (value) {
-                          setSheetState(() {
-                            _showOnlyOrganic = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          setSheetState(() {
-                            _selectedCategory = 'All';
-                            _sortBy = 'timestamp';
-                            _showOnlyOrganic = false;
-                          });
-                        },
-                        child: const Text('Clear All'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            // Apply filters
-                          });
-                          _loadProducts().then((_) => _filterProducts());
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryGreen,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Apply Filters'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -338,231 +201,274 @@ class _BuyingListPageState extends State<BuyingListPage>
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: _showFilterBottomSheet,
-            icon: Stack(
-              children: [
-                const Icon(Icons.filter_list),
-                if (_selectedCategory != 'All' || _showOnlyOrganic)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 8,
-                        minHeight: 8,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            tooltip: 'Filter & Sort',
-          ),
-          IconButton(
-            onPressed: _loadProducts,
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+            onPressed: _loadProducts,
           ),
         ],
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
+        child: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return _buildLoadingWidget();
+    }
+    
+    if (_hasError) {
+      return _buildErrorWidget();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadProducts,
+      child: Column(
+        children: [
+          _buildFiltersSection(),
+          Expanded(
+            child: _products.isEmpty 
+                ? _buildEmptyStateWidget()
+                : _buildProductsList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: AppTheme.primaryGreen,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Loading products...',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppTheme.textGrey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildSearchBar(),
-            _buildFilterChips(),
-            Expanded(child: _buildProductsList()),
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppTheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load products',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: AppTheme.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppTheme.textGrey,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadProducts,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Try Again'),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      padding: AppConstants.defaultPadding,
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Search products...',
-          prefixIcon: Icon(Icons.search, color: AppTheme.primaryGreen),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  onPressed: () {
-                    _searchController.clear();
-                    _filterProducts();
-                  },
-                  icon: const Icon(Icons.clear),
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.primaryGreen),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.primaryGreen, width: 2),
-          ),
+  Widget _buildEmptyStateWidget() {
+    return Center(
+      child: Padding(
+        padding: AppConstants.defaultPadding,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 96,
+              color: AppTheme.textGrey,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'No Products Available',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textDark,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'There are no products available for purchase at the moment.\nCheck back later!',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: AppTheme.textGrey,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips() {
-    if (_selectedCategory == 'All' && !_showOnlyOrganic) {
-      return const SizedBox.shrink();
-    }
-
+  Widget _buildFiltersSection() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      color: Colors.white,
+      padding: AppConstants.defaultPadding,
+      child: Column(
         children: [
-          if (_selectedCategory != 'All')
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Chip(
-                label: Text(_selectedCategory),
-                backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
-                side: BorderSide(color: AppTheme.primaryGreen),
-                deleteIcon: const Icon(Icons.close, size: 18),
-                onDeleted: () {
-                  setState(() {
-                    _selectedCategory = 'All';
-                  });
-                  _loadProducts();
-                },
+          // Search Bar
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search products...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Filter Row
+          Row(
+            children: [
+              // Category Dropdown
+              Expanded(
+                flex: 2,
+                child: DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: _categories.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      _onCategoryChanged(value);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // Sort Dropdown
+              Expanded(
+                flex: 2,
+                child: DropdownButtonFormField<String>(
+                  value: _sortBy,
+                  decoration: const InputDecoration(
+                    labelText: 'Sort By',
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'latest', child: Text('Latest')),
+                    DropdownMenuItem(value: 'price_low', child: Text('Price: Low to High')),
+                    DropdownMenuItem(value: 'price_high', child: Text('Price: High to Low')),
+                    DropdownMenuItem(value: 'name', child: Text('Name')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      _onSortChanged(value);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // Organic Filter
+              Column(
+                children: [
+                  const Text('Organic', style: TextStyle(fontSize: 12)),
+                  Switch(
+                    value: _showOnlyOrganic,
+                    onChanged: _onOrganicFilterChanged,
+                    activeColor: AppTheme.success,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          
+          // Results count
+          if (!_isLoading) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${_filteredProducts.length} products found',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppTheme.textGrey,
               ),
             ),
-          if (_showOnlyOrganic)
-            Chip(
-              label: const Text('Organic'),
-              backgroundColor: AppTheme.success.withOpacity(0.1),
-              side: BorderSide(color: AppTheme.success),
-              deleteIcon: const Icon(Icons.close, size: 18),
-              onDeleted: () {
-                setState(() {
-                  _showOnlyOrganic = false;
-                });
-                _filterProducts();
-              },
-            ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildProductsList() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: AppTheme.error),
-            const SizedBox(height: 16),
-            Text(
-              'Error',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.error,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadProducts,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     if (_filteredProducts.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'No Products Found',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
+        child: Padding(
+          padding: AppConstants.defaultPadding,
+          child: Text(
+            'No products match your filters',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppTheme.textGrey,
             ),
-            const SizedBox(height: 8),
-            Text(
-              _searchController.text.isNotEmpty
-                  ? 'No products match your search'
-                  : 'No products available at the moment',
-              style: TextStyle(color: Colors.grey[500]),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _selectedCategory = 'All';
-                  _showOnlyOrganic = false;
-                });
-                _loadProducts();
-              },
-              icon: const Icon(Icons.clear),
-              label: const Text('Clear Filters'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadProducts,
-      color: AppTheme.primaryGreen,
-      child: ListView.builder(
-        padding: AppConstants.defaultPadding,
-        itemCount: _filteredProducts.length,
-        itemBuilder: (context, index) {
-          final product = _filteredProducts[index];
-          return _buildProductCard(product);
-        },
-      ),
+    return ListView.builder(
+      controller: _scrollController,
+      padding: AppConstants.defaultPadding,
+      itemCount: _filteredProducts.length,
+      itemBuilder: (context, index) {
+        return _buildProductCard(_filteredProducts[index]);
+      },
     );
   }
 
   Widget _buildProductCard(Product product) {
-    final user = FirebaseAuth.instance.currentUser;
-    final isOwnProduct = user != null && product.sellerId == user.uid;
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -570,173 +476,125 @@ class _BuyingListPageState extends State<BuyingListPage>
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailPage(product: product),
+              builder: (context) => EnhancedProductDetailPage(product: product),
             ),
           );
         },
-        borderRadius: BorderRadius.circular(8),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: AppConstants.defaultPadding,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              // Product Image
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.lightGreen.withAlpha(100),
+                ),
+                child: product.imageUrls.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          product.imageUrls.first,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.image, color: AppTheme.textGrey);
+                          },
+                        ),
+                      )
+                    : const Icon(Icons.agriculture, color: AppTheme.primaryGreen, size: 40),
+              ),
+              const SizedBox(width: 12),
+              
+              // Product Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        Expanded(
+                          child: Text(
+                            product.name,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (product.isOrganic)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.success.withAlpha(50),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'ORGANIC',
+                              style: TextStyle(
+                                color: AppTheme.success,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (product.isOrganic)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.success.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: AppTheme.success.withOpacity(0.3)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.eco, size: 12, color: AppTheme.success),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      'Organic',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: AppTheme.success,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      product.description,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textGrey,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
                         Text(
-                          product.category,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
+                          '₹${product.price.toStringAsFixed(2)}/${product.unit}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGreen,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'by ${product.sellerName}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppTheme.textGrey,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                product.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.currency_rupee, size: 18, color: AppTheme.primaryGreen),
-                  Text(
-                    '${product.price.toStringAsFixed(2)} per ${product.unit}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryGreen,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(Icons.inventory, size: 16, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${product.quantity} ${product.unit}',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.location_on, size: 14, color: Colors.grey[500]),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      product.location,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'by ${product.sellerName}',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-              if (product.tags.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: product.tags.take(3).map((tag) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryGreen.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppTheme.primaryGreen,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-              if (isOwnProduct) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.info.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.info.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: AppTheme.info),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'This is your product',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    if (product.location.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 14, color: AppTheme.textGrey),
+                          const SizedBox(width: 4),
+                          Text(
+                            product.location,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.textGrey,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${product.quantity} ${product.unit} available',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: product.quantity > 0 ? AppTheme.success : AppTheme.error,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
         ),

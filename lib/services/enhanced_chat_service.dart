@@ -25,7 +25,7 @@ class EnhancedChatService {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      final conversationId = '\_\';
+      final conversationId = '${product.id}_${user.uid}';
       
       // Check if conversation exists
       final conversationDoc = await _firestore
@@ -70,7 +70,7 @@ class EnhancedChatService {
 
       return conversationId;
     } catch (e) {
-      throw Exception('Failed to create conversation: \');
+      throw Exception('Failed to create conversation: $e');
     }
   }
 
@@ -165,7 +165,7 @@ class EnhancedChatService {
       }
 
     } catch (e) {
-      throw Exception('Failed to send message: \');
+      throw Exception('Failed to send message: $e');
     }
   }
 
@@ -208,7 +208,7 @@ class EnhancedChatService {
         duration: duration,
       );
     } catch (e) {
-      throw Exception('Failed to send media: \');
+      throw Exception('Failed to send media: $e');
     }
   }
 
@@ -236,11 +236,11 @@ class EnhancedChatService {
       );
 
       final content = '🏷️ BID OFFER\n'
-          '💰 Price: ₹\ per \\n'
-          '📦 Quantity: \ \\n'
-          '💵 Total: ₹\\n'
-          '\'
-          '⏰ Valid until: \';
+          '💰 Price: ₹$amount per $unit\n'
+          '📦 Quantity: $quantity $unit\n'
+          '💵 Total: ₹${amount * quantity}\n'
+          '${notes != null ? "\n📝 Notes: $notes" : ""}\n'
+          '⏰ Valid until: ${_formatDate(bidOffer.validUntil)}';
 
       await sendEnhancedMessage(
         conversationId: conversationId,
@@ -250,7 +250,7 @@ class EnhancedChatService {
         bidOffer: bidOffer,
       );
     } catch (e) {
-      throw Exception('Failed to send bid: \');
+      throw Exception('Failed to send bid: $e');
     }
   }
 
@@ -298,7 +298,7 @@ class EnhancedChatService {
       });
 
     } catch (e) {
-      throw Exception('Failed to record call: \');
+      throw Exception('Failed to record call: $e');
     }
   }
 
@@ -330,7 +330,7 @@ class EnhancedChatService {
       }
       return null;
     } catch (e) {
-      throw Exception('Failed to get conversation: \');
+      throw Exception('Failed to get conversation: $e');
     }
   }
 
@@ -364,7 +364,7 @@ class EnhancedChatService {
         'status': status.name,
       });
     } catch (e) {
-      throw Exception('Failed to update message status: \');
+      throw Exception('Failed to update message status: $e');
     }
   }
 
@@ -397,7 +397,7 @@ class EnhancedChatService {
           .update({'unreadCount': 0});
 
     } catch (e) {
-      throw Exception('Failed to mark messages as read: \');
+      throw Exception('Failed to mark messages as read: $e');
     }
   }
 
@@ -410,7 +410,7 @@ class EnhancedChatService {
       if (isTyping) {
         await _firestore
             .collection('typing_indicators')
-            .doc('\_\')
+            .doc('${conversationId}_${user.uid}')
             .set({
           'userId': user.uid,
           'userName': user.displayName ?? user.email ?? 'User',
@@ -419,11 +419,11 @@ class EnhancedChatService {
       } else {
         await _firestore
             .collection('typing_indicators')
-            .doc('\_\')
+            .doc('${conversationId}_${user.uid}')
             .delete();
       }
     } catch (e) {
-      print('Failed to update typing status: \');
+      print('Failed to update typing status: $e');
     }
   }
 
@@ -512,7 +512,7 @@ class EnhancedChatService {
       });
 
     } catch (e) {
-      print('Failed to update bid information: \');
+      print('Failed to update bid information: $e');
     }
   }
 
@@ -521,11 +521,11 @@ class EnhancedChatService {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today \:\';
+      return 'Today ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays == 1) {
-      return 'Tomorrow \:\';
+      return 'Tomorrow ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
     } else {
-      return '\/\/\';
+      return '${date.day}/${date.month}/${date.year}';
     }
   }
 
@@ -576,13 +576,13 @@ class EnhancedChatService {
       String content = '';
       switch (status) {
         case BidStatus.accepted:
-          content = '✅ Bid accepted! \';
+          content = '✅ Bid accepted!';
           break;
         case BidStatus.rejected:
-          content = '❌ Bid declined. \';
+          content = '❌ Bid declined.';
           break;
         case BidStatus.negotiating:
-          content = '💬 Let\\'s negotiate. \';
+          content = '💬 Let\'s negotiate.';
           break;
         default:
           content = responseMessage ?? 'Bid status updated';
@@ -596,7 +596,7 @@ class EnhancedChatService {
       );
 
     } catch (e) {
-      throw Exception('Failed to respond to bid: \');
+      throw Exception('Failed to respond to bid: $e');
     }
   }
 }

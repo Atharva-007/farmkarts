@@ -77,16 +77,17 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _pulseAnimation.value,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: const BoxDecoration(
-                          color: AppTheme.error,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+                      child: child,
                     );
                   },
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.error,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -157,15 +158,16 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
                     maxWidth: double.infinity,
                     child: Transform.translate(
                       offset: Offset(-_scrollController.value * 1000, 0),
-                      child: Row(
-                        children: List.generate(_prices.length * 3, (index) {
-                          final price = _prices[index % _prices.length];
-                          return _buildPriceCard(price);
-                        }),
-                      ),
+                      child: child,
                     ),
                   );
                 },
+                child: Row(
+                  children: List.generate(_prices.length * 3, (index) {
+                    final price = _prices[index % _prices.length];
+                    return _buildPriceCard(price);
+                  }),
+                ),
               ),
             ),
           ),

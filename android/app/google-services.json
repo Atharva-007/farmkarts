@@ -13,7 +13,12 @@
           "package_name": "com.example.farmkarts"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "709785957438-mmjcrlhcf20vm46pk3rp6i04bd2gef97.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAYGPfM-kQ5jIZzRNN059ASTo2Wiy-CHd8"
@@ -21,7 +26,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "709785957438-mmjcrlhcf20vm46pk3rp6i04bd2gef97.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "709785957438-m2fjdu9c2jb911k07fhugf9iitan1r1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.farmkarts"
+              }
+            }
+          ]
         }
       }
     }

@@ -156,7 +156,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
           _currentConversation = conversation;
         });
       } catch (e) {
-        ToastHelper.showError(context, 'Failed to load conversation: \');
+        ToastHelper.showError(context, 'Failed to load conversation: $e');
       }
     }
   }
@@ -181,8 +181,10 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
       );
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFECE5DD), // WhatsApp background color
+      backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFECE5DD), // WhatsApp background color
       appBar: _buildWhatsAppAppBar(),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -297,7 +299,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                         return AnimatedBuilder(
                           animation: _typingAnimation,
                           builder: (context, child) {
-                            return Text(
+                            return const Text(
                               'typing...',
                               style: TextStyle(
                                 fontSize: 12,
@@ -308,9 +310,9 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                           },
                         );
                       }
-                      return Text(
+                      return const Text(
                         'Tap for product info',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: Colors.white70,
                         ),
@@ -333,7 +335,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
         
         // Audio call button
         IconButton(
-          onPressed: () => _initiateCall(CallType.audio),
+          onPressed: () => _initiateCall(CallType.call),
           icon: const Icon(Icons.call, color: Colors.white),
           tooltip: 'Voice Call',
         ),
@@ -392,7 +394,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
   Widget _buildBackgroundPattern() {
     return Positioned.fill(
       child: Opacity(
-        opacity: 0.1,
+        opacity: Theme.of(context).brightness == Brightness.dark ? 0.05 : 0.1,
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -406,15 +408,17 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
   }
 
   Widget _buildEnhancedProductBanner() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.all(8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -437,10 +441,10 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                   children: [
                     Text(
                       _currentConversation!.productName,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: AppTheme.getTextColor(context),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -451,17 +455,17 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                     Row(
                       children: [
                         Text(
-                          '₹\',
+                          '₹${_currentConversation!.productPrice}',
                           style: TextStyle(
-                            color: AppTheme.primaryGreen,
+                            color: AppTheme.getPrimaryAccent(context),
                             fontWeight: FontWeight.w600,
                             fontSize: 18,
                           ),
                         ),
                         Text(
-                          '/\',
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          '/${_currentConversation!.productUnit}',
+                          style: TextStyle(
+                            color: AppTheme.getSecondaryTextColor(context),
                             fontSize: 14,
                           ),
                         ),
@@ -481,8 +485,8 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                               ),
                             ),
                             child: Text(
-                              'Highest: ₹\',
-                              style: TextStyle(
+                              'Highest: ₹${_currentConversation!.currentHighestBid}',
+                              style: const TextStyle(
                                 color: AppTheme.accentOrange,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -511,7 +515,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                         if (_currentConversation!.totalBids > 0)
                           _buildInfoChip(
                             Icons.local_offer,
-                            '\ bids',
+                            '${_currentConversation!.totalBids} bids',
                             Colors.orange,
                           ),
                       ],
@@ -533,7 +537,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
                   _buildQuickActionButton(
                     Icons.info_outline,
                     'Info',
-                    AppTheme.primaryGreen,
+                    AppTheme.getPrimaryAccent(context),
                     _showDetailedProductInfo,
                   ),
                 ],
@@ -750,7 +754,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
             ),
             const SizedBox(height: 8),
             Text(
-              'Discuss about \',
+              'Discuss about ${_currentConversation!.productName}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -763,7 +767,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
-                    _messageController.text = 'Hi! I\\'m interested in your \. ';
+                    _messageController.text = 'Hi! I\'m interested in your ${_currentConversation!.productName}. ';
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryGreen,
@@ -815,6 +819,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(date.year, date.month, date.day);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     String dateText;
     if (messageDate.isAtSameMomentAs(today)) {
@@ -822,7 +827,7 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
     } else if (messageDate.isAtSameMomentAs(today.subtract(const Duration(days: 1)))) {
       dateText = 'Yesterday';
     } else {
-      dateText = '\/\/\';
+      dateText = '${date.day}/${date.month}/${date.year}';
     }
     
     return Container(
@@ -831,14 +836,14 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.1),
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             dateText,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black54,
+              color: isDark ? Colors.white70 : Colors.black54,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -846,5 +851,231 @@ class _WhatsAppStyleContactSellerPageState extends State<WhatsAppStyleContactSel
       ),
     );
   }
-  // Continue with rest of the implementation...
+
+  void _showMessageOptions(EnhancedChatMessage message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkSurface : Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              height: 4,
+              width: 40,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.reply, color: isDark ? Colors.white70 : null),
+              title: Text('Reply', style: TextStyle(color: isDark ? Colors.white : null)),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement reply functionality
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.copy, color: isDark ? Colors.white70 : null),
+              title: Text('Copy', style: TextStyle(color: isDark ? Colors.white : null)),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement copy functionality
+              },
+            ),
+            if (message.senderId == _currentUser?.uid)
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement delete functionality
+                },
+              ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showClearChatDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppTheme.darkSurface : null,
+        title: Text('Clear Chat', style: TextStyle(color: isDark ? Colors.white : null)),
+        content: Text('Are you sure you want to clear all messages? This action cannot be undone.', style: TextStyle(color: isDark ? Colors.white70 : null)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Implement clear chat functionality
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockUserDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppTheme.darkSurface : null,
+        title: Text('Block User', style: TextStyle(color: isDark ? Colors.white : null)),
+        content: Text('Are you sure you want to block this user? They will no longer be able to contact you.', style: TextStyle(color: isDark ? Colors.white70 : null)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Implement block user functionality
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReplyPreview(String replyToMessageId) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black.withOpacity(0.2) : Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+        border: Border(left: BorderSide(color: AppTheme.getPrimaryAccent(context), width: 3)),
+      ),
+      child: Text(
+        'Reply preview...', // Implement actual reply preview
+        style: TextStyle(
+          fontSize: 12,
+          color: isDark ? Colors.white60 : Colors.grey,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+
+  void _showUserProfile() {
+    // Show user profile modal
+    print('Show user profile');
+  }
+
+  void _showDetailedProductInfo() {
+    // Show detailed product information
+    print('Show product details');
+  }
+
+  void _showFullScreenImage(String imageUrl) {
+    // Show full screen image viewer
+    print('Show full screen image: $imageUrl');
+  }
+
+  void _playVideo(String videoUrl) {
+    // Play video
+    print('Play video: $videoUrl');
+  }
+
+  void _handleMenuAction(String action) {
+    switch (action) {
+      case 'product_details':
+        _showDetailedProductInfo();
+        break;
+      case 'toggle_bid_card':
+        setState(() {
+          _showBidCard = !_showBidCard;
+        });
+        break;
+      case 'clear_chat':
+        _showClearChatDialog();
+        break;
+      case 'block_user':
+        _showBlockUserDialog();
+        break;
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  // Helper methods for bid card
+  IconData _getBidStatusIcon(BidStatus status) {
+    switch (status) {
+      case BidStatus.accepted:
+        return Icons.check_circle;
+      case BidStatus.rejected:
+        return Icons.cancel;
+      case BidStatus.negotiating:
+        return Icons.chat;
+      case BidStatus.expired:
+        return Icons.access_time;
+      default:
+        return Icons.schedule;
+    }
+  }
+
+  Color _getBidStatusColor(BidStatus status) {
+    switch (status) {
+      case BidStatus.accepted:
+        return Colors.green;
+      case BidStatus.rejected:
+        return Colors.red;
+      case BidStatus.negotiating:
+        return Colors.blue;
+      case BidStatus.expired:
+        return Colors.grey;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  String _formatBidTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'Now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h';
+    } else {
+      return '${difference.inDays}d';
+    }
+  }
 }

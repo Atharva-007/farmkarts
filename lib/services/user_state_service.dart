@@ -1,6 +1,7 @@
-
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:async';
 import '../models/user_model.dart';
 import 'auth_service.dart';
 
@@ -19,6 +20,7 @@ class UserStateService extends ChangeNotifier {
   bool _isOnline = true;
   int _retryCount = 0;
   static const int _maxRetries = 3;
+  StreamSubscription? _connectivitySubscription;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
@@ -30,14 +32,24 @@ class UserStateService extends ChangeNotifier {
   bool get isOnline => _isOnline;
 
   void _initializeConnectivityListener() {
-    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((dynamic result) {
       final wasOnline = _isOnline;
-      _isOnline = result != ConnectivityResult.none;
       
-      if (!wasOnline && _isOnline && _currentUser == null && _authService.currentUser != null) {
-        // Reconnected and we have an authenticated user but no profile
-        print('UserStateService: Reconnected - attempting to load user profile');
-        setCurrentUser(_authService.currentUser!.uid);
+      bool isNowOnline = false;
+      if (result is List) {
+        isNowOnline = !result.contains(ConnectivityResult.none);
+      } else {
+        isNowOnline = result != ConnectivityResult.none;
+      }
+      
+      _isOnline = isNowOnline;
+      
+      if (!wasOnline && _isOnline) {
+        print('UserStateService: Connection restored');
+        if (_currentUser == null && _authService.currentUser != null) {
+          print('UserStateService: Attempting to load user profile after reconnection');
+          setCurrentUser(_authService.currentUser!.uid);
+        }
       }
       
       notifyListeners();
@@ -48,9 +60,9 @@ class UserStateService extends ChangeNotifier {
   Future<void> initializeUser() async {
     _setLoading(true);
     _retryCount = 0;
+    _error = null;
     
     try {
-      await _checkConnectivity();
       final currentUser = await _authService.getCurrentUserModel();
       _currentUser = currentUser;
       _error = null;
@@ -66,11 +78,11 @@ class UserStateService extends ChangeNotifier {
   Future<void> setCurrentUser(String uid) async {
     _setLoading(true);
     _retryCount = 0;
+    _error = null;
     
     try {
       print('UserStateService: Loading user profile for UID: $uid');
       
-      await _checkConnectivity();
       final userModel = await _authService.getUserProfile(uid);
       
       if (userModel != null) {
@@ -93,7 +105,6 @@ class UserStateService extends ChangeNotifier {
   Future<void> updateUserProfile(UserModel updatedUser) async {
     _setLoading(true);
     try {
-      await _checkConnectivity();
       await _authService.updateUserProfile(updatedUser);
       _currentUser = updatedUser;
       _error = null;
@@ -115,61 +126,59 @@ class UserStateService extends ChangeNotifier {
       print('UserStateService: User cleared successfully');
     } catch (e) {
       print('UserStateService: Error clearing user: $e');
-      _error = e.toString();
+      _currentUser = null;
+      _error = null;
     }
     _setLoading(false);
   }
 
   // Retry loading user profile manually
   Future<void> retryLoadUser() async {
+    _error = null;
+    _retryCount = 0;
     if (_authService.currentUser != null) {
-      _error = null;
       await setCurrentUser(_authService.currentUser!.uid);
-    }
-  }
-
-  Future<void> _checkConnectivity() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    _isOnline = connectivityResult != ConnectivityResult.none;
-    
-    if (!_isOnline) {
-      throw Exception('No internet connection. Please check your network settings.');
+    } else {
+      await initializeUser();
     }
   }
 
   Future<void> _handleError(dynamic error, Future<void> Function() retryFunction) async {
-    final errorString = error.toString();
+    final errorString = error.toString().toLowerCase();
     print('UserStateService: Error occurred: $errorString');
 
-    if (errorString.contains('unavailable') || 
-        errorString.contains('offline') ||
-        errorString.contains('network-request-failed')) {
+    bool isNetworkError = errorString.contains('unavailable') || 
+                         errorString.contains('offline') ||
+                         errorString.contains('network') ||
+                         errorString.contains('timeout') ||
+                         errorString.contains('deadline-exceeded');
       
+    if (isNetworkError) {
       if (_retryCount < _maxRetries) {
         _retryCount++;
-        print('UserStateService: Retrying... attempt $_retryCount/$_maxRetries');
+        final waitSeconds = _retryCount * _retryCount; // Exponential: 1, 4, 9 seconds
+        print('UserStateService: Network error. Retrying in $waitSeconds seconds... attempt $_retryCount/$_maxRetries');
         
-        // Wait before retrying (exponential backoff)
-        await Future.delayed(Duration(seconds: _retryCount * 2));
+        await Future.delayed(Duration(seconds: waitSeconds));
         
         try {
           await retryFunction();
-          return; // Success, exit error handling
+          return;
         } catch (retryError) {
           if (_retryCount >= _maxRetries) {
-            _error = 'Connection failed after $_maxRetries attempts. Please check your internet connection and try again.';
+            _error = 'Unable to connect to FarmKarts. Please check your internet connection and try again.';
           }
           return;
         }
       } else {
-        _error = 'Unable to connect to server. Please check your internet connection and try again.';
+        _error = 'Connection persistent failure. Please check your network and tap Retry.';
       }
     } else if (errorString.contains('permission-denied')) {
-      _error = 'Database access denied. Please contact support or check if Firestore is properly configured.';
-    } else if (errorString.contains('not-found')) {
-      _error = 'User profile not found. Please try logging in again or contact support.';
+      _error = 'Access denied. Please contact support or check your account status.';
+    } else if (errorString.contains('not-found') || errorString.contains('not found')) {
+      _error = 'User profile could not be found. You may need to sign up again.';
     } else {
-      _error = 'An unexpected error occurred. Please try again later.';
+      _error = 'An unexpected error occurred: ${error.toString().split(':').last.trim()}';
     }
     
     _currentUser = null;
@@ -192,13 +201,23 @@ class UserStateService extends ChangeNotifier {
   }
 
   void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+    if (_isLoading != loading) {
+      _isLoading = loading;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
   }
 
   void clearError() {
     _error = null;
     _retryCount = 0;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
   }
 }
