@@ -758,6 +758,13 @@
       ]
     },
     {
+      "name": "google_generative_ai",
+      "version": "0.4.7",
+      "dependencies": [
+        "http"
+      ]
+    },
+    {
       "name": "upi_india",
       "version": "3.0.1",
       "dependencies": [
@@ -2776,13 +2783,6 @@
         "flutter",
         "meta",
         "plugin_platform_interface"
-      ]
-    },
-    {
-      "name": "google_generative_ai",
-      "version": "0.4.7",
-      "dependencies": [
-        "http"
       ]
     }
   ],
