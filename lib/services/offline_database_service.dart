@@ -2,17 +2,17 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/foundation.dart';
 import '../models/product_model.dart';
-import '../models/user_model.dart';
 import 'dart:convert';
 
 /// Local database service for offline support
 class OfflineDatabaseService {
-  static final OfflineDatabaseService _instance = OfflineDatabaseService._internal();
+  static final OfflineDatabaseService _instance =
+      OfflineDatabaseService._internal();
   factory OfflineDatabaseService() => _instance;
   OfflineDatabaseService._internal();
 
   Database? _database;
-  
+
   static const String _dbName = 'farmkarts_offline.db';
   static const int _dbVersion = 1;
 
@@ -135,9 +135,12 @@ class OfflineDatabaseService {
     ''');
 
     // Create indexes
-    await db.execute('CREATE INDEX idx_products_category ON products(category)');
-    await db.execute('CREATE INDEX idx_products_sellerId ON products(sellerId)');
-    await db.execute('CREATE INDEX idx_pending_ops_timestamp ON pending_operations(timestamp)');
+    await db
+        .execute('CREATE INDEX idx_products_category ON products(category)');
+    await db
+        .execute('CREATE INDEX idx_products_sellerId ON products(sellerId)');
+    await db.execute(
+        'CREATE INDEX idx_pending_ops_timestamp ON pending_operations(timestamp)');
 
     debugPrint('OfflineDB: Tables created successfully');
   }
@@ -152,7 +155,7 @@ class OfflineDatabaseService {
   /// Save product to offline database
   Future<void> saveProduct(Product product) async {
     final db = await database;
-    
+
     final data = {
       'id': product.id,
       'name': product.name,
@@ -232,10 +235,10 @@ class OfflineDatabaseService {
     int offset = 0,
   }) async {
     final db = await database;
-    
+
     String whereClause = '';
     List<dynamic> whereArgs = [];
-    
+
     if (category != null && category != 'All') {
       whereClause = 'WHERE category = ?';
       whereArgs.add(category);
@@ -254,7 +257,7 @@ class OfflineDatabaseService {
   /// Get product by ID
   Future<Product?> getProductById(String productId) async {
     final db = await database;
-    
+
     final maps = await db.query(
       'products',
       where: 'id = ?',
@@ -269,7 +272,7 @@ class OfflineDatabaseService {
   /// Search products offline
   Future<List<Product>> searchProducts(String query) async {
     final db = await database;
-    
+
     final maps = await db.rawQuery('''
       SELECT * FROM products
       WHERE name LIKE ? OR description LIKE ? OR category LIKE ?
@@ -303,7 +306,7 @@ class OfflineDatabaseService {
     required Map<String, dynamic> data,
   }) async {
     final db = await database;
-    
+
     await db.insert('pending_operations', {
       'operationType': operationType,
       'tableName': tableName,
@@ -313,7 +316,8 @@ class OfflineDatabaseService {
       'retryCount': 0,
     });
 
-    debugPrint('OfflineDB: Added pending operation: $operationType on $tableName');
+    debugPrint(
+        'OfflineDB: Added pending operation: $operationType on $tableName');
   }
 
   /// Get all pending operations
@@ -349,9 +353,10 @@ class OfflineDatabaseService {
     String? imageUrl,
   }) async {
     final db = await database;
-    
-    final cartItemId = 'cart_${productId}_${DateTime.now().millisecondsSinceEpoch}';
-    
+
+    final cartItemId =
+        'cart_${productId}_${DateTime.now().millisecondsSinceEpoch}';
+
     await db.insert('cart_items', {
       'id': cartItemId,
       'productId': productId,
@@ -401,18 +406,21 @@ class OfflineDatabaseService {
   /// Get database stats
   Future<Map<String, int>> getDatabaseStats() async {
     final db = await database;
-    
+
     final productsCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM products'),
-    ) ?? 0;
-    
+          await db.rawQuery('SELECT COUNT(*) FROM products'),
+        ) ??
+        0;
+
     final pendingOpsCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM pending_operations'),
-    ) ?? 0;
-    
+          await db.rawQuery('SELECT COUNT(*) FROM pending_operations'),
+        ) ??
+        0;
+
     final cartItemsCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM cart_items'),
-    ) ?? 0;
+          await db.rawQuery('SELECT COUNT(*) FROM cart_items'),
+        ) ??
+        0;
 
     return {
       'products': productsCount,
@@ -439,7 +447,7 @@ class OfflineDatabaseService {
       category: map['category'] ?? '',
       price: map['price'],
       unit: map['unit'] ?? 'kg',
-      imageUrls: map['imageUrls'] != null 
+      imageUrls: map['imageUrls'] != null
           ? List<String>.from(jsonDecode(map['imageUrls']))
           : [],
       sellerId: map['sellerId'] ?? '',
@@ -450,9 +458,8 @@ class OfflineDatabaseService {
       isOrganic: map['isOrganic'] == 1,
       isAvailable: map['isAvailable'] == 1,
       quantity: map['quantity'] ?? 0,
-      tags: map['tags'] != null 
-          ? List<String>.from(jsonDecode(map['tags']))
-          : [],
+      tags:
+          map['tags'] != null ? List<String>.from(jsonDecode(map['tags'])) : [],
       rating: map['rating'],
       reviewCount: map['reviewCount'] ?? 0,
     );

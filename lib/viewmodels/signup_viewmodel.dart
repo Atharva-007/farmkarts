@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,7 +11,7 @@ class SignUpViewModel extends ChangeNotifier {
   final ImagePicker _imagePicker = ImagePicker();
 
   final formKey = GlobalKey<FormState>();
-  
+
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
@@ -62,38 +61,39 @@ class SignUpViewModel extends ChangeNotifier {
   Future<void> pickLicenseImage() async {
     try {
       clearError();
-      
+
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 85,
         maxWidth: 1920,
         maxHeight: 1920,
       );
-      
+
       if (pickedFile != null) {
         if (kIsWeb) {
           final imageBytes = await pickedFile.readAsBytes();
-          
+
           if (imageBytes.length > 5 * 1024 * 1024) {
-            _errorMessage = 'Image too large. Please select an image smaller than 5MB.';
+            _errorMessage =
+                'Image too large. Please select an image smaller than 5MB.';
             notifyListeners();
             return;
           }
-          
+
           _licenseImageBytes = imageBytes;
           _licenseImageName = pickedFile.name;
           _licenseImage = null;
-          
         } else {
           final file = File(pickedFile.path);
           final fileSize = await file.length();
-          
+
           if (fileSize > 5 * 1024 * 1024) {
-            _errorMessage = 'Image too large. Please select an image smaller than 5MB.';
+            _errorMessage =
+                'Image too large. Please select an image smaller than 5MB.';
             notifyListeners();
             return;
           }
-          
+
           _licenseImage = file;
           _licenseImageBytes = null;
           _licenseImageName = pickedFile.name;
@@ -112,7 +112,8 @@ class SignUpViewModel extends ChangeNotifier {
     }
 
     if (_selectedRole == UserRole.addat) {
-      if ((kIsWeb && _licenseImageBytes == null) || (!kIsWeb && _licenseImage == null)) {
+      if ((kIsWeb && _licenseImageBytes == null) ||
+          (!kIsWeb && _licenseImage == null)) {
         _errorMessage = 'Please upload your business license';
         notifyListeners();
         return false;
@@ -130,11 +131,11 @@ class SignUpViewModel extends ChangeNotifier {
         fullName: fullNameController.text.trim(),
         mobileNo: mobileController.text.trim(),
         role: _selectedRole,
-        acresLand: _selectedRole == UserRole.farmer 
-            ? double.tryParse(acresController.text.trim()) 
+        acresLand: _selectedRole == UserRole.farmer
+            ? double.tryParse(acresController.text.trim())
             : null,
-        dukanName: _selectedRole == UserRole.addat 
-            ? dukanNameController.text.trim() 
+        dukanName: _selectedRole == UserRole.addat
+            ? dukanNameController.text.trim()
             : null,
         licenseImage: _licenseImage,
         licenseImageBytes: _licenseImageBytes,
@@ -142,11 +143,10 @@ class SignUpViewModel extends ChangeNotifier {
       );
 
       await userStateService.initializeUser();
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
-      
     } catch (e) {
       _isLoading = false;
       _errorMessage = _getReadableErrorMessage(e.toString());

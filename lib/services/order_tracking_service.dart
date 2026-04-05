@@ -3,7 +3,8 @@ import 'dart:convert';
 import '../models/order_model.dart';
 
 class OrderTrackingService {
-  static final OrderTrackingService _instance = OrderTrackingService._internal();
+  static final OrderTrackingService _instance =
+      OrderTrackingService._internal();
   factory OrderTrackingService() => _instance;
   OrderTrackingService._internal();
 
@@ -26,7 +27,8 @@ class OrderTrackingService {
         'limit': limit.toString(),
       };
 
-      final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+      final uri =
+          Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -36,12 +38,15 @@ class OrderTrackingService {
         final data = jsonDecode(response.body);
         if (data['success']) {
           final ordersData = List<Map<String, dynamic>>.from(data['data']);
-          return ordersData.map((orderData) => OrderModel.fromMap(orderData['id'] ?? '', orderData)).toList();
+          return ordersData
+              .map((orderData) =>
+                  OrderModel.fromMap(orderData['id'] ?? '', orderData))
+              .toList();
         }
       }
       return [];
     } catch (e) {
-      print('Error fetching orders: $e');
+      // print('Error fetching orders: $e');
       return [];
     }
   }
@@ -62,7 +67,7 @@ class OrderTrackingService {
       }
       return null;
     } catch (e) {
-      print('Error fetching order: $e');
+      // print('Error fetching order: $e');
       return null;
     }
   }
@@ -83,7 +88,7 @@ class OrderTrackingService {
       }
       return null;
     } catch (e) {
-      print('Error tracking order: $e');
+      // print('Error tracking order: $e');
       return null;
     }
   }
@@ -114,7 +119,7 @@ class OrderTrackingService {
       }
       return false;
     } catch (e) {
-      print('Error updating order status: $e');
+      // print('Error updating order status: $e');
       return false;
     }
   }
@@ -133,7 +138,7 @@ class OrderTrackingService {
         message: 'Order cancelled: $reason',
       );
     } catch (e) {
-      print('Error cancelling order: $e');
+      // print('Error cancelling order: $e');
       return false;
     }
   }
@@ -149,12 +154,12 @@ class OrderTrackingService {
         orderId: orderId,
         status: 'confirmed',
         updatedBy: sellerId,
-        message: estimatedDeliveryDate != null 
-          ? 'Order confirmed. Estimated delivery: $estimatedDeliveryDate'
-          : 'Order confirmed and will be processed soon',
+        message: estimatedDeliveryDate != null
+            ? 'Order confirmed. Estimated delivery: $estimatedDeliveryDate'
+            : 'Order confirmed and will be processed soon',
       );
     } catch (e) {
-      print('Error confirming order: $e');
+      // print('Error confirming order: $e');
       return false;
     }
   }
@@ -171,13 +176,13 @@ class OrderTrackingService {
         orderId: orderId,
         status: 'shipped',
         updatedBy: sellerId,
-        message: courierName != null 
-          ? 'Order shipped via $courierName'
-          : 'Order has been shipped',
+        message: courierName != null
+            ? 'Order shipped via $courierName'
+            : 'Order has been shipped',
         trackingNumber: trackingNumber,
       );
     } catch (e) {
-      print('Error shipping order: $e');
+      // print('Error shipping order: $e');
       return false;
     }
   }
@@ -196,19 +201,21 @@ class OrderTrackingService {
         message: deliveryNotes ?? 'Order has been delivered successfully',
       );
     } catch (e) {
-      print('Error marking order as delivered: $e');
+      // print('Error marking order as delivered: $e');
       return false;
     }
   }
 
   // Get order analytics
-  Future<OrderAnalytics?> getOrderAnalytics(String userId, {required bool isSeller}) async {
+  Future<OrderAnalytics?> getOrderAnalytics(String userId,
+      {required bool isSeller}) async {
     try {
       final queryParams = {
         'type': isSeller ? 'seller' : 'buyer',
       };
 
-      final uri = Uri.parse('$baseUrl/users/$userId/stats').replace(queryParameters: queryParams);
+      final uri = Uri.parse('$baseUrl/users/$userId/stats')
+          .replace(queryParameters: queryParams);
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -222,7 +229,7 @@ class OrderTrackingService {
       }
       return null;
     } catch (e) {
-      print('Error fetching order analytics: $e');
+      // print('Error fetching order analytics: $e');
       return null;
     }
   }
@@ -239,12 +246,14 @@ class OrderTrackingService {
         final data = jsonDecode(response.body);
         if (data['success']) {
           final activitiesData = List<Map<String, dynamic>>.from(data['data']);
-          return activitiesData.map((activity) => OrderActivity.fromMap(activity)).toList();
+          return activitiesData
+              .map((activity) => OrderActivity.fromMap(activity))
+              .toList();
         }
       }
       return [];
     } catch (e) {
-      print('Error fetching recent activities: $e');
+      // print('Error fetching recent activities: $e');
       return [];
     }
   }
@@ -266,7 +275,8 @@ class OrderTrackingService {
         if (endDate != null) 'endDate': endDate.toIso8601String(),
       };
 
-      final uri = Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
+      final uri =
+          Uri.parse('$baseUrl/orders').replace(queryParameters: queryParams);
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -276,25 +286,31 @@ class OrderTrackingService {
         final data = jsonDecode(response.body);
         if (data['success']) {
           final ordersData = List<Map<String, dynamic>>.from(data['data']);
-          List<OrderModel> orders = ordersData.map((orderData) => OrderModel.fromMap(orderData['id'] ?? '', orderData)).toList();
-          
+          List<OrderModel> orders = ordersData
+              .map((orderData) =>
+                  OrderModel.fromMap(orderData['id'] ?? '', orderData))
+              .toList();
+
           // Apply client-side search filter if query provided
           if (query != null && query.isNotEmpty) {
             final queryLower = query.toLowerCase();
-            orders = orders.where((order) =>
-              order.productName.toLowerCase().contains(queryLower) ||
-              (order.trackingId ?? '').toLowerCase().contains(queryLower) ||
-              order.buyerName.toLowerCase().contains(queryLower) ||
-              order.sellerName.toLowerCase().contains(queryLower)
-            ).toList();
+            orders = orders
+                .where((order) =>
+                    order.productName.toLowerCase().contains(queryLower) ||
+                    (order.trackingId ?? '')
+                        .toLowerCase()
+                        .contains(queryLower) ||
+                    order.buyerName.toLowerCase().contains(queryLower) ||
+                    order.sellerName.toLowerCase().contains(queryLower))
+                .toList();
           }
-          
+
           return orders;
         }
       }
       return [];
     } catch (e) {
-      print('Error searching orders: $e');
+      // print('Error searching orders: $e');
       return [];
     }
   }
@@ -344,13 +360,14 @@ class OrderTrackingService {
         cancelledOrders: cancelledOrders,
         pendingOrders: pendingOrders,
         totalRevenue: totalRevenue,
-        averageOrderValue: completedOrders > 0 ? totalRevenue / completedOrders : 0,
+        averageOrderValue:
+            completedOrders > 0 ? totalRevenue / completedOrders : 0,
         startDate: startDate,
         endDate: endDate,
         orders: orders,
       );
     } catch (e) {
-      print('Error generating order report: $e');
+      // print('Error generating order report: $e');
       return null;
     }
   }
@@ -374,11 +391,12 @@ class OrderTrackingDetails {
     return OrderTrackingDetails(
       order: OrderModel.fromMap(map['order']['id'] ?? '', map['order']),
       trackingTimeline: (map['trackingTimeline'] as List<dynamic>?)
-          ?.map((timeline) => TrackingTimeline.fromMap(timeline))
-          .toList() ?? [],
-      estimatedDelivery: map['estimatedDelivery'] != null 
-        ? DateTime.parse(map['estimatedDelivery'])
-        : null,
+              ?.map((timeline) => TrackingTimeline.fromMap(timeline))
+              .toList() ??
+          [],
+      estimatedDelivery: map['estimatedDelivery'] != null
+          ? DateTime.parse(map['estimatedDelivery'])
+          : null,
       currentStatus: map['status'] ?? 'pending',
     );
   }
@@ -402,9 +420,8 @@ class TrackingTimeline {
   factory TrackingTimeline.fromMap(Map<String, dynamic> map) {
     return TrackingTimeline(
       status: map['status'] ?? '',
-      timestamp: map['timestamp'] != null 
-        ? DateTime.parse(map['timestamp'])
-        : null,
+      timestamp:
+          map['timestamp'] != null ? DateTime.parse(map['timestamp']) : null,
       message: map['message'] ?? '',
       updatedBy: map['updatedBy'] ?? '',
       completed: map['completed'] ?? false,

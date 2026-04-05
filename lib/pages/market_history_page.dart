@@ -17,7 +17,7 @@ class MarketHistoryPage extends StatefulWidget {
 class _MarketHistoryPageState extends State<MarketHistoryPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  
+
   String _selectedCommodity = 'All';
   List<String> _trackedCommodities = ['All'];
 
@@ -29,14 +29,17 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
 
   Future<void> _loadTrackedList() async {
     if (_uid.isEmpty) return;
-    
+
     final snapshot = await _firestore
         .collection('users')
         .doc(_uid)
         .collection('user_commodity_history')
         .get();
-    
-    final names = snapshot.docs.map((doc) => doc['commodityName'] as String).toSet().toList();
+
+    final names = snapshot.docs
+        .map((doc) => doc['commodityName'] as String)
+        .toSet()
+        .toList();
     if (mounted) {
       setState(() {
         _trackedCommodities = ['All', ...names..sort()];
@@ -63,9 +66,10 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
             stream: _getHistoryStream(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+                return const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()));
               }
-              
+
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return _buildEmptyState();
               }
@@ -86,7 +90,7 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ...docs.map((doc) => _buildHistoryCard(doc)).toList(),
+                    ...docs.map((doc) => _buildHistoryCard(doc)),
                     const SizedBox(height: 100),
                   ]),
                 ),
@@ -104,11 +108,11 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
         .doc(_uid)
         .collection('user_commodity_history')
         .orderBy('date', descending: true);
-    
+
     if (_selectedCommodity != 'All') {
       query = query.where('commodityName', isEqualTo: _selectedCommodity);
     }
-    
+
     return query.snapshots();
   }
 
@@ -128,10 +132,13 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
               selected: isSelected,
               label: Text(name),
               onSelected: (val) => setState(() => _selectedCommodity = name),
-              selectedColor: AppTheme.getPrimaryAccent(context).withOpacity(0.2),
+              selectedColor:
+                  AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2),
               checkmarkColor: AppTheme.getPrimaryAccent(context),
               labelStyle: TextStyle(
-                color: isSelected ? AppTheme.getPrimaryAccent(context) : AppTheme.getSecondaryTextColor(context),
+                color: isSelected
+                    ? AppTheme.getPrimaryAccent(context)
+                    : AppTheme.getSecondaryTextColor(context),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -161,7 +168,9 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
         children: [
           Text(
             'Price Momentum',
-            style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getPrimaryAccent(context)),
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.getPrimaryAccent(context)),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -181,7 +190,8 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                      color: AppTheme.getPrimaryAccent(context)
+                          .withValues(alpha: 0.1),
                     ),
                   ),
                 ],
@@ -196,7 +206,7 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
   Widget _buildHistoryCard(QueryDocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     final date = (data['date'] as Timestamp).toDate();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: CustomCard(
@@ -206,10 +216,12 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                color:
+                    AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.inventory_2, color: AppTheme.getPrimaryAccent(context), size: 20),
+              child: Icon(Icons.inventory_2,
+                  color: AppTheme.getPrimaryAccent(context), size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -218,11 +230,14 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
                 children: [
                   Text(
                     data['commodityName'],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   Text(
                     '${data['market']}, ${data['state']}',
-                    style: TextStyle(fontSize: 12, color: AppTheme.getSecondaryTextColor(context)),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.getSecondaryTextColor(context)),
                   ),
                 ],
               ),
@@ -240,7 +255,9 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
                 ),
                 Text(
                   '${date.day}/${date.month}/${date.year}',
-                  style: TextStyle(fontSize: 11, color: AppTheme.getSecondaryTextColor(context)),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.getSecondaryTextColor(context)),
                 ),
               ],
             ),
@@ -256,13 +273,17 @@ class _MarketHistoryPageState extends State<MarketHistoryPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.history, size: 64, color: AppTheme.getSecondaryTextColor(context).withOpacity(0.3)),
+            Icon(Icons.history,
+                size: 64,
+                color: AppTheme.getSecondaryTextColor(context)
+                    .withValues(alpha: 0.3)),
             const SizedBox(height: 16),
             const Text('No market history saved yet'),
             const SizedBox(height: 8),
             Text(
               'Browse commodities in APMC Market to save data',
-              style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
+              style: TextStyle(
+                  color: AppTheme.getSecondaryTextColor(context), fontSize: 12),
             ),
           ],
         ),

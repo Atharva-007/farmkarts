@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -9,7 +8,8 @@ import 'package:flutter/material.dart';
 /// Image Optimization Service
 /// Handles image compression, caching, and loading optimization
 class ImageOptimizationService {
-  static final ImageOptimizationService _instance = ImageOptimizationService._internal();
+  static final ImageOptimizationService _instance =
+      ImageOptimizationService._internal();
   factory ImageOptimizationService() => _instance;
   ImageOptimizationService._internal();
 
@@ -45,14 +45,17 @@ class ImageOptimizationService {
 
       // Save to temp file
       final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final tempFile = File(
+          '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.jpg');
       await tempFile.writeAsBytes(compressed);
 
       final originalSize = bytes.length / 1024; // KB
       final compressedSize = compressed.length / 1024; // KB
-      final reduction = ((originalSize - compressedSize) / originalSize * 100).toStringAsFixed(1);
+      final reduction = ((originalSize - compressedSize) / originalSize * 100)
+          .toStringAsFixed(1);
 
-      debugPrint('ImageOptimization: Compressed ${originalSize.toStringAsFixed(0)}KB → ${compressedSize.toStringAsFixed(0)}KB ($reduction% reduction)');
+      debugPrint(
+          'ImageOptimization: Compressed ${originalSize.toStringAsFixed(0)}KB → ${compressedSize.toStringAsFixed(0)}KB ($reduction% reduction)');
 
       return tempFile;
     } catch (e) {
@@ -110,7 +113,8 @@ class ImageOptimizationService {
 
       // Save
       final tempDir = await getTemporaryDirectory();
-      final thumbnailFile = File('${tempDir.path}/thumb_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final thumbnailFile = File(
+          '${tempDir.path}/thumb_${DateTime.now().millisecondsSinceEpoch}.jpg');
       await thumbnailFile.writeAsBytes(compressed);
 
       debugPrint('ImageOptimization: Thumbnail generated (${size}x$size)');
@@ -144,22 +148,24 @@ class ImageOptimizationService {
       width: width,
       height: height,
       fit: fit,
-      placeholder: (context, url) => placeholder ?? 
-        Container(
-          color: Colors.grey[200],
-          child: const Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+      placeholder: (context, url) =>
+          placeholder ??
+          Container(
+            color: Colors.grey[200],
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
           ),
-        ),
-      errorWidget: (context, url, error) => errorWidget ?? 
-        Container(
-          color: Colors.grey[300],
-          child: const Icon(Icons.error_outline, color: Colors.grey),
-        ),
+      errorWidget: (context, url, error) =>
+          errorWidget ??
+          Container(
+            color: Colors.grey[300],
+            child: const Icon(Icons.error_outline, color: Colors.grey),
+          ),
       memCacheWidth: cacheWidth,
       memCacheHeight: cacheHeight,
       maxWidthDiskCache: 1000,
@@ -167,7 +173,6 @@ class ImageOptimizationService {
       filterQuality: FilterQuality.low, // Faster rendering during scroll
     );
   }
-
 
   /// Preload images
   Future<void> preloadImages(
@@ -216,7 +221,8 @@ class ImageOptimizationService {
         }
       }
 
-      debugPrint('ImageOptimization: Cache size - ${(totalSize / 1024 / 1024).toStringAsFixed(2)} MB');
+      debugPrint(
+          'ImageOptimization: Cache size - ${(totalSize / 1024 / 1024).toStringAsFixed(2)} MB');
       return totalSize;
     } catch (e) {
       debugPrint('ImageOptimization: Error getting cache size: $e');
@@ -324,7 +330,7 @@ class ImageOptimizationService {
     Function(int, int)? onProgress,
   }) async {
     final compressed = <File>[];
-    
+
     for (int i = 0; i < files.length; i++) {
       try {
         final compressedFile = await compressImage(files[i], quality: quality);

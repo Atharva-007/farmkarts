@@ -32,7 +32,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   final ChatService _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   bool _isSending = false;
   User? _currentUser;
   Conversation? _currentConversation;
@@ -42,7 +42,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     super.initState();
     _currentUser = FirebaseAuth.instance.currentUser;
     _initializeConversation();
-    
+
     // Mark conversation as read when opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_currentConversation != null) {
@@ -81,7 +81,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
   }
 
   Future<void> _sendMessage() async {
-    if (_messageController.text.trim().isEmpty || _currentConversation == null) return;
+    if (_messageController.text.trim().isEmpty || _currentConversation == null)
+      return;
 
     final content = _messageController.text.trim();
     _messageController.clear();
@@ -166,7 +167,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         children: [
           // Product Info Banner
           _buildProductBanner(),
-          
+
           // Messages List
           Expanded(
             child: StreamBuilder<List<Message>>(
@@ -178,12 +179,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
 
                 if (snapshot.hasError) {
                   return Center(
-                    child: Text('Error: ${snapshot.error}', style: TextStyle(color: AppTheme.getTextColor(context))),
+                    child: Text('Error: ${snapshot.error}',
+                        style:
+                            TextStyle(color: AppTheme.getTextColor(context))),
                   );
                 }
 
                 final messages = snapshot.data ?? [];
-                
+
                 if (messages.isEmpty) {
                   return Center(
                     child: Column(
@@ -192,12 +195,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 64,
-                          color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
+                          color: AppTheme.getSecondaryTextColor(context)
+                              .withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No messages yet for ${_currentConversation!.productName}',
-                          style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                          style: TextStyle(
+                              color: AppTheme.getSecondaryTextColor(context)),
                         ),
                       ],
                     ),
@@ -217,7 +222,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               },
             ),
           ),
-          
+
           // Message Input
           _buildMessageInput(),
         ],
@@ -229,9 +234,10 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+        color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
         border: Border(
-          bottom: BorderSide(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+          bottom: BorderSide(
+              color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
         ),
       ),
       child: Row(
@@ -249,7 +255,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
           ),
           TextButton(
             onPressed: _showProductDetails,
-            child: Text('View Product', style: TextStyle(color: AppTheme.getPrimaryAccent(context))),
+            child: Text('View Product',
+                style: TextStyle(color: AppTheme.getPrimaryAccent(context))),
           ),
         ],
       ),
@@ -258,7 +265,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
 
   Widget _buildMessageBubble(Message message, bool isMe) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -268,8 +275,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isMe 
-              ? AppTheme.getPrimaryAccent(context) 
+          color: isMe
+              ? AppTheme.getPrimaryAccent(context)
               : AppTheme.getCardColor(context),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
@@ -277,10 +284,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             bottomLeft: Radius.circular(isMe ? 18 : 4),
             bottomRight: Radius.circular(isMe ? 4 : 18),
           ),
-          border: !isMe ? Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)) : null,
+          border: !isMe
+              ? Border.all(
+                  color:
+                      AppTheme.getBorderColor(context).withValues(alpha: 0.5))
+              : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -300,7 +311,10 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             Text(
               _formatTime(message.timestamp),
               style: TextStyle(
-                color: isMe ? Colors.white70 : AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
+                color: isMe
+                    ? Colors.white70
+                    : AppTheme.getSecondaryTextColor(context)
+                        .withValues(alpha: 0.7),
                 fontSize: 10,
               ),
             ),
@@ -312,14 +326,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
 
   Widget _buildMessageInput() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -337,12 +351,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   child: OutlinedButton.icon(
                     onPressed: _showMakeOfferDialog,
                     icon: const Icon(Icons.local_offer, size: 18),
-                    label: const Text('Make Offer', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text('Make Offer',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.accentOrange,
                       side: BorderSide(color: AppTheme.accentOrange),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -357,14 +373,19 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                     decoration: BoxDecoration(
                       color: AppTheme.getBackgroundColor(context),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+                      border: Border.all(
+                          color: AppTheme.getBorderColor(context)
+                              .withValues(alpha: 0.5)),
                     ),
                     child: TextField(
                       controller: _messageController,
                       style: TextStyle(color: AppTheme.getTextColor(context)),
                       decoration: InputDecoration(
-                        hintText: 'Type about ${_currentConversation!.productName}...',
-                        hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.6)),
+                        hintText:
+                            'Type about ${_currentConversation!.productName}...',
+                        hintStyle: TextStyle(
+                            color: AppTheme.getSecondaryTextColor(context)
+                                .withValues(alpha: 0.6)),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -411,7 +432,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppTheme.getCardColor(context),
-          title: Text('Product Details', style: TextStyle(color: AppTheme.getTextColor(context))),
+          title: Text('Product Details',
+              style: TextStyle(color: AppTheme.getTextColor(context))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,11 +448,14 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               ),
               const SizedBox(height: 12),
               if (widget.product != null) ...[
-                _buildDetailItem('Price', '₹${widget.product!.price}/${widget.product!.unit}'),
+                _buildDetailItem('Price',
+                    '₹${widget.product!.price}/${widget.product!.unit}'),
                 _buildDetailItem('Category', widget.product!.category),
                 _buildDetailItem('Location', widget.product!.location),
               ] else ...[
-                Text('Product details not available', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+                Text('Product details not available',
+                    style: TextStyle(
+                        color: AppTheme.getSecondaryTextColor(context))),
               ],
             ],
           ),
@@ -443,7 +468,8 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  _messageController.text = 'I would like to make a bid offer for this product. ';
+                  _messageController.text =
+                      'I would like to make a bid offer for this product. ';
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.getPrimaryAccent(context),
@@ -462,8 +488,12 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
-          Text(value, style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+          Text('$label: ',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context))),
+          Text(value,
+              style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
         ],
       ),
     );
@@ -501,7 +531,9 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
             children: [
               Icon(Icons.local_offer, color: AppTheme.accentOrange),
               const SizedBox(width: 8),
-              Expanded(child: Text('Make an Offer', style: TextStyle(color: AppTheme.getTextColor(context)))),
+              Expanded(
+                  child: Text('Make an Offer',
+                      style: TextStyle(color: AppTheme.getTextColor(context)))),
             ],
           ),
           content: SizedBox(
@@ -514,12 +546,15 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                      color: AppTheme.getPrimaryAccent(context)
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.shopping_bag, color: AppTheme.getPrimaryAccent(context), size: 20),
+                        Icon(Icons.shopping_bag,
+                            color: AppTheme.getPrimaryAccent(context),
+                            size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -533,9 +568,9 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Bid amount
                   _buildDialogTextField(
                     controller: bidAmountController,
@@ -544,9 +579,9 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                     keyboardType: TextInputType.number,
                     onChanged: (v) => setState(() {}),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Quantity and unit
                   Row(
                     children: [
@@ -565,17 +600,24 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                         child: DropdownButtonFormField<String>(
                           value: selectedUnit,
                           dropdownColor: AppTheme.getCardColor(context),
-                          style: TextStyle(color: AppTheme.getTextColor(context)),
+                          style:
+                              TextStyle(color: AppTheme.getTextColor(context)),
                           decoration: InputDecoration(
                             labelText: 'Unit',
-                            labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+                            labelStyle: TextStyle(
+                                color: AppTheme.getSecondaryTextColor(context)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: AppTheme.getBorderColor(context))),
                           ),
-                          items: units.map((unit) => DropdownMenuItem(
-                            value: unit,
-                            child: Text(unit),
-                          )).toList(),
+                          items: units
+                              .map((unit) => DropdownMenuItem(
+                                    value: unit,
+                                    child: Text(unit),
+                                  ))
+                              .toList(),
                           onChanged: (value) {
                             setState(() {
                               selectedUnit = value!;
@@ -585,9 +627,9 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Optional message
                   _buildDialogTextField(
                     controller: messageController,
@@ -596,21 +638,25 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
                     maxLines: 3,
                     hintText: 'Add any special requirements...',
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Total calculation preview
-                  if (bidAmountController.text.isNotEmpty && quantityController.text.isNotEmpty)
+                  if (bidAmountController.text.isNotEmpty &&
+                      quantityController.text.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppTheme.accentOrange.withOpacity(0.1),
+                        color: AppTheme.accentOrange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Total Amount:', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
+                          Text('Total Amount:',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.getTextColor(context))),
                           Text(
                             '₹${((double.tryParse(bidAmountController.text) ?? 0) * (int.tryParse(quantityController.text) ?? 0)).toStringAsFixed(2)}',
                             style: TextStyle(
@@ -635,19 +681,22 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
               onPressed: () {
                 final bidAmount = double.tryParse(bidAmountController.text);
                 final quantity = int.tryParse(quantityController.text);
-                
+
                 if (bidAmount == null || bidAmount <= 0) {
-                  ToastHelper.showError(context, 'Please enter a valid bid amount');
+                  ToastHelper.showError(
+                      context, 'Please enter a valid bid amount');
                   return;
                 }
-                
+
                 if (quantity == null || quantity <= 0) {
-                  ToastHelper.showError(context, 'Please enter a valid quantity');
+                  ToastHelper.showError(
+                      context, 'Please enter a valid quantity');
                   return;
                 }
-                
+
                 Navigator.pop(context);
-                _sendBidOffer(bidAmount, quantity, selectedUnit, messageController.text);
+                _sendBidOffer(
+                    bidAmount, quantity, selectedUnit, messageController.text);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.accentOrange,
@@ -681,10 +730,13 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         labelText: label,
         labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
         hintText: hintText,
-        hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5)),
+        hintStyle: TextStyle(
+            color:
+                AppTheme.getSecondaryTextColor(context).withValues(alpha: 0.5)),
         prefixIcon: Icon(icon, color: AppTheme.getPrimaryAccent(context)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: AppTheme.getPrimaryAccent(context)),
           borderRadius: BorderRadius.circular(8),
@@ -708,7 +760,7 @@ class _ChatConversationPageState extends State<ChatConversationPage> {
         unit: unit,
         message: message.isNotEmpty ? message : null,
       );
-      
+
       ToastHelper.showSuccess(context, 'Bid offer sent successfully!');
     } catch (e) {
       ToastHelper.showError(context, 'Failed to send offer: $e');

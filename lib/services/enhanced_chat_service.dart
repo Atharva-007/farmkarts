@@ -26,7 +26,7 @@ class EnhancedChatService {
       if (user == null) throw Exception('User not authenticated');
 
       final conversationId = '${product.id}_${user.uid}';
-      
+
       // Check if conversation exists
       final conversationDoc = await _firestore
           .collection('enhanced_conversations')
@@ -39,7 +39,8 @@ class EnhancedChatService {
           id: conversationId,
           productId: product.id,
           productName: product.name,
-          productImageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
+          productImageUrl:
+              product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
           productImages: product.imageUrls,
           productPrice: product.price,
           productUnit: product.unit,
@@ -111,10 +112,10 @@ class EnhancedChatService {
       );
 
       // Determine receiverId if not provided
-      final actualReceiverId = receiverId.isNotEmpty 
-          ? receiverId 
-          : (user.uid == conversation.buyerId 
-              ? conversation.sellerId 
+      final actualReceiverId = receiverId.isNotEmpty
+          ? receiverId
+          : (user.uid == conversation.buyerId
+              ? conversation.sellerId
               : conversation.buyerId);
 
       // Create message
@@ -163,7 +164,6 @@ class EnhancedChatService {
       if (bidOffer != null) {
         await _updateBidInformation(conversationId, bidOffer);
       }
-
     } catch (e) {
       throw Exception('Failed to send message: $e');
     }
@@ -277,9 +277,8 @@ class EnhancedChatService {
         receiverId: receiverId,
       );
 
-      final content = callType == CallType.video 
-          ? '📹 Video call' 
-          : '📞 Voice call';
+      final content =
+          callType == CallType.video ? '📹 Video call' : '📞 Voice call';
 
       await sendEnhancedMessage(
         conversationId: conversationId,
@@ -296,7 +295,6 @@ class EnhancedChatService {
           .update({
         'lastCall': callInfo.toMap(),
       });
-
     } catch (e) {
       throw Exception('Failed to record call: $e');
     }
@@ -318,7 +316,8 @@ class EnhancedChatService {
   }
 
   /// Get enhanced conversation
-  Future<EnhancedConversation?> getEnhancedConversation(String conversationId) async {
+  Future<EnhancedConversation?> getEnhancedConversation(
+      String conversationId) async {
     try {
       final doc = await _firestore
           .collection('enhanced_conversations')
@@ -335,7 +334,8 @@ class EnhancedChatService {
   }
 
   /// Get enhanced conversation stream
-  Stream<EnhancedConversation?> getEnhancedConversationStream(String conversationId) {
+  Stream<EnhancedConversation?> getEnhancedConversationStream(
+      String conversationId) {
     return _firestore
         .collection('enhanced_conversations')
         .doc(conversationId)
@@ -383,7 +383,7 @@ class EnhancedChatService {
           .get();
 
       final batch = _firestore.batch();
-      
+
       for (final doc in messagesQuery.docs) {
         batch.update(doc.reference, {'status': MessageStatus.read.name});
       }
@@ -395,7 +395,6 @@ class EnhancedChatService {
           .collection('enhanced_conversations')
           .doc(conversationId)
           .update({'unreadCount': 0});
-
     } catch (e) {
       throw Exception('Failed to mark messages as read: $e');
     }
@@ -423,7 +422,7 @@ class EnhancedChatService {
             .delete();
       }
     } catch (e) {
-      print('Failed to update typing status: $e');
+      // print('Failed to update typing status: $e');
     }
   }
 
@@ -440,13 +439,13 @@ class EnhancedChatService {
         .map((snapshot) {
       return snapshot.docs
           .map((doc) {
-        final data = doc.data();
-        return TypingIndicator(
-          userId: data['userId'],
-          userName: data['userName'],
-          lastTyping: (data['lastTyping'] as Timestamp).toDate(),
-        );
-      })
+            final data = doc.data();
+            return TypingIndicator(
+              userId: data['userId'],
+              userName: data['userName'],
+              lastTyping: (data['lastTyping'] as Timestamp).toDate(),
+            );
+          })
           .where((indicator) => indicator.isTyping)
           .toList();
     });
@@ -484,9 +483,8 @@ class EnhancedChatService {
     BidOffer bidOffer,
   ) async {
     try {
-      final conversationRef = _firestore
-          .collection('enhanced_conversations')
-          .doc(conversationId);
+      final conversationRef =
+          _firestore.collection('enhanced_conversations').doc(conversationId);
 
       final conversationDoc = await conversationRef.get();
       if (!conversationDoc.exists) return;
@@ -497,22 +495,19 @@ class EnhancedChatService {
       );
 
       final currentHighest = conversation.currentHighestBid ?? 0.0;
-      final newHighest = bidOffer.amount > currentHighest 
-          ? bidOffer.amount 
-          : currentHighest;
+      final newHighest =
+          bidOffer.amount > currentHighest ? bidOffer.amount : currentHighest;
 
-      final updatedBids = [...conversation.recentBids, bidOffer]
-          .take(10)
-          .toList();
+      final updatedBids =
+          [...conversation.recentBids, bidOffer].take(10).toList();
 
       await conversationRef.update({
         'currentHighestBid': newHighest,
         'totalBids': conversation.totalBids + 1,
         'recentBids': updatedBids.map((e) => e.toMap()).toList(),
       });
-
     } catch (e) {
-      print('Failed to update bid information: $e');
+      // print('Failed to update bid information: $e');
     }
   }
 
@@ -538,9 +533,8 @@ class EnhancedChatService {
   }) async {
     try {
       // Update bid status in conversation
-      final conversationRef = _firestore
-          .collection('enhanced_conversations')
-          .doc(conversationId);
+      final conversationRef =
+          _firestore.collection('enhanced_conversations').doc(conversationId);
 
       final conversationDoc = await conversationRef.get();
       if (!conversationDoc.exists) return;
@@ -594,7 +588,6 @@ class EnhancedChatService {
         type: MessageType.system,
         receiverId: '', // Will be determined in the method
       );
-
     } catch (e) {
       throw Exception('Failed to respond to bid: $e');
     }

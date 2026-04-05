@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -43,18 +40,19 @@ void main() async {
   // Catch all Dart errors
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    AppLogger.error('Global Flutter Error', error: details.exception, stackTrace: details.stack, tag: 'Main');
+    AppLogger.error('Global Flutter Error',
+        error: details.exception, stackTrace: details.stack, tag: 'Main');
   };
 
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Firebase
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     AppLogger.info('Firebase initialized successfully', 'Main');
-    
+
     // Background initialization for non-critical services
     _initializeBackgroundServices();
   } catch (e) {
@@ -73,17 +71,20 @@ Future<void> _initializeBackgroundServices() async {
       _initNotifications(),
       _initFCM(),
       _initSync(),
-    ], eagerError: false).timeout(
+    ], eagerError: false)
+        .timeout(
       const Duration(seconds: 15),
       onTimeout: () {
-        AppLogger.warning('Background services initialization timed out after 15s', 'Main');
+        AppLogger.warning(
+            'Background services initialization timed out after 15s', 'Main');
         return [];
       },
     );
-    
+
     AppLogger.info('All background services initialized', 'Main');
   } catch (e) {
-    AppLogger.error('Some background services failed to initialize', error: e, tag: 'Main');
+    AppLogger.error('Some background services failed to initialize',
+        error: e, tag: 'Main');
   }
 }
 
@@ -100,7 +101,7 @@ Future<void> _initConnectivity() async {
     if (isOffline) {
       await FirebaseFirestore.instance.disableNetwork();
     }
-    
+
     Connectivity().onConnectivityChanged.listen((dynamic result) async {
       bool nowOnline = false;
       if (result is List) {
@@ -116,7 +117,8 @@ Future<void> _initConnectivity() async {
       }
     });
   } catch (e) {
-    AppLogger.error('Connectivity initialization failed', error: e, tag: 'Main');
+    AppLogger.error('Connectivity initialization failed',
+        error: e, tag: 'Main');
   }
 }
 
@@ -142,7 +144,8 @@ Future<void> _initNotifications() async {
   try {
     await NotificationService().initialize();
   } catch (e) {
-    AppLogger.error('Notification initialization failed', error: e, tag: 'Main');
+    AppLogger.error('Notification initialization failed',
+        error: e, tag: 'Main');
   }
 }
 
@@ -216,20 +219,22 @@ class MyApp extends StatelessWidget {
                 final args = settings.arguments as Map<String, dynamic>?;
                 final initialIndex = args?['initialIndex'] as int?;
                 return MaterialPageRoute(
-                  builder: (context) => MainAppLayout(initialIndex: initialIndex),
+                  builder: (context) =>
+                      MainAppLayout(initialIndex: initialIndex),
                   settings: settings,
                 );
               }
-              
+
               if (settings.name == '/chat') {
                 final args = settings.arguments as Map<String, dynamic>?;
                 if (args != null) {
-                  final conversationId = args['conversationId'] as String? ?? '';
+                  final conversationId =
+                      args['conversationId'] as String? ?? '';
                   final product = args['product'] as Product?;
                   final otherUserId = args['otherUserId'] as String? ?? '';
                   final otherUserName = args['otherUserName'] as String? ?? '';
                   final productName = args['productName'] as String? ?? '';
-                  
+
                   final conversation = Conversation(
                     id: conversationId,
                     productId: product?.id ?? '',
@@ -243,7 +248,7 @@ class MyApp extends StatelessWidget {
                     lastMessageSenderId: '',
                     createdAt: DateTime.now(),
                   );
-                  
+
                   return MaterialPageRoute(
                     builder: (context) => ChatConversationPage(
                       conversation: conversation,
@@ -271,12 +276,14 @@ class MyApp extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                        const Icon(Icons.error_outline,
+                            size: 64, color: Colors.grey),
                         const SizedBox(height: 16),
                         Text('Route "${settings.name}" not found'),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
+                          onPressed: () =>
+                              Navigator.of(context).pushReplacementNamed('/'),
                           child: const Text('Go Home'),
                         ),
                       ],

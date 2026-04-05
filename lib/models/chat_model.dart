@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Enums
 enum ChatStatus { active, archived, blocked }
+
 enum MessageType { text, image, bid, system }
+
 enum BidStatus { pending, accepted, rejected, expired, withdrawn }
+
 enum NotificationType { message, bid, rating, order, system, market, weather }
 
 /// Chat conversation model
@@ -40,8 +43,8 @@ class ChatConversation {
     this.status = ChatStatus.active,
     List<String>? participantIds,
     String? lastSenderId,
-  }) : participantIds = participantIds ?? [sellerId, buyerId],
-       lastSenderId = lastSenderId ?? '';
+  })  : participantIds = participantIds ?? [sellerId, buyerId],
+        lastSenderId = lastSenderId ?? '';
 
   factory ChatConversation.fromMap(Map<String, dynamic> map) {
     return ChatConversation(
@@ -54,7 +57,8 @@ class ChatConversation {
       buyerId: map['buyerId'] ?? '',
       buyerName: map['buyerName'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
-      lastMessageTime: (map['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastMessageTime:
+          (map['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       unreadCount: map['unreadCount'] ?? 0,
       isActive: map['isActive'] ?? true,
       status: ChatStatus.values.firstWhere(
@@ -126,7 +130,8 @@ class ChatMessage {
         orElse: () => MessageType.text,
       ),
       imageUrl: map['imageUrl'],
-      bidOffer: map['bidOffer'] != null ? BidOffer.fromMap(map['bidOffer']) : null,
+      bidOffer:
+          map['bidOffer'] != null ? BidOffer.fromMap(map['bidOffer']) : null,
       isRead: map['isRead'] ?? false,
     );
   }

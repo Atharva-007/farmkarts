@@ -30,7 +30,7 @@ class AppLocalizations {
       'search': 'Search',
       'filter': 'Filter',
       'sort': 'Sort',
-      
+
       // Authentication
       'login': 'Login',
       'email_or_mobile': 'Email or Mobile Number',
@@ -52,7 +52,7 @@ class AppLocalizations {
       'session_expired': 'Your session has expired. Please login again.',
       'login_failed': 'Login failed. Please try again.',
       'enter_email_mobile': 'Please enter email or mobile number',
-      
+
       // Navigation
       'dashboard': 'Dashboard',
       'marketplace': 'Marketplace',
@@ -67,7 +67,7 @@ class AppLocalizations {
       'community': 'Community',
       'weather': 'Weather',
       'notifications': 'Notifications',
-      
+
       // Settings
       'language': 'Language',
       'theme': 'Theme',
@@ -78,7 +78,7 @@ class AppLocalizations {
       'account_settings': 'Account Settings',
       'select_language': 'Select Language',
       'select_theme': 'Select Theme',
-      
+
       // Marketplace
       'add_product': 'Add Product',
       'product_name': 'Product Name',
@@ -94,7 +94,7 @@ class AppLocalizations {
       'organic': 'Organic',
       'fresh': 'Fresh',
       'location': 'Location',
-      
+
       // Cart & Wishlist
       'cart_empty': 'Your cart is empty',
       'wishlist_empty': 'Your wishlist is empty',
@@ -104,7 +104,7 @@ class AppLocalizations {
       'proceed_to_checkout': 'Proceed to Checkout',
       'remove': 'Remove',
       'move_to_cart': 'Move to Cart',
-      
+
       // Profile
       'edit_profile': 'Edit Profile',
       'my_orders': 'My Orders',
@@ -113,7 +113,7 @@ class AppLocalizations {
       'license_management': 'License Management',
       'selling_history': 'Selling History',
       'buying_history': 'Buying History',
-      
+
       // General UI
       'refresh': 'Refresh',
       'error_occurred': 'An error occurred',
@@ -138,7 +138,7 @@ class AppLocalizations {
       'search': 'खोजें',
       'filter': 'फ़िल्टर',
       'sort': 'क्रमबद्ध करें',
-      
+
       // Authentication
       'login': 'लॉगिन',
       'email_or_mobile': 'ईमेल या मोबाइल नंबर',
@@ -154,13 +154,14 @@ class AppLocalizations {
       'invalid_credentials': 'अमान्य ईमेल/मोबाइल या पासवर्ड',
       'user_not_found': 'उपयोगकर्ता नहीं मिला। कृपया साइन अप करें।',
       'invalid_email_mobile': 'कृपया मान्य ईमेल या मोबाइल नंबर दर्ज करें',
-      'too_many_attempts': 'बहुत अधिक लॉगिन प्रयास। कृपया बाद में पुनः प्रयास करें।',
+      'too_many_attempts':
+          'बहुत अधिक लॉगिन प्रयास। कृपया बाद में पुनः प्रयास करें।',
       'network_error': 'नेटवर्क त्रुटि। कृपया अपना कनेक्शन जांचें।',
       'account_disabled': 'यह खाता अक्षम कर दिया गया है।',
       'session_expired': 'आपका सत्र समाप्त हो गया है। कृपया फिर से लॉगिन करें।',
       'login_failed': 'लॉगिन विफल। कृपया पुनः प्रयास करें।',
       'enter_email_mobile': 'कृपया ईमेल या मोबाइल नंबर दर्ज करें',
-      
+
       // Navigation
       'dashboard': 'डैशबोर्ड',
       'marketplace': 'बाज़ार',
@@ -175,7 +176,7 @@ class AppLocalizations {
       'community': 'समुदाय',
       'weather': 'मौसम',
       'notifications': 'सूचनाएं',
-      
+
       // Settings
       'language': 'भाषा',
       'theme': 'थीम',
@@ -186,7 +187,7 @@ class AppLocalizations {
       'account_settings': 'खाता सेटिंग्स',
       'select_language': 'भाषा चुनें',
       'select_theme': 'थीम चुनें',
-      
+
       // Marketplace
       'add_product': 'उत्पाद जोड़ें',
       'product_name': 'उत्पाद का नाम',
@@ -202,7 +203,7 @@ class AppLocalizations {
       'organic': 'जैविक',
       'fresh': 'ताज़ा',
       'location': 'स्थान',
-      
+
       // Cart & Wishlist
       'cart_empty': 'आपकी कार्ट खाली है',
       'wishlist_empty': 'आपकी इच्छा सूची खाली है',
@@ -212,7 +213,7 @@ class AppLocalizations {
       'proceed_to_checkout': 'चेकआउट करें',
       'remove': 'हटाएं',
       'move_to_cart': 'कार्ट में ले जाएं',
-      
+
       // Profile
       'edit_profile': 'प्रोफाइल संपादित करें',
       'my_orders': 'मेरे आदेश',
@@ -221,7 +222,7 @@ class AppLocalizations {
       'license_management': 'लाइसेंस प्रबंधन',
       'selling_history': 'बिक्री इतिहास',
       'buying_history': 'खरीद इतिहास',
-      
+
       // General UI
       'refresh': 'रीफ्रेश करें',
       'error_occurred': 'एक त्रुटि हुई',
@@ -246,7 +247,7 @@ class AppLocalizations {
       'search': 'शोधा',
       'filter': 'फिल्टर',
       'sort': 'क्रमवारी लावा',
-      
+
       // Authentication
       'login': 'लॉगिन',
       'email_or_mobile': 'ईमेल किंवा मोबाईल नंबर',
@@ -268,7 +269,7 @@ class AppLocalizations {
       'session_expired': 'तुमचे सत्र संपले आहे. कृपया पुन्हा लॉगिन करा.',
       'login_failed': 'लॉगिन अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
       'enter_email_mobile': 'कृपया ईमेल किंवा मोबाईल नंबर टाका',
-      
+
       // Navigation
       'dashboard': 'डॅशबोर्ड',
       'marketplace': 'बाजारपेठ',
@@ -283,7 +284,7 @@ class AppLocalizations {
       'community': 'समुदाय',
       'weather': 'हवामान',
       'notifications': 'सूचना',
-      
+
       // Settings
       'language': 'भाषा',
       'theme': 'थीम',
@@ -294,7 +295,7 @@ class AppLocalizations {
       'account_settings': 'खाते सेटिंग्ज',
       'select_language': 'भाषा निवडा',
       'select_theme': 'थीम निवडा',
-      
+
       // Marketplace
       'add_product': 'उत्पादन जोडा',
       'product_name': 'उत्पादनाचे नाव',
@@ -310,7 +311,7 @@ class AppLocalizations {
       'organic': 'सेंद्रिय',
       'fresh': 'ताजे',
       'location': 'स्थान',
-      
+
       // Cart & Wishlist
       'cart_empty': 'तुमची कार्ट रिकामी आहे',
       'wishlist_empty': 'तुमची इच्छा यादी रिकामी आहे',
@@ -320,7 +321,7 @@ class AppLocalizations {
       'proceed_to_checkout': 'चेकआउट करा',
       'remove': 'काढा',
       'move_to_cart': 'कार्टमध्ये हलवा',
-      
+
       // Profile
       'edit_profile': 'प्रोफाइल संपादित करा',
       'my_orders': 'माझे ऑर्डर्स',
@@ -329,7 +330,7 @@ class AppLocalizations {
       'license_management': 'परवाना व्यवस्थापन',
       'selling_history': 'विक्री इतिहास',
       'buying_history': 'खरेदी इतिहास',
-      
+
       // General UI
       'refresh': 'रीफ्रेश करा',
       'error_occurred': 'एक त्रुटी झाली',

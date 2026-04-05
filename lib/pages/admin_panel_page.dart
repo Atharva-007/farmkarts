@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../theme/app_theme.dart';
-import '../models/user_model.dart';
-import '../models/product_model.dart';
 import 'package:intl/intl.dart';
 
 /// Admin Panel - User & Product Management Dashboard
@@ -14,7 +12,8 @@ class AdminPanelPage extends StatefulWidget {
   State<AdminPanelPage> createState() => _AdminPanelPageState();
 }
 
-class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProviderStateMixin {
+class _AdminPanelPageState extends State<AdminPanelPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -40,7 +39,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
   Future<void> _loadDashboardStats() async {
     try {
       final usersCount = await _firestore.collection('users').count().get();
-      final productsCount = await _firestore.collection('products').count().get();
+      final productsCount =
+          await _firestore.collection('products').count().get();
       final ordersCount = await _firestore.collection('orders').count().get();
       final pendingProductsCount = await _firestore
           .collection('products')
@@ -102,7 +102,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          
+
           // Stats Cards
           GridView.count(
             shrinkWrap: true,
@@ -138,16 +138,16 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Recent Activity
           const Text(
             'Recent Activity',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           StreamBuilder<QuerySnapshot>(
             stream: _firestore
                 .collection('products')
@@ -160,20 +160,23 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
               }
 
               final products = snapshot.data!.docs;
-              
+
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: products.length,
                 itemBuilder: (context, index) {
-                  final product = products[index].data() as Map<String, dynamic>;
+                  final product =
+                      products[index].data() as Map<String, dynamic>;
                   return ListTile(
                     leading: const CircleAvatar(
                       backgroundColor: AppTheme.primaryGreen,
-                      child: Icon(Icons.inventory_2, color: Colors.white, size: 20),
+                      child: Icon(Icons.inventory_2,
+                          color: Colors.white, size: 20),
                     ),
                     title: Text(product['name'] ?? 'Unknown'),
-                    subtitle: Text('Added by ${product['sellerName'] ?? 'Unknown'}'),
+                    subtitle:
+                        Text('Added by ${product['sellerName'] ?? 'Unknown'}'),
                     trailing: Text(
                       _formatTimestamp(product['createdAt']),
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -219,7 +222,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
             ],
           ),
         ),
-        
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: _firestore.collection('users').snapshots(),
@@ -239,12 +241,14 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                 itemBuilder: (context, index) {
                   final userData = users[index].data() as Map<String, dynamic>;
                   final userId = users[index].id;
-                  
+
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                        backgroundColor:
+                            AppTheme.primaryGreen.withValues(alpha: 0.1),
                         child: Text(
                           (userData['fullName'] ?? 'U')[0].toUpperCase(),
                           style: const TextStyle(
@@ -262,8 +266,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                             'Role: ${userData['role'] ?? 'Unknown'}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: userData['role'] == 'farmer' 
-                                  ? Colors.green 
+                              color: userData['role'] == 'farmer'
+                                  ? Colors.green
                                   : Colors.blue,
                             ),
                           ),
@@ -287,12 +291,14 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                               children: [
                                 Icon(Icons.block, size: 18, color: Colors.red),
                                 SizedBox(width: 8),
-                                Text('Block User', style: TextStyle(color: Colors.red)),
+                                Text('Block User',
+                                    style: TextStyle(color: Colors.red)),
                               ],
                             ),
                           ),
                         ],
-                        onSelected: (value) => _handleUserAction(value, userId, userData),
+                        onSelected: (value) =>
+                            _handleUserAction(value, userId, userData),
                       ),
                     ),
                   );
@@ -335,7 +341,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
             ],
           ),
         ),
-        
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
             stream: _firestore
@@ -356,21 +361,25 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
               return ListView.builder(
                 itemCount: products.length,
                 itemBuilder: (context, index) {
-                  final productData = products[index].data() as Map<String, dynamic>;
+                  final productData =
+                      products[index].data() as Map<String, dynamic>;
                   final productId = products[index].id;
-                  
+
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.green.shade100,
-                        child: const Icon(Icons.inventory_2, color: Colors.green),
+                        child:
+                            const Icon(Icons.inventory_2, color: Colors.green),
                       ),
                       title: Text(productData['name'] ?? 'Unknown Product'),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('₹${productData['price']}/${productData['unit']}'),
+                          Text(
+                              '₹${productData['price']}/${productData['unit']}'),
                           Text(
                             'Seller: ${productData['sellerName'] ?? 'Unknown'}',
                             style: const TextStyle(fontSize: 12),
@@ -381,7 +390,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: _getStatusColor(productData['status']),
                               borderRadius: BorderRadius.circular(12),
@@ -401,7 +411,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                                 value: 'approve',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.check_circle, size: 18, color: Colors.green),
+                                    Icon(Icons.check_circle,
+                                        size: 18, color: Colors.green),
                                     SizedBox(width: 8),
                                     Text('Approve'),
                                   ],
@@ -411,7 +422,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                                 value: 'reject',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.cancel, size: 18, color: Colors.red),
+                                    Icon(Icons.cancel,
+                                        size: 18, color: Colors.red),
                                     SizedBox(width: 8),
                                     Text('Reject'),
                                   ],
@@ -421,14 +433,17 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                                 value: 'delete',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete, size: 18, color: Colors.red),
+                                    Icon(Icons.delete,
+                                        size: 18, color: Colors.red),
                                     SizedBox(width: 8),
-                                    Text('Delete', style: TextStyle(color: Colors.red)),
+                                    Text('Delete',
+                                        style: TextStyle(color: Colors.red)),
                                   ],
                                 ),
                               ),
                             ],
-                            onSelected: (value) => _handleProductAction(value, productId, productData),
+                            onSelected: (value) => _handleProductAction(
+                                value, productId, productData),
                           ),
                         ],
                       ),
@@ -468,7 +483,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
           itemBuilder: (context, index) {
             final orderData = orders[index].data() as Map<String, dynamic>;
             final orderId = orders[index].id;
-            
+
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ExpansionTile(
@@ -496,17 +511,22 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow('Product', orderData['productName'] ?? 'N/A'),
-                        _buildInfoRow('Quantity', '${orderData['quantity']} ${orderData['unit'] ?? ''}'),
+                        _buildInfoRow(
+                            'Product', orderData['productName'] ?? 'N/A'),
+                        _buildInfoRow('Quantity',
+                            '${orderData['quantity']} ${orderData['unit'] ?? ''}'),
                         _buildInfoRow('Buyer', orderData['buyerName'] ?? 'N/A'),
-                        _buildInfoRow('Phone', orderData['buyerPhone'] ?? 'N/A'),
-                        _buildInfoRow('Address', orderData['deliveryAddress'] ?? 'N/A'),
+                        _buildInfoRow(
+                            'Phone', orderData['buyerPhone'] ?? 'N/A'),
+                        _buildInfoRow(
+                            'Address', orderData['deliveryAddress'] ?? 'N/A'),
                         const SizedBox(height: 12),
                         Row(
                           children: [
                             Expanded(
                               child: ElevatedButton.icon(
-                                onPressed: () => _updateOrderStatus(orderId, 'confirmed'),
+                                onPressed: () =>
+                                    _updateOrderStatus(orderId, 'confirmed'),
                                 icon: const Icon(Icons.check, size: 18),
                                 label: const Text('Confirm'),
                                 style: ElevatedButton.styleFrom(
@@ -517,7 +537,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
                             const SizedBox(width: 8),
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: () => _updateOrderStatus(orderId, 'cancelled'),
+                                onPressed: () =>
+                                    _updateOrderStatus(orderId, 'cancelled'),
                                 icon: const Icon(Icons.cancel, size: 18),
                                 label: const Text('Cancel'),
                                 style: OutlinedButton.styleFrom(
@@ -549,7 +570,6 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        
         Card(
           child: Column(
             children: [
@@ -590,14 +610,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
             ],
           ),
         ),
-        
         const SizedBox(height: 24),
-        
         Card(
           color: Colors.red.shade50,
           child: ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text('Clear All Data', style: TextStyle(color: Colors.red)),
+            title: const Text('Clear All Data',
+                style: TextStyle(color: Colors.red)),
             subtitle: const Text('Warning: This action cannot be undone'),
             onTap: () => _showClearDataDialog(),
           ),
@@ -607,7 +626,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
   }
 
   // Helper Widgets & Methods
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -697,7 +717,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
 
   String _formatTimestamp(dynamic timestamp) {
     if (timestamp == null) return 'Unknown';
-    
+
     try {
       DateTime dateTime;
       if (timestamp is Timestamp) {
@@ -707,14 +727,15 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
       } else {
         return 'Unknown';
       }
-      
+
       return DateFormat('MMM dd, hh:mm a').format(dateTime);
     } catch (e) {
       return 'Unknown';
     }
   }
 
-  void _handleUserAction(String action, String userId, Map<String, dynamic> userData) {
+  void _handleUserAction(
+      String action, String userId, Map<String, dynamic> userData) {
     switch (action) {
       case 'view':
         _showUserDetails(userId, userData);
@@ -725,14 +746,21 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
     }
   }
 
-  void _handleProductAction(String action, String productId, Map<String, dynamic> productData) async {
+  void _handleProductAction(
+      String action, String productId, Map<String, dynamic> productData) async {
     switch (action) {
       case 'approve':
-        await _firestore.collection('products').doc(productId).update({'status': 'approved'});
+        await _firestore
+            .collection('products')
+            .doc(productId)
+            .update({'status': 'approved'});
         _showToast('Product approved');
         break;
       case 'reject':
-        await _firestore.collection('products').doc(productId).update({'status': 'rejected'});
+        await _firestore
+            .collection('products')
+            .doc(productId)
+            .update({'status': 'rejected'});
         _showToast('Product rejected');
         break;
       case 'delete':
@@ -778,7 +806,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Block User?'),
-        content: Text('Are you sure you want to block ${userData['fullName']}?'),
+        content:
+            Text('Are you sure you want to block ${userData['fullName']}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -786,7 +815,10 @@ class _AdminPanelPageState extends State<AdminPanelPage> with SingleTickerProvid
           ),
           ElevatedButton(
             onPressed: () async {
-              await _firestore.collection('users').doc(userId).update({'blocked': true});
+              await _firestore
+                  .collection('users')
+                  .doc(userId)
+                  .update({'blocked': true});
               Navigator.pop(context);
               _showToast('User blocked');
             },

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/enhanced_chat_models.dart';
 
@@ -160,9 +159,9 @@ class MediaService {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: color.withOpacity(0.3)),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
             ),
             child: Icon(
               icon,
@@ -193,9 +192,9 @@ class MediaService {
         _showPermissionDeniedDialog(context, 'Camera');
         return;
       }
-      
+
       // Simulate image capture - replace with actual image picker
-      print('Camera capture initiated');
+      // print('Camera capture initiated');
       // final ImagePicker picker = ImagePicker();
       // final XFile? image = await picker.pickImage(source: ImageSource.camera);
       // if (image != null) {
@@ -216,9 +215,9 @@ class MediaService {
         _showPermissionDeniedDialog(context, 'Camera');
         return;
       }
-      
+
       // Simulate video capture - replace with actual image picker
-      print('Video capture initiated');
+      // print('Video capture initiated');
       // final ImagePicker picker = ImagePicker();
       // final XFile? video = await picker.pickVideo(source: ImageSource.camera);
       // if (video != null) {
@@ -239,9 +238,9 @@ class MediaService {
         _showPermissionDeniedDialog(context, 'Storage');
         return;
       }
-      
+
       // Simulate gallery pick - replace with actual image picker
-      print('Gallery picker initiated');
+      // print('Gallery picker initiated');
       // final ImagePicker picker = ImagePicker();
       // final XFile? image = await picker.pickImage(source: ImageSource.gallery);
       // if (image != null) {
@@ -262,9 +261,9 @@ class MediaService {
         _showPermissionDeniedDialog(context, 'Storage');
         return;
       }
-      
+
       // Simulate document picker - replace with actual file picker
-      print('Document picker initiated');
+      // print('Document picker initiated');
       // final FilePickerResult? result = await FilePicker.platform.pickFiles();
       // if (result != null) {
       //   onDocumentSelected(File(result.files.single.path!));
@@ -276,7 +275,7 @@ class MediaService {
 
   Future<void> _shareLocation(BuildContext context) async {
     try {
-      print('Location sharing initiated');
+      // print('Location sharing initiated');
       // Implement location sharing
     } catch (e) {
       _showErrorDialog(context, 'Failed to share location: $e');
@@ -285,7 +284,7 @@ class MediaService {
 
   Future<void> _shareContact(BuildContext context) async {
     try {
-      print('Contact sharing initiated');
+      // print('Contact sharing initiated');
       // Implement contact sharing
     } catch (e) {
       _showErrorDialog(context, 'Failed to share contact: $e');
@@ -308,7 +307,7 @@ class MediaService {
           onProgress(i / 100.0);
         }
       }
-      
+
       // Return simulated download URL
       return 'https://example.com/uploads/';
     } catch (e) {
@@ -463,7 +462,7 @@ class _CallScreenState extends State<CallScreen> {
                       radius: 80,
                       backgroundColor: Colors.grey[300],
                       child: Text(
-                        widget.receiverName.isNotEmpty 
+                        widget.receiverName.isNotEmpty
                             ? widget.receiverName[0].toUpperCase()
                             : 'U',
                         style: TextStyle(
@@ -493,7 +492,7 @@ class _CallScreenState extends State<CallScreen> {
                 ),
               ),
             ),
-            
+
             // Call controls
             Padding(
               padding: EdgeInsets.all(20),
@@ -533,7 +532,7 @@ class _CallScreenState extends State<CallScreen> {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          color: isActive ? Colors.white : Colors.white.withOpacity(0.2),
+          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(

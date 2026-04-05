@@ -11,15 +11,15 @@ class ConnectionPool {
   }
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // Request queue for batching
   final Map<String, List<_QueuedRequest>> _requestQueue = {};
   Timer? _batchTimer;
-  
+
   // Rate limiting
   final Map<String, DateTime> _lastRequestTime = {};
   static const Duration _minRequestInterval = Duration(milliseconds: 100);
-  
+
   // Batch configuration
   static const int _maxBatchSize = 500;
   static const Duration _batchInterval = Duration(milliseconds: 50);
@@ -30,7 +30,7 @@ class ConnectionPool {
       persistenceEnabled: true,
       cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
     );
-    
+
     // Start batch processor
     _batchTimer = Timer.periodic(_batchInterval, (_) => _processBatches());
   }
@@ -39,18 +39,18 @@ class ConnectionPool {
   Future<DocumentSnapshot?> queueRead(String collection, String docId) {
     final completer = Completer<DocumentSnapshot?>();
     final key = '$collection:$docId';
-    
+
     _requestQueue.putIfAbsent(collection, () => []);
     _requestQueue[collection]!.add(_QueuedRequest(
       docId: docId,
       completer: completer,
       type: _RequestType.read,
     ));
-    
+
     if (_requestQueue[collection]!.length >= _maxBatchSize) {
       _processBatch(collection);
     }
-    
+
     return completer.future;
   }
 
@@ -77,14 +77,14 @@ class ConnectionPool {
   Future<void> _processBatch(String collection) async {
     final requests = _requestQueue[collection] ?? [];
     if (requests.isEmpty) return;
-    
+
     final batch = requests.take(_maxBatchSize).toList();
     _requestQueue[collection]!.removeRange(0, batch.length);
-    
+
     try {
       // Group by operation type
       final reads = batch.where((r) => r.type == _RequestType.read).toList();
-      
+
       if (reads.isNotEmpty) {
         await _processBatchReads(collection, reads);
       }
@@ -97,11 +97,12 @@ class ConnectionPool {
   }
 
   /// Process batch reads
-  Future<void> _processBatchReads(String collection, List<_QueuedRequest> reads) async {
+  Future<void> _processBatchReads(
+      String collection, List<_QueuedRequest> reads) async {
     try {
       // Fetch all documents in parallel with limited concurrency
       const concurrentLimit = 10;
-      
+
       for (var i = 0; i < reads.length; i += concurrentLimit) {
         final chunk = reads.skip(i).take(concurrentLimit);
         await Future.wait(
@@ -136,7 +137,7 @@ class ConnectionPool {
         await Future.delayed(_minRequestInterval - elapsed);
       }
     }
-    
+
     _lastRequestTime[queryKey] = DateTime.now();
     return await query.get();
   }
@@ -148,11 +149,11 @@ class ConnectionPool {
     DocumentSnapshot? startAfter,
   }) {
     var paginatedQuery = query.limit(pageSize);
-    
+
     if (startAfter != null) {
       paginatedQuery = paginatedQuery.startAfterDocument(startAfter);
     }
-    
+
     return paginatedQuery.snapshots();
   }
 

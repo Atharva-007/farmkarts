@@ -2,6 +2,7 @@ class Conversation {
   final String id;
   final String productId;
   final String productName;
+  final String productImageUrl;
   final String buyerId;
   final String buyerName;
   final String sellerId;
@@ -17,6 +18,7 @@ class Conversation {
     required this.id,
     required this.productId,
     required this.productName,
+    this.productImageUrl = '',
     required this.buyerId,
     required this.buyerName,
     required this.sellerId,
@@ -34,12 +36,14 @@ class Conversation {
       id: id,
       productId: map['productId'] ?? '',
       productName: map['productName'] ?? '',
+      productImageUrl: map['productImageUrl'] ?? '',
       buyerId: map['buyerId'] ?? '',
       buyerName: map['buyerName'] ?? '',
       sellerId: map['sellerId'] ?? '',
       sellerName: map['sellerName'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
-      lastMessageTime: DateTime.fromMillisecondsSinceEpoch(map['lastMessageTime'] ?? 0),
+      lastMessageTime:
+          DateTime.fromMillisecondsSinceEpoch(map['lastMessageTime'] ?? 0),
       lastMessageSenderId: map['lastMessageSenderId'] ?? '',
       unreadCount: map['unreadCount'] ?? 0,
       isActive: map['isActive'] ?? true,
@@ -51,11 +55,15 @@ class Conversation {
     return {
       'productId': productId,
       'productName': productName,
+      'productImageUrl': productImageUrl,
       'buyerId': buyerId,
       'buyerName': buyerName,
       'sellerId': sellerId,
       'sellerName': sellerName,
-      'participants': [buyerId, sellerId], // Add participants array for Firestore rules
+      'participants': [
+        buyerId,
+        sellerId
+      ], // Add participants array for Firestore rules
       'lastMessage': lastMessage,
       'lastMessageTime': lastMessageTime.millisecondsSinceEpoch,
       'lastMessageSenderId': lastMessageSenderId,
@@ -138,7 +146,9 @@ class Message {
       imageUrl: map['imageUrl'],
       fileUrl: map['fileUrl'],
       fileName: map['fileName'],
-      metadata: map['metadata'] != null ? Map<String, dynamic>.from(map['metadata']) : null,
+      metadata: map['metadata'] != null
+          ? Map<String, dynamic>.from(map['metadata'])
+          : null,
     );
   }
 

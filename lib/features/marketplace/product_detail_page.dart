@@ -7,7 +7,6 @@ import '../../models/order_model.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/toast_helper.dart';
 import '../../utils/responsive_helper.dart';
-import '../../utils/app_constants.dart';
 import '../../services/marketplace_service.dart';
 import '../../services/order_service.dart';
 import '../chat/conversation_list_page.dart';
@@ -179,8 +178,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   Widget _buildProductImageSection() {
-    final images = widget.product.imageUrls.isNotEmpty 
-        ? widget.product.imageUrls 
+    final images = widget.product.imageUrls.isNotEmpty
+        ? widget.product.imageUrls
         : ['https://via.placeholder.com/400x300?text=No+Image'];
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -191,7 +190,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -201,7 +200,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               child: CachedNetworkImage(
                 imageUrl: images[_selectedImageIndex],
                 fit: BoxFit.cover,
@@ -240,8 +240,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               margin: const EdgeInsets.only(right: 8),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: index == _selectedImageIndex 
-                      ? AppTheme.getPrimaryAccent(context) 
+                  color: index == _selectedImageIndex
+                      ? AppTheme.getPrimaryAccent(context)
                       : (isDark ? Colors.white10 : Colors.grey[300]!),
                   width: 2,
                 ),
@@ -276,10 +276,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -294,16 +295,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 child: Text(
                   widget.product.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.getTextColor(context),
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.getTextColor(context),
+                      ),
                 ),
               ),
               if (widget.product.isOrganic)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.1),
+                    color: AppTheme.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -328,8 +330,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             widget.product.category,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.getSecondaryTextColor(context),
-            ),
+                  color: AppTheme.getSecondaryTextColor(context),
+                ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -337,15 +339,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               Text(
                 '₹${widget.product.price.toStringAsFixed(0)}',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.getPrimaryAccent(context),
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.getPrimaryAccent(context),
+                    ),
               ),
               Text(
                 ' / ${widget.product.unit}',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
+                      color: AppTheme.getSecondaryTextColor(context),
+                    ),
               ),
             ],
           ),
@@ -354,8 +356,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             Text(
               'Available: ${widget.product.quantity} ${widget.product.unit}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.getSecondaryTextColor(context),
-              ),
+                    color: AppTheme.getSecondaryTextColor(context),
+                  ),
             ),
           ],
         ],
@@ -370,10 +372,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -385,9 +388,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             'Seller Information',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.getTextColor(context),
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context),
+                ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -411,9 +414,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     Text(
                       widget.product.sellerName,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.getTextColor(context),
-                      ),
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.getTextColor(context),
+                          ),
                     ),
                     Row(
                       children: [
@@ -421,9 +424,12 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         const SizedBox(width: 4),
                         Text(
                           '4.5 (120 reviews)',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.getSecondaryTextColor(context),
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: AppTheme.getSecondaryTextColor(context),
+                              ),
                         ),
                       ],
                     ),
@@ -433,7 +439,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               ElevatedButton(
                 onPressed: _contactSeller,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                  backgroundColor:
+                      AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
                   foregroundColor: AppTheme.getPrimaryAccent(context),
                   elevation: 0,
                 ),
@@ -453,10 +460,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -468,9 +476,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             'Description',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.getTextColor(context),
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.getTextColor(context),
+                ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -478,9 +486,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ? widget.product.description
                 : 'No description available.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppTheme.getSecondaryTextColor(context),
-              height: 1.5,
-            ),
+                  color: AppTheme.getSecondaryTextColor(context),
+                  height: 1.5,
+                ),
           ),
         ],
       ),
@@ -494,10 +502,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       decoration: BoxDecoration(
         color: AppTheme.getCardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.5)),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -509,9 +518,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           Text(
             'Quantity',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppTheme.getTextColor(context),
-            ),
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.getTextColor(context),
+                ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -524,7 +533,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 child: Row(
                   children: [
                     IconButton(
-                      onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
+                      onPressed: _quantity > 1
+                          ? () => setState(() => _quantity--)
+                          : null,
                       icon: const Icon(Icons.remove),
                       color: AppTheme.getSecondaryTextColor(context),
                     ),
@@ -532,10 +543,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
                         _quantity.toString(),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.getTextColor(context),
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.getTextColor(context),
+                                ),
                       ),
                     ),
                     IconButton(
@@ -550,8 +562,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               Text(
                 widget.product.unit,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
+                      color: AppTheme.getSecondaryTextColor(context),
+                    ),
               ),
             ],
           ),
@@ -569,7 +581,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             icon: const Icon(Icons.shopping_cart),
             label: const Text('Add to Cart'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+              backgroundColor:
+                  AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
               foregroundColor: AppTheme.getPrimaryAccent(context),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -609,7 +622,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -676,7 +689,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
   }
 
   void _addToCart() {
-    ToastHelper.showSuccess(context, 'Added $_quantity ${widget.product.unit} to cart');
+    ToastHelper.showSuccess(
+        context, 'Added $_quantity ${widget.product.unit} to cart');
   }
 
   void _buyNow() async {
@@ -724,7 +738,7 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
-  
+
   DeliveryType _deliveryType = DeliveryType.pickup;
   bool _isPlacingOrder = false;
 
@@ -743,7 +757,8 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
 
     return AlertDialog(
       backgroundColor: AppTheme.getCardColor(context),
-      title: Text('Place Order', style: TextStyle(color: AppTheme.getTextColor(context))),
+      title: Text('Place Order',
+          style: TextStyle(color: AppTheme.getTextColor(context))),
       content: SizedBox(
         width: double.maxFinite,
         child: Form(
@@ -757,7 +772,8 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                    color: AppTheme.getPrimaryAccent(context)
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -769,7 +785,8 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                           color: AppTheme.getPrimaryAccent(context),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(Icons.agriculture, color: Colors.white, size: 20),
+                        child: const Icon(Icons.agriculture,
+                            color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -778,11 +795,15 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                           children: [
                             Text(
                               widget.product.name,
-                              style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context)),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.getTextColor(context)),
                             ),
                             Text(
                               '${widget.quantity} ${widget.product.unit} × ₹${widget.product.price}',
-                              style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                              style: TextStyle(
+                                  color:
+                                      AppTheme.getSecondaryTextColor(context)),
                             ),
                             Text(
                               'Total: ₹${totalAmount.toStringAsFixed(0)}',
@@ -805,9 +826,13 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                   style: TextStyle(color: AppTheme.getTextColor(context)),
                   decoration: InputDecoration(
                     labelText: 'Phone Number *',
-                    labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                    prefixIcon: Icon(Icons.phone, color: AppTheme.getPrimaryAccent(context)),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+                    labelStyle: TextStyle(
+                        color: AppTheme.getSecondaryTextColor(context)),
+                    prefixIcon: Icon(Icons.phone,
+                        color: AppTheme.getPrimaryAccent(context)),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                            color: AppTheme.getBorderColor(context))),
                   ),
                   keyboardType: TextInputType.phone,
                   validator: (value) {
@@ -822,14 +847,22 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                 // Delivery Type
                 Text(
                   'Delivery Option',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.getTextColor(context)),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.getTextColor(context)),
                 ),
                 const SizedBox(height: 8),
                 Column(
                   children: DeliveryType.values.map((type) {
                     return RadioListTile<DeliveryType>(
-                      title: Text(_getDeliveryTypeLabel(type), style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14)),
-                      subtitle: Text(_getDeliveryTypeDescription(type), style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12)),
+                      title: Text(_getDeliveryTypeLabel(type),
+                          style: TextStyle(
+                              color: AppTheme.getTextColor(context),
+                              fontSize: 14)),
+                      subtitle: Text(_getDeliveryTypeDescription(type),
+                          style: TextStyle(
+                              color: AppTheme.getSecondaryTextColor(context),
+                              fontSize: 12)),
                       value: type,
                       groupValue: _deliveryType,
                       activeColor: AppTheme.getPrimaryAccent(context),
@@ -849,9 +882,13 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                     style: TextStyle(color: AppTheme.getTextColor(context)),
                     decoration: InputDecoration(
                       labelText: 'Delivery Address *',
-                      labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                      prefixIcon: Icon(Icons.location_on, color: AppTheme.getPrimaryAccent(context)),
-                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+                      labelStyle: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context)),
+                      prefixIcon: Icon(Icons.location_on,
+                          color: AppTheme.getPrimaryAccent(context)),
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                              color: AppTheme.getBorderColor(context))),
                     ),
                     maxLines: 3,
                     validator: (value) {
@@ -872,9 +909,13 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
                   style: TextStyle(color: AppTheme.getTextColor(context)),
                   decoration: InputDecoration(
                     labelText: 'Additional Notes (Optional)',
-                    labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                    prefixIcon: Icon(Icons.note, color: AppTheme.getPrimaryAccent(context)),
-                    enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.getBorderColor(context))),
+                    labelStyle: TextStyle(
+                        color: AppTheme.getSecondaryTextColor(context)),
+                    prefixIcon: Icon(Icons.note,
+                        color: AppTheme.getPrimaryAccent(context)),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                            color: AppTheme.getBorderColor(context))),
                   ),
                   maxLines: 2,
                 ),
@@ -938,30 +979,31 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
 
     try {
       final orderService = OrderService();
-      
+
       final orderId = await orderService.createOrder(
         product: widget.product,
         quantity: widget.quantity,
         buyerPhone: _phoneController.text.trim(),
         buyerAddress: _addressController.text.trim(),
         deliveryType: _deliveryType,
-        deliveryAddress: _deliveryType == DeliveryType.delivery 
-            ? _addressController.text.trim() 
+        deliveryAddress: _deliveryType == DeliveryType.delivery
+            ? _addressController.text.trim()
             : null,
-        notes: _notesController.text.trim().isNotEmpty 
-            ? _notesController.text.trim() 
+        notes: _notesController.text.trim().isNotEmpty
+            ? _notesController.text.trim()
             : null,
         paymentMethod: 'Cash on Delivery',
       );
 
       Navigator.pop(context);
-      
+
       // Show success dialog
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           backgroundColor: AppTheme.getCardColor(context),
-          title: Text('Order Placed Successfully!', style: TextStyle(color: AppTheme.getTextColor(context))),
+          title: Text('Order Placed Successfully!',
+              style: TextStyle(color: AppTheme.getTextColor(context))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1006,7 +1048,6 @@ class _OrderPlacementDialogState extends State<OrderPlacementDialog> {
           ],
         ),
       );
-
     } catch (e) {
       ToastHelper.showError(context, 'Failed to place order: $e');
     } finally {

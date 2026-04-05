@@ -4,16 +4,15 @@ import '../models/product_model.dart';
 import '../models/user_model.dart';
 import '../services/marketplace_service.dart';
 import '../services/product_service.dart';
-import '../services/performance_service.dart';
 
 class MarketplaceViewModel extends ChangeNotifier {
   final MarketplaceService _marketplaceService = MarketplaceService();
   final ProductService _productService = ProductService();
-  
-  List<Product> _sellingProducts = [];
+
+  final List<Product> _sellingProducts = [];
   List<Product> _buyingProducts = [];
   List<String> _categories = ['All'];
-  
+
   String _selectedCategory = 'All';
   String _searchQuery = '';
   bool _isLoading = true;
@@ -45,10 +44,13 @@ class MarketplaceViewModel extends ChangeNotifier {
 
   List<Product> _filteredBuyingProducts() {
     return _buyingProducts.where((product) {
-      final matchesCategory = _selectedCategory == 'All' || product.category == _selectedCategory;
-      final matchesSearch = _searchQuery.isEmpty || 
+      final matchesCategory =
+          _selectedCategory == 'All' || product.category == _selectedCategory;
+      final matchesSearch = _searchQuery.isEmpty ||
           product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          product.description.toLowerCase().contains(_searchQuery.toLowerCase());
+          product.description
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     }).toList();
   }
@@ -63,7 +65,8 @@ class MarketplaceViewModel extends ChangeNotifier {
       if (user != null) {
         // Fetch products and categories in parallel
         final results = await Future.wait([
-          _marketplaceService.getProducts(forceRefresh: forceRefresh, excludeCurrentUser: true),
+          _marketplaceService.getProducts(
+              forceRefresh: forceRefresh, excludeCurrentUser: true),
           _marketplaceService.getCategories(),
         ]);
 

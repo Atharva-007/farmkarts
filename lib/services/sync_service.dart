@@ -25,7 +25,7 @@ class SyncService {
   /// Initialize sync service
   Future<void> initialize() async {
     debugPrint('SyncService: Initializing...');
-    
+
     // Check initial connectivity
     final dynamic connectivityResult = await _connectivity.checkConnectivity();
     if (connectivityResult is List) {
@@ -33,9 +33,10 @@ class SyncService {
     } else {
       _isOnline = connectivityResult != ConnectivityResult.none;
     }
-    
-    debugPrint('SyncService: Initial status - ${_isOnline ? "Online" : "Offline"}');
-    
+
+    debugPrint(
+        'SyncService: Initial status - ${_isOnline ? "Online" : "Offline"}');
+
     // Listen to connectivity changes
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       (dynamic result) {
@@ -47,20 +48,21 @@ class SyncService {
   /// Handle connectivity changes
   void _handleConnectivityChange(dynamic result) {
     final wasOnline = _isOnline;
-    
+
     if (result is List) {
       _isOnline = !result.contains(ConnectivityResult.none);
     } else {
       _isOnline = result != ConnectivityResult.none;
     }
-    
-    debugPrint('SyncService: Connectivity changed - ${_isOnline ? "Online" : "Offline"}');
-    
+
+    debugPrint(
+        'SyncService: Connectivity changed - ${_isOnline ? "Online" : "Offline"}');
+
     _syncStatusController.add(SyncStatus(
       isOnline: _isOnline,
       isSyncing: _isSyncing,
     ));
-    
+
     // If we just came online, start syncing
     if (!wasOnline && _isOnline) {
       debugPrint('SyncService: Connection restored, starting sync...');
@@ -89,16 +91,16 @@ class SyncService {
       _notifySyncStatus();
 
       debugPrint('SyncService: Syncing products from server...');
-      
+
       // Fetch products from server
       final products = await _marketplaceService.getProducts(
         category: category,
         forceRefresh: forceRefresh,
       );
-      
+
       // Save to offline database
       await _offlineDb.saveProducts(products);
-      
+
       debugPrint('SyncService: Synced ${products.length} products');
     } catch (e) {
       debugPrint('SyncService: Error syncing products: $e');
@@ -111,7 +113,8 @@ class SyncService {
   /// Sync pending operations to server
   Future<void> syncPendingOperations() async {
     if (!_isOnline || _isSyncing) {
-      debugPrint('SyncService: Cannot sync - ${!_isOnline ? "offline" : "already syncing"}');
+      debugPrint(
+          'SyncService: Cannot sync - ${!_isOnline ? "offline" : "already syncing"}');
       return;
     }
 
@@ -120,14 +123,15 @@ class SyncService {
       _notifySyncStatus();
 
       final pendingOps = await _offlineDb.getPendingOperations();
-      
+
       if (pendingOps.isEmpty) {
         debugPrint('SyncService: No pending operations to sync');
         return;
       }
 
-      debugPrint('SyncService: Syncing ${pendingOps.length} pending operations...');
-      
+      debugPrint(
+          'SyncService: Syncing ${pendingOps.length} pending operations...');
+
       int successCount = 0;
       int failCount = 0;
 
@@ -137,19 +141,22 @@ class SyncService {
           await _offlineDb.removePendingOperation(op['id']);
           successCount++;
         } catch (e) {
-          debugPrint('SyncService: Failed to process operation ${op['id']}: $e');
+          debugPrint(
+              'SyncService: Failed to process operation ${op['id']}: $e');
           failCount++;
-          
+
           // Implement exponential backoff for retries
           final retryCount = op['retryCount'] as int;
           if (retryCount >= 3) {
-            debugPrint('SyncService: Max retries reached for operation ${op['id']}');
+            debugPrint(
+                'SyncService: Max retries reached for operation ${op['id']}');
             await _offlineDb.removePendingOperation(op['id']);
           }
         }
       }
 
-      debugPrint('SyncService: Sync complete - Success: $successCount, Failed: $failCount');
+      debugPrint(
+          'SyncService: Sync complete - Success: $successCount, Failed: $failCount');
     } catch (e) {
       debugPrint('SyncService: Error syncing pending operations: $e');
     } finally {
@@ -165,7 +172,8 @@ class SyncService {
     final recordId = op['recordId'] as String;
     final Map<String, dynamic> data = op['data'] as Map<String, dynamic>;
 
-    debugPrint('SyncService: Processing $operationType on $tableName/$recordId');
+    debugPrint(
+        'SyncService: Processing $operationType on $tableName/$recordId');
 
     try {
       switch (operationType) {
@@ -206,14 +214,16 @@ class SyncService {
 
     try {
       debugPrint('SyncService: Fetching products from server');
-      final products = await _marketplaceService.getProducts(category: category);
-      
+      final products =
+          await _marketplaceService.getProducts(category: category);
+
       // Save to offline DB for future offline access
       await _offlineDb.saveProducts(products);
-      
+
       return products;
     } catch (e) {
-      debugPrint('SyncService: Error fetching from server, falling back to offline DB: $e');
+      debugPrint(
+          'SyncService: Error fetching from server, falling back to offline DB: $e');
       return await _offlineDb.getProducts(category: category);
     }
   }
@@ -228,10 +238,10 @@ class SyncService {
     try {
       // Try online search first
       final products = await _marketplaceService.searchProducts(query);
-      
+
       // Save results to offline DB
       await _offlineDb.saveProducts(products);
-      
+
       return products;
     } catch (e) {
       debugPrint('SyncService: Online search failed, using offline: $e');
@@ -244,8 +254,9 @@ class SyncService {
     if (_isOnline) {
       try {
         // Add to server
-        final productId = await _marketplaceService.addProduct(product, sellerId);
-        
+        final productId =
+            await _marketplaceService.addProduct(product, sellerId);
+
         // Update local product with server ID
         final updatedProduct = Product(
           id: productId,
@@ -267,13 +278,14 @@ class SyncService {
           rating: product.rating,
           reviewCount: product.reviewCount,
         );
-        
+
         // Save to offline DB
         await _offlineDb.saveProduct(updatedProduct);
-        
+
         return;
       } catch (e) {
-        debugPrint('SyncService: Failed to add product online, queuing for sync: $e');
+        debugPrint(
+            'SyncService: Failed to add product online, queuing for sync: $e');
       }
     }
 
@@ -285,7 +297,7 @@ class SyncService {
       recordId: product.id,
       data: product.toMap(),
     );
-    
+
     debugPrint('SyncService: Product queued for sync when online');
   }
 
@@ -293,7 +305,7 @@ class SyncService {
   Future<Map<String, dynamic>> getSyncStats() async {
     final dbStats = await _offlineDb.getDatabaseStats();
     final pendingOps = await _offlineDb.getPendingOperations();
-    
+
     return {
       'isOnline': _isOnline,
       'isSyncing': _isSyncing,

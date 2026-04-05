@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive_helper.dart';
-import '../features/chat/enhanced_ai_expert_chat_page.dart';
+import '../features/crops/ai_crop_page.dart';
+import '../features/weather/weather_dashboard.dart';
 
 class QuickActionGrid extends StatelessWidget {
   final Function(int)? onNavigate;
@@ -16,7 +17,7 @@ class QuickActionGrid extends StatelessWidget {
         title: 'AI Expert',
         subtitle: 'Get farming advice',
         color: const Color(0xFF6C5CE7), // Purple for AI
-        onTap: () => _navigateToAIChat(context),
+        onTap: () => onNavigate?.call(2),
       ),
       _QuickAction(
         icon: Icons.storefront,
@@ -30,21 +31,29 @@ class QuickActionGrid extends StatelessWidget {
         title: 'Weather',
         subtitle: 'Live farm updates',
         color: AppTheme.skyBlue,
-        onTap: () => onNavigate?.call(2),
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const WeatherDashboard()));
+        },
       ),
       _QuickAction(
         icon: Icons.agriculture,
         title: 'Crops',
         subtitle: 'Manage your crops',
         color: AppTheme.lightGreen,
-        onTap: () => onNavigate?.call(3),
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const AICropPage()));
+        },
       ),
       _QuickAction(
         icon: Icons.trending_up,
         title: 'APMC Market',
         subtitle: 'Live market rates',
-        color: AppTheme.earthBrown,
-        onTap: () => onNavigate?.call(4),
+        color: AppTheme.accentOrange,
+        onTap: () => onNavigate?.call(3),
       ),
     ];
 
@@ -59,9 +68,9 @@ class QuickActionGrid extends StatelessWidget {
             Text(
               'Quick Actions',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryGreen,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryGreen,
+                  ),
             ),
             const SizedBox(height: 16),
             GridView.builder(
@@ -69,7 +78,8 @@ class QuickActionGrid extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context),
+                crossAxisSpacing:
+                    ResponsiveHelper.getResponsiveSpacing(context),
                 mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context),
                 childAspectRatio: childAspectRatio,
               ),
@@ -95,15 +105,16 @@ class QuickActionGrid extends StatelessWidget {
         onTap: action.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
+          padding:
+              EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                action.color.withOpacity(0.1),
-                action.color.withOpacity(0.05),
+                action.color.withValues(alpha: 0.1),
+                action.color.withValues(alpha: 0.05),
               ],
             ),
           ),
@@ -111,20 +122,23 @@ class QuickActionGrid extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
+                padding: EdgeInsets.all(
+                    ResponsiveHelper.isDesktop(context) ? 16 : 12),
                 decoration: BoxDecoration(
-                  color: action.color.withOpacity(0.2),
+                  color: action.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(action.icon, color: action.color, size: ResponsiveHelper.isDesktop(context) ? 28 : 24),
+                child: Icon(action.icon,
+                    color: action.color,
+                    size: ResponsiveHelper.isDesktop(context) ? 28 : 24),
               ),
               const SizedBox(height: 12),
               Text(
                 action.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: action.color,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: action.color,
+                    ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -133,8 +147,8 @@ class QuickActionGrid extends StatelessWidget {
               Text(
                 action.subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
-                ),
+                      color: AppTheme.getSecondaryTextColor(context),
+                    ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -142,24 +156,6 @@ class QuickActionGrid extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  static void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        backgroundColor: AppTheme.primaryGreen,
-      ),
-    );
-  }
-
-  static void _navigateToAIChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const EnhancedAIExpertChatPage(),
       ),
     );
   }

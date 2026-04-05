@@ -26,20 +26,24 @@ class CropStatusCard extends StatelessWidget {
                     'Active Crops',
                     context: context,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveHelper.getFontSize(context, 18),
-                    ),
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveHelper.getFontSize(context, 18),
+                        ),
                     maxLines: 1,
                   ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: ResponsiveHelper.getResponsiveSpacing(context) * 0.5,
-                    vertical: ResponsiveHelper.getResponsiveSpacing(context) * 0.25,
+                    horizontal:
+                        ResponsiveHelper.getResponsiveSpacing(context) * 0.5,
+                    vertical:
+                        ResponsiveHelper.getResponsiveSpacing(context) * 0.25,
                   ),
                   decoration: BoxDecoration(
                     color: AppTheme.success.withValues(alpha: 0.1),
-                    borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+                    borderRadius:
+                        ResponsiveHelper.getResponsiveBorderRadius(context)
+                            .copyWith(
                       topLeft: const Radius.circular(12),
                       topRight: const Radius.circular(12),
                       bottomLeft: const Radius.circular(12),
@@ -50,15 +54,16 @@ class CropStatusCard extends StatelessWidget {
                     '3 Active',
                     context: context,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.success,
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveHelper.getFontSize(context, 12),
-                    ),
+                          color: AppTheme.success,
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveHelper.getFontSize(context, 12),
+                        ),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+            SizedBox(
+                height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
             _buildCropItem(
               context,
               'Wheat (Field A)',
@@ -67,7 +72,8 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.lightGreen,
               85,
             ),
-            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+            SizedBox(
+                height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             _buildCropItem(
               context,
               'Corn (Field B)',
@@ -76,7 +82,8 @@ class CropStatusCard extends StatelessWidget {
               AppTheme.sunshine,
               65,
             ),
-            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+            SizedBox(
+                height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             _buildCropItem(
               context,
               'Tomatoes (Greenhouse)',
@@ -106,7 +113,8 @@ class CropStatusCard extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+        borderRadius:
+            ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
           topLeft: const Radius.circular(8),
           topRight: const Radius.circular(8),
           bottomLeft: const Radius.circular(8),
@@ -117,7 +125,8 @@ class CropStatusCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+            padding: EdgeInsets.all(
+                ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -128,7 +137,8 @@ class CropStatusCard extends StatelessWidget {
               size: ResponsiveHelper.isMobile(context) ? 18 : 20,
             ),
           ),
-          SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+          SizedBox(
+              width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,9 +147,9 @@ class CropStatusCard extends StatelessWidget {
                   name,
                   context: context,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: ResponsiveHelper.getFontSize(context, 16),
-                  ),
+                        fontWeight: FontWeight.bold,
+                        fontSize: ResponsiveHelper.getFontSize(context, 16),
+                      ),
                   maxLines: 1,
                 ),
                 const SizedBox(height: 2),
@@ -147,9 +157,9 @@ class CropStatusCard extends StatelessWidget {
                   stage,
                   context: context,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textGrey,
-                    fontSize: ResponsiveHelper.getFontSize(context, 12),
-                  ),
+                        color: AppTheme.textGrey,
+                        fontSize: ResponsiveHelper.getFontSize(context, 12),
+                      ),
                   maxLines: ResponsiveHelper.isMobile(context) ? 2 : 1,
                 ),
                 const SizedBox(height: 4),
@@ -159,19 +169,21 @@ class CropStatusCard extends StatelessWidget {
                       'Health: ',
                       context: context,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: ResponsiveHelper.getFontSize(context, 12),
-                      ),
+                            fontSize: ResponsiveHelper.getFontSize(context, 12),
+                          ),
                     ),
                     ResponsiveHelper.autoSizeText(
                       '$healthPercentage%',
                       context: context,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: _getHealthColor(healthPercentage),
-                        fontSize: ResponsiveHelper.getFontSize(context, 12),
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: _getHealthColor(healthPercentage),
+                            fontSize: ResponsiveHelper.getFontSize(context, 12),
+                          ),
                     ),
-                    SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+                    SizedBox(
+                        width: ResponsiveHelper.getResponsiveSpacing(context) *
+                            0.5),
                     Expanded(
                       child: LinearProgressIndicator(
                         value: healthPercentage / 100,

@@ -6,7 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/marketplace_models.dart';
 
 class BuyerInteractionService {
-  static final BuyerInteractionService _instance = BuyerInteractionService._internal();
+  static final BuyerInteractionService _instance =
+      BuyerInteractionService._internal();
   factory BuyerInteractionService() => _instance;
   BuyerInteractionService._internal();
 
@@ -79,9 +80,8 @@ class BuyerInteractionService {
         createdAt: DateTime.now(),
       );
 
-      final docRef = await _firestore
-          .collection('price_offers')
-          .add(offerData.toMap());
+      final docRef =
+          await _firestore.collection('price_offers').add(offerData.toMap());
 
       // Update product offer count
       await _updateProductOfferCount(productId);
@@ -107,7 +107,7 @@ class BuyerInteractionService {
         return BuyerInterest.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error fetching product interests: $e');
+      // print('Error fetching product interests: $e');
       return [];
     }
   }
@@ -127,7 +127,7 @@ class BuyerInteractionService {
         return PriceOffer.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error fetching product offers: $e');
+      // print('Error fetching product offers: $e');
       return [];
     }
   }
@@ -147,7 +147,7 @@ class BuyerInteractionService {
         return BuyerInterest.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error fetching user interests: $e');
+      // print('Error fetching user interests: $e');
       return [];
     }
   }
@@ -167,18 +167,16 @@ class BuyerInteractionService {
         return PriceOffer.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error fetching user offers: $e');
+      // print('Error fetching user offers: $e');
       return [];
     }
   }
 
   // Respond to an interest (for sellers)
-  Future<void> respondToInterest(String interestId, String status, {String? response}) async {
+  Future<void> respondToInterest(String interestId, String status,
+      {String? response}) async {
     try {
-      await _firestore
-          .collection('buyer_interests')
-          .doc(interestId)
-          .update({
+      await _firestore.collection('buyer_interests').doc(interestId).update({
         'status': status,
         'response': response,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -189,7 +187,8 @@ class BuyerInteractionService {
   }
 
   // Respond to an offer (for sellers)
-  Future<void> respondToOffer(String offerId, String status, {String? response}) async {
+  Future<void> respondToOffer(String offerId, String status,
+      {String? response}) async {
     try {
       final updateData = {
         'status': status,
@@ -218,10 +217,8 @@ class BuyerInteractionService {
   // Create a transaction when an offer is accepted
   Future<void> _createTransaction(String offerId) async {
     try {
-      final offerDoc = await _firestore
-          .collection('price_offers')
-          .doc(offerId)
-          .get();
+      final offerDoc =
+          await _firestore.collection('price_offers').doc(offerId).get();
 
       if (!offerDoc.exists) return;
 
@@ -232,10 +229,8 @@ class BuyerInteractionService {
       });
 
       // Get product details
-      final productDoc = await _firestore
-          .collection('products')
-          .doc(offer.productId)
-          .get();
+      final productDoc =
+          await _firestore.collection('products').doc(offer.productId).get();
 
       if (!productDoc.exists) return;
 
@@ -260,20 +255,17 @@ class BuyerInteractionService {
 
       // Update product quantity
       final newQuantity = (productData['quantity'] ?? 0) - offer.quantity;
-      await _firestore
-          .collection('products')
-          .doc(offer.productId)
-          .update({
+      await _firestore.collection('products').doc(offer.productId).update({
         'quantity': newQuantity,
         'isAvailable': newQuantity > 0,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
       // Update selling history
-      await _updateSellingHistory(offer.productId, offer.quantity, offer.totalValue);
-
+      await _updateSellingHistory(
+          offer.productId, offer.quantity, offer.totalValue);
     } catch (e) {
-      print('Error creating transaction: $e');
+      // print('Error creating transaction: $e');
       throw Exception('Failed to create transaction: $e');
     }
   }
@@ -282,7 +274,7 @@ class BuyerInteractionService {
   Future<void> _updateProductInterestCount(String productId) async {
     try {
       final productRef = _firestore.collection('products').doc(productId);
-      
+
       await _firestore.runTransaction((transaction) async {
         final productDoc = await transaction.get(productRef);
         if (productDoc.exists) {
@@ -307,7 +299,7 @@ class BuyerInteractionService {
         });
       }
     } catch (e) {
-      print('Error updating interest count: $e');
+      // print('Error updating interest count: $e');
     }
   }
 
@@ -327,12 +319,13 @@ class BuyerInteractionService {
         });
       }
     } catch (e) {
-      print('Error updating offer count: $e');
+      // print('Error updating offer count: $e');
     }
   }
 
   // Update selling history when a sale is made
-  Future<void> _updateSellingHistory(String productId, int soldQuantity, double revenue) async {
+  Future<void> _updateSellingHistory(
+      String productId, int soldQuantity, double revenue) async {
     try {
       final sellingHistoryQuery = await _firestore
           .collection('selling_history')
@@ -365,7 +358,7 @@ class BuyerInteractionService {
         });
       }
     } catch (e) {
-      print('Error updating selling history: $e');
+      // print('Error updating selling history: $e');
     }
   }
 
@@ -383,10 +376,7 @@ class BuyerInteractionService {
       });
 
       // Update product view count
-      await _firestore
-          .collection('products')
-          .doc(productId)
-          .update({
+      await _firestore.collection('products').doc(productId).update({
         'totalViews': FieldValue.increment(1),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -404,12 +394,13 @@ class BuyerInteractionService {
         });
       }
     } catch (e) {
-      print('Error tracking product view: $e');
+      // print('Error tracking product view: $e');
     }
   }
 
   // Get transactions for a user
-  Future<List<MarketplaceTransaction>> getUserTransactions(String userId, {bool asSeller = false}) async {
+  Future<List<MarketplaceTransaction>> getUserTransactions(String userId,
+      {bool asSeller = false}) async {
     try {
       final field = asSeller ? 'sellerId' : 'buyerId';
       final querySnapshot = await _firestore
@@ -424,13 +415,14 @@ class BuyerInteractionService {
         return MarketplaceTransaction.fromMap(data);
       }).toList();
     } catch (e) {
-      print('Error fetching user transactions: $e');
+      // print('Error fetching user transactions: $e');
       return [];
     }
   }
 
   // Update transaction status
-  Future<void> updateTransactionStatus(String transactionId, String status) async {
+  Future<void> updateTransactionStatus(
+      String transactionId, String status) async {
     try {
       await _firestore
           .collection('marketplace_transactions')

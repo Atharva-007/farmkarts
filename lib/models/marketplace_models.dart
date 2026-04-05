@@ -58,35 +58,47 @@ class SellingHistoryItem {
       sellerId: map['sellerId']?.toString() ?? '',
       sellerName: map['sellerName']?.toString() ?? '',
       category: map['category']?.toString() ?? '',
-      initialPrice: (map['initialPrice'] ?? map['originalPrice'] ?? 0).toDouble(),
+      initialPrice:
+          (map['initialPrice'] ?? map['originalPrice'] ?? 0).toDouble(),
       currentPrice: (map['currentPrice'] ?? 0).toDouble(),
-      totalQuantity: (map['totalQuantity'] ?? map['originalQuantity'] ?? 0) is int 
+      totalQuantity: (map['totalQuantity'] ?? map['originalQuantity'] ?? 0)
+              is int
           ? (map['totalQuantity'] ?? map['originalQuantity'] ?? 0)
-          : int.tryParse((map['totalQuantity'] ?? map['originalQuantity'] ?? 0).toString()) ?? 0,
-      soldQuantity: (map['soldQuantity'] ?? 0) is int 
-          ? map['soldQuantity'] 
+          : int.tryParse((map['totalQuantity'] ?? map['originalQuantity'] ?? 0)
+                  .toString()) ??
+              0,
+      soldQuantity: (map['soldQuantity'] ?? 0) is int
+          ? map['soldQuantity']
           : int.tryParse(map['soldQuantity'].toString()) ?? 0,
-      availableQuantity: (map['availableQuantity'] ?? map['currentQuantity'] ?? 0) is int 
-          ? (map['availableQuantity'] ?? map['currentQuantity'] ?? 0)
-          : int.tryParse((map['availableQuantity'] ?? map['currentQuantity'] ?? 0).toString()) ?? 0,
+      availableQuantity:
+          (map['availableQuantity'] ?? map['currentQuantity'] ?? 0) is int
+              ? (map['availableQuantity'] ?? map['currentQuantity'] ?? 0)
+              : int.tryParse(
+                      (map['availableQuantity'] ?? map['currentQuantity'] ?? 0)
+                          .toString()) ??
+                  0,
       status: map['status']?.toString() ?? 'active',
       imageUrl: map['imageUrl']?.toString() ?? '',
       listedDate: BuyerInterest._parseDateTime(map['listedDate']),
-      lastSoldDate: map['lastSoldDate'] != null ? BuyerInterest._parseDateTime(map['lastSoldDate']) : null,
+      lastSoldDate: map['lastSoldDate'] != null
+          ? BuyerInterest._parseDateTime(map['lastSoldDate'])
+          : null,
       totalRevenue: (map['totalRevenue'] ?? 0).toDouble(),
-      totalInquiries: (map['totalInquiries'] ?? 0) is int 
-          ? map['totalInquiries'] 
+      totalInquiries: (map['totalInquiries'] ?? 0) is int
+          ? map['totalInquiries']
           : int.tryParse(map['totalInquiries'].toString()) ?? 0,
-      totalViews: (map['totalViews'] ?? 0) is int 
-          ? map['totalViews'] 
+      totalViews: (map['totalViews'] ?? 0) is int
+          ? map['totalViews']
           : int.tryParse(map['totalViews'].toString()) ?? 0,
       isActive: map['isActive'] ?? true,
-      currentProductData: map['currentProductData'] != null 
-        ? Product.fromMap(Map<String, dynamic>.from(map['currentProductData']))
-        : null,
+      currentProductData: map['currentProductData'] != null
+          ? Product.fromMap(map['productId']?.toString() ?? '',
+              Map<String, dynamic>.from(map['currentProductData']))
+          : null,
       performanceMetrics: map['performanceMetrics'] != null
-        ? PerformanceMetrics.fromMap(Map<String, dynamic>.from(map['performanceMetrics']))
-        : null,
+          ? PerformanceMetrics.fromMap(
+              Map<String, dynamic>.from(map['performanceMetrics']))
+          : null,
     );
   }
 
@@ -202,8 +214,8 @@ class BuyerInterest {
       buyerName: map['buyerName'] ?? 'Unknown Buyer',
       buyerEmail: map['buyerEmail'] ?? '',
       message: map['message'] ?? '',
-      interestedQuantity: (map['interestedQuantity'] ?? 1) is int 
-          ? map['interestedQuantity'] 
+      interestedQuantity: (map['interestedQuantity'] ?? 1) is int
+          ? map['interestedQuantity']
           : int.tryParse(map['interestedQuantity'].toString()) ?? 1,
       contactPreference: map['contactPreference'] ?? 'email',
       status: map['status'] ?? 'pending',
@@ -278,18 +290,18 @@ class PriceOffer {
       buyerName: map['buyerName'] ?? 'Unknown Buyer',
       buyerEmail: map['buyerEmail'] ?? '',
       offeredPrice: (map['offeredPrice'] ?? 0).toDouble(),
-      quantity: (map['quantity'] ?? 1) is int 
-          ? map['quantity'] 
+      quantity: (map['quantity'] ?? 1) is int
+          ? map['quantity']
           : int.tryParse(map['quantity'].toString()) ?? 1,
       message: map['message'] ?? '',
       status: map['status'] ?? 'pending',
-      validUntil: map['validUntil'] != null 
-        ? BuyerInterest._parseDateTime(map['validUntil'])
-        : null,
+      validUntil: map['validUntil'] != null
+          ? BuyerInterest._parseDateTime(map['validUntil'])
+          : null,
       createdAt: BuyerInterest._parseDateTime(map['createdAt']),
       respondedAt: map['respondedAt'] != null
-        ? BuyerInterest._parseDateTime(map['respondedAt'])
-        : null,
+          ? BuyerInterest._parseDateTime(map['respondedAt'])
+          : null,
       response: map['response'],
     );
   }
@@ -329,7 +341,8 @@ class MarketplaceTransaction {
   final int quantity;
   final double pricePerUnit;
   final double totalAmount;
-  final String status; // 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'
+  final String
+      status; // 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled'
   final DateTime createdAt;
   final DateTime? completedAt;
 
@@ -354,16 +367,16 @@ class MarketplaceTransaction {
       sellerId: map['sellerId'] ?? '',
       buyerId: map['buyerId'] ?? '',
       offerId: map['offerId'] ?? '',
-      quantity: (map['quantity'] ?? 0) is int 
-          ? map['quantity'] 
+      quantity: (map['quantity'] ?? 0) is int
+          ? map['quantity']
           : int.tryParse(map['quantity'].toString()) ?? 0,
       pricePerUnit: (map['pricePerUnit'] ?? 0).toDouble(),
       totalAmount: (map['totalAmount'] ?? 0).toDouble(),
       status: map['status'] ?? 'confirmed',
       createdAt: BuyerInterest._parseDateTime(map['createdAt']),
       completedAt: map['completedAt'] != null
-        ? BuyerInterest._parseDateTime(map['completedAt'])
-        : null,
+          ? BuyerInterest._parseDateTime(map['completedAt'])
+          : null,
     );
   }
 
@@ -431,10 +444,10 @@ class UserStatistics {
       totalReviews: map['totalReviews'] ?? 0,
       responseTime: map['responseTime'] ?? '0 hours',
       completionRate: (map['completionRate'] ?? 0).toDouble(),
-      joinDate: map['joinDate'] != null 
+      joinDate: map['joinDate'] != null
           ? DateTime.tryParse(map['joinDate']) ?? DateTime.now()
           : DateTime.now(),
-      lastActive: map['lastActive'] != null 
+      lastActive: map['lastActive'] != null
           ? DateTime.tryParse(map['lastActive']) ?? DateTime.now()
           : DateTime.now(),
     );

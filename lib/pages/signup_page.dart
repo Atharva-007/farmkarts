@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
-import 'dart:typed_data';
 import '../services/user_state_service.dart';
 import '../models/user_model.dart';
 import '../theme/app_theme.dart';
@@ -26,7 +24,8 @@ class _SignUpView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<SignUpViewModel>(context);
-    final userStateService = Provider.of<UserStateService>(context, listen: false);
+    final userStateService =
+        Provider.of<UserStateService>(context, listen: false);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -74,9 +73,10 @@ class _SignUpView extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 24),
                     decoration: BoxDecoration(
-                      color: AppTheme.error.withOpacity(0.1),
+                      color: AppTheme.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                      border: Border.all(
+                          color: AppTheme.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -139,7 +139,7 @@ class _SignUpView extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 _buildTextField(
                   context: context,
                   controller: viewModel.emailController,
@@ -184,7 +184,9 @@ class _SignUpView extends StatelessWidget {
                   obscureText: viewModel.obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      viewModel.obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      viewModel.obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: AppTheme.getSecondaryTextColor(context),
                     ),
                     onPressed: viewModel.togglePasswordVisibility,
@@ -226,7 +228,8 @@ class _SignUpView extends StatelessWidget {
                     controller: viewModel.acresController,
                     label: 'Farm Size (Acres)',
                     icon: Icons.landscape_outlined,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) {
                       if (value != null && value.isNotEmpty) {
                         if (double.tryParse(value) == null) {
@@ -250,7 +253,7 @@ class _SignUpView extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // License Upload
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +281,8 @@ class _SignUpView extends StatelessWidget {
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: viewModel.licenseImage != null || viewModel.licenseImageBytes != null
+                          child: viewModel.licenseImage != null ||
+                                  viewModel.licenseImageBytes != null
                               ? Stack(
                                   children: [
                                     ClipRRect(
@@ -286,26 +290,30 @@ class _SignUpView extends StatelessWidget {
                                       child: SizedBox(
                                         width: double.infinity,
                                         height: double.infinity,
-                                        child: kIsWeb 
-                                          ? Image.memory(
-                                              viewModel.licenseImageBytes!,
-                                              fit: BoxFit.cover,
-                                            )
-                                          : Image.file(
-                                              viewModel.licenseImage!,
-                                              fit: BoxFit.cover,
-                                            ),
+                                        child: kIsWeb
+                                            ? Image.memory(
+                                                viewModel.licenseImageBytes!,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Image.file(
+                                                viewModel.licenseImage!,
+                                                fit: BoxFit.cover,
+                                              ),
                                       ),
                                     ),
                                     Positioned(
                                       right: 8,
                                       top: 8,
                                       child: CircleAvatar(
-                                        backgroundColor: Theme.of(context).cardColor,
+                                        backgroundColor:
+                                            Theme.of(context).cardColor,
                                         radius: 16,
                                         child: IconButton(
                                           padding: EdgeInsets.zero,
-                                          icon: Icon(Icons.edit, size: 16, color: AppTheme.getPrimaryAccent(context)),
+                                          icon: Icon(Icons.edit,
+                                              size: 16,
+                                              color: AppTheme.getPrimaryAccent(
+                                                  context)),
                                           onPressed: viewModel.pickLicenseImage,
                                         ),
                                       ),
@@ -318,13 +326,16 @@ class _SignUpView extends StatelessWidget {
                                     Icon(
                                       Icons.add_photo_alternate_outlined,
                                       size: 40,
-                                      color: AppTheme.getSecondaryTextColor(context).withOpacity(0.5),
+                                      color: AppTheme.getSecondaryTextColor(
+                                              context)
+                                          .withValues(alpha: 0.5),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
                                       'Tap to upload license',
                                       style: TextStyle(
-                                        color: AppTheme.getSecondaryTextColor(context),
+                                        color: AppTheme.getSecondaryTextColor(
+                                            context),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -332,8 +343,8 @@ class _SignUpView extends StatelessWidget {
                                 ),
                         ),
                       ),
-                      if (viewModel.selectedRole == UserRole.addat && 
-                          viewModel.licenseImage == null && 
+                      if (viewModel.selectedRole == UserRole.addat &&
+                          viewModel.licenseImage == null &&
                           viewModel.licenseImageBytes == null)
                         const Padding(
                           padding: EdgeInsets.only(top: 8, left: 12),
@@ -357,9 +368,11 @@ class _SignUpView extends StatelessWidget {
                     onPressed: viewModel.isLoading
                         ? null
                         : () async {
-                            final success = await viewModel.signUp(userStateService);
+                            final success =
+                                await viewModel.signUp(userStateService);
                             if (success && context.mounted) {
-                              Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                  '/home', (route) => false);
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -375,7 +388,8 @@ class _SignUpView extends StatelessWidget {
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 2.5,
                             ),
                           )
@@ -396,7 +410,8 @@ class _SignUpView extends StatelessWidget {
                   children: [
                     Text(
                       'Already have an account? ',
-                      style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                      style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context)),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
@@ -449,11 +464,13 @@ class _SignUpView extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.getPrimaryAccent(context), width: 2),
+          borderSide:
+              BorderSide(color: AppTheme.getPrimaryAccent(context), width: 2),
         ),
         filled: true,
         fillColor: Theme.of(context).cardColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
@@ -475,20 +492,20 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? AppTheme.getPrimaryAccent(context).withOpacity(0.1) 
+          color: isSelected
+              ? AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1)
               : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
-                ? AppTheme.getPrimaryAccent(context) 
+            color: isSelected
+                ? AppTheme.getPrimaryAccent(context)
                 : AppTheme.getBorderColor(context),
             width: isSelected ? 2 : 1,
           ),
@@ -498,8 +515,8 @@ class _RoleCard extends StatelessWidget {
             Icon(
               icon,
               size: 32,
-              color: isSelected 
-                  ? AppTheme.getPrimaryAccent(context) 
+              color: isSelected
+                  ? AppTheme.getPrimaryAccent(context)
                   : AppTheme.getSecondaryTextColor(context),
             ),
             const SizedBox(height: 8),
@@ -508,8 +525,8 @@ class _RoleCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected 
-                    ? AppTheme.getPrimaryAccent(context) 
+                color: isSelected
+                    ? AppTheme.getPrimaryAccent(context)
                     : AppTheme.getTextColor(context),
               ),
             ),

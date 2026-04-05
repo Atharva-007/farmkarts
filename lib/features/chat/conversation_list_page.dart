@@ -18,7 +18,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
   final ConversationService _conversationService = ConversationService();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _isSearching = false;
+  final bool _isSearching = false;
 
   @override
   void dispose() {
@@ -87,7 +87,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -112,7 +112,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
                     Text(
                       'Get instant AI-powered farming advice',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 14,
                       ),
                     ),
@@ -125,7 +125,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
           Text(
             'Ask our AI expert about crops, weather, market prices, farming techniques, and get personalized recommendations instantly',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 14,
               height: 1.4,
             ),
@@ -157,9 +157,10 @@ class _ConversationListPageState extends State<ConversationListPage> {
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
@@ -216,7 +217,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
             builder: (context, snapshot) {
               final unreadCount = snapshot.data ?? 0;
               if (unreadCount == 0) return const SizedBox.shrink();
-              
+
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -261,8 +262,8 @@ class _ConversationListPageState extends State<ConversationListPage> {
                 Text(
                   'Error loading conversations',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.textGrey,
-                  ),
+                        color: AppTheme.textGrey,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -324,8 +325,8 @@ class _ConversationListPageState extends State<ConversationListPage> {
                 Text(
                   'No conversations found',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppTheme.textGrey,
-                  ),
+                        color: AppTheme.textGrey,
+                      ),
                 ),
                 Text(
                   'Try a different search term',
@@ -350,11 +351,12 @@ class _ConversationListPageState extends State<ConversationListPage> {
 
   Widget _buildConversationTile(Conversation conversation) {
     final currentUser = FirebaseAuth.instance.currentUser;
-    final isFromCurrentUser = conversation.lastMessageSenderId == currentUser?.uid;
-    final otherUserName = conversation.buyerId == currentUser?.uid 
-        ? conversation.sellerName 
+    final isFromCurrentUser =
+        conversation.lastMessageSenderId == currentUser?.uid;
+    final otherUserName = conversation.buyerId == currentUser?.uid
+        ? conversation.sellerName
         : conversation.buyerName;
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
@@ -468,9 +470,9 @@ class _ConversationListPageState extends State<ConversationListPage> {
             Text(
               'No Conversations Yet',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppTheme.textGrey,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: AppTheme.textGrey,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -486,7 +488,8 @@ class _ConversationListPageState extends State<ConversationListPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGreen,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],
@@ -522,12 +525,14 @@ class _ConversationListPageState extends State<ConversationListPage> {
       MaterialPageRoute(
         builder: (context) => ChatScreen(
           conversationId: conversation.id,
-          otherUserId: conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
-              ? conversation.sellerId
-              : conversation.buyerId,
-          otherUserName: conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
-              ? conversation.sellerName
-              : conversation.buyerName,
+          otherUserId:
+              conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
+                  ? conversation.sellerId
+                  : conversation.buyerId,
+          otherUserName:
+              conversation.buyerId == FirebaseAuth.instance.currentUser?.uid
+                  ? conversation.sellerName
+                  : conversation.buyerName,
         ),
       ),
     );

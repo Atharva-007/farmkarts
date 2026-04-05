@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_helper.dart';
 import '../../widgets/custom_card.dart';
 
 class EnhancedAPMCMarketLive extends StatefulWidget {
@@ -17,19 +16,19 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   late TabController _tabController;
   late AnimationController _animationController;
   late Timer _refreshTimer;
-  
+
   String _selectedState = 'All States';
   String _selectedCity = 'All Cities';
   String _selectedCategory = 'All Products';
   String _selectedUnit = 'Original Unit';
   bool _isLoading = false;
-  
+
   final List<String> _states = [
     'All States',
     'Maharashtra',
     'Karnataka',
     'Tamil Nadu',
-    'Gujarat', 
+    'Gujarat',
     'Uttar Pradesh',
     'Madhya Pradesh',
     'Rajasthan',
@@ -65,7 +64,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   final List<String> _categories = [
     'All Products',
     'Vegetables',
-    'Fruits', 
+    'Fruits',
     'Grains & Cereals',
     'Pulses & Legumes',
     'Spices & Condiments',
@@ -93,11 +92,11 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _generateMarketData();
     _filterData();
     _animationController.forward();
-    
+
     // Auto-refresh every 45 seconds for live data simulation
     _refreshTimer = Timer.periodic(const Duration(seconds: 45), (timer) {
       _updateLiveData();
@@ -116,60 +115,231 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
     final random = Random();
     final products = [
       // Vegetables - Fixed structure
-      {'name': 'Tomato', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 35.0},
-      {'name': 'Onion (Red)', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 28.0},
-      {'name': 'Potato', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 22.0},
-      {'name': 'Cabbage', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 18.0},
-      {'name': 'Cauliflower', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 25.0},
-      {'name': 'Carrot', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 30.0},
-      {'name': 'Green Beans', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 45.0},
-      {'name': 'Brinjal', 'category': 'Vegetables', 'baseUnit': 'Kg', 'basePrice': 32.0},
-      
+      {
+        'name': 'Tomato',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 35.0
+      },
+      {
+        'name': 'Onion (Red)',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 28.0
+      },
+      {
+        'name': 'Potato',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 22.0
+      },
+      {
+        'name': 'Cabbage',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 18.0
+      },
+      {
+        'name': 'Cauliflower',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 25.0
+      },
+      {
+        'name': 'Carrot',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 30.0
+      },
+      {
+        'name': 'Green Beans',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 45.0
+      },
+      {
+        'name': 'Brinjal',
+        'category': 'Vegetables',
+        'baseUnit': 'Kg',
+        'basePrice': 32.0
+      },
+
       // Fruits
-      {'name': 'Apple', 'category': 'Fruits', 'baseUnit': 'Kg', 'basePrice': 120.0},
-      {'name': 'Banana', 'category': 'Fruits', 'baseUnit': 'Dozen', 'basePrice': 45.0},
-      {'name': 'Orange', 'category': 'Fruits', 'baseUnit': 'Kg', 'basePrice': 60.0},
-      {'name': 'Mango', 'category': 'Fruits', 'baseUnit': 'Kg', 'basePrice': 80.0},
-      {'name': 'Grapes', 'category': 'Fruits', 'baseUnit': 'Kg', 'basePrice': 85.0},
-      {'name': 'Pomegranate', 'category': 'Fruits', 'baseUnit': 'Kg', 'basePrice': 150.0},
-      
-      // Grains & Cereals  
-      {'name': 'Rice (Basmati)', 'category': 'Grains & Cereals', 'baseUnit': 'Quintal', 'basePrice': 3200.0},
-      {'name': 'Wheat', 'category': 'Grains & Cereals', 'baseUnit': 'Quintal', 'basePrice': 2100.0},
-      {'name': 'Maize', 'category': 'Grains & Cereals', 'baseUnit': 'Quintal', 'basePrice': 1850.0},
-      {'name': 'Bajra', 'category': 'Grains & Cereals', 'baseUnit': 'Quintal', 'basePrice': 2200.0},
-      {'name': 'Jowar', 'category': 'Grains & Cereals', 'baseUnit': 'Quintal', 'basePrice': 2050.0},
-      
+      {
+        'name': 'Apple',
+        'category': 'Fruits',
+        'baseUnit': 'Kg',
+        'basePrice': 120.0
+      },
+      {
+        'name': 'Banana',
+        'category': 'Fruits',
+        'baseUnit': 'Dozen',
+        'basePrice': 45.0
+      },
+      {
+        'name': 'Orange',
+        'category': 'Fruits',
+        'baseUnit': 'Kg',
+        'basePrice': 60.0
+      },
+      {
+        'name': 'Mango',
+        'category': 'Fruits',
+        'baseUnit': 'Kg',
+        'basePrice': 80.0
+      },
+      {
+        'name': 'Grapes',
+        'category': 'Fruits',
+        'baseUnit': 'Kg',
+        'basePrice': 85.0
+      },
+      {
+        'name': 'Pomegranate',
+        'category': 'Fruits',
+        'baseUnit': 'Kg',
+        'basePrice': 150.0
+      },
+
+      // Grains & Cereals
+      {
+        'name': 'Rice (Basmati)',
+        'category': 'Grains & Cereals',
+        'baseUnit': 'Quintal',
+        'basePrice': 3200.0
+      },
+      {
+        'name': 'Wheat',
+        'category': 'Grains & Cereals',
+        'baseUnit': 'Quintal',
+        'basePrice': 2100.0
+      },
+      {
+        'name': 'Maize',
+        'category': 'Grains & Cereals',
+        'baseUnit': 'Quintal',
+        'basePrice': 1850.0
+      },
+      {
+        'name': 'Bajra',
+        'category': 'Grains & Cereals',
+        'baseUnit': 'Quintal',
+        'basePrice': 2200.0
+      },
+      {
+        'name': 'Jowar',
+        'category': 'Grains & Cereals',
+        'baseUnit': 'Quintal',
+        'basePrice': 2050.0
+      },
+
       // Pulses & Legumes
-      {'name': 'Toor Dal', 'category': 'Pulses & Legumes', 'baseUnit': 'Quintal', 'basePrice': 6800.0},
-      {'name': 'Moong Dal', 'category': 'Pulses & Legumes', 'baseUnit': 'Quintal', 'basePrice': 7200.0},
-      {'name': 'Chana', 'category': 'Pulses & Legumes', 'baseUnit': 'Quintal', 'basePrice': 5400.0},
-      {'name': 'Masoor', 'category': 'Pulses & Legumes', 'baseUnit': 'Quintal', 'basePrice': 4800.0},
-      
+      {
+        'name': 'Toor Dal',
+        'category': 'Pulses & Legumes',
+        'baseUnit': 'Quintal',
+        'basePrice': 6800.0
+      },
+      {
+        'name': 'Moong Dal',
+        'category': 'Pulses & Legumes',
+        'baseUnit': 'Quintal',
+        'basePrice': 7200.0
+      },
+      {
+        'name': 'Chana',
+        'category': 'Pulses & Legumes',
+        'baseUnit': 'Quintal',
+        'basePrice': 5400.0
+      },
+      {
+        'name': 'Masoor',
+        'category': 'Pulses & Legumes',
+        'baseUnit': 'Quintal',
+        'basePrice': 4800.0
+      },
+
       // Spices & Condiments
-      {'name': 'Turmeric', 'category': 'Spices & Condiments', 'baseUnit': 'Kg', 'basePrice': 125.0},
-      {'name': 'Red Chili', 'category': 'Spices & Condiments', 'baseUnit': 'Kg', 'basePrice': 180.0},
-      {'name': 'Coriander', 'category': 'Spices & Condiments', 'baseUnit': 'Kg', 'basePrice': 98.0},
-      {'name': 'Cumin', 'category': 'Spices & Condiments', 'baseUnit': 'Kg', 'basePrice': 450.0},
-      
+      {
+        'name': 'Turmeric',
+        'category': 'Spices & Condiments',
+        'baseUnit': 'Kg',
+        'basePrice': 125.0
+      },
+      {
+        'name': 'Red Chili',
+        'category': 'Spices & Condiments',
+        'baseUnit': 'Kg',
+        'basePrice': 180.0
+      },
+      {
+        'name': 'Coriander',
+        'category': 'Spices & Condiments',
+        'baseUnit': 'Kg',
+        'basePrice': 98.0
+      },
+      {
+        'name': 'Cumin',
+        'category': 'Spices & Condiments',
+        'baseUnit': 'Kg',
+        'basePrice': 450.0
+      },
+
       // Oil Seeds
-      {'name': 'Groundnut', 'category': 'Oil Seeds', 'baseUnit': 'Quintal', 'basePrice': 5800.0},
-      {'name': 'Soybean', 'category': 'Oil Seeds', 'baseUnit': 'Quintal', 'basePrice': 4200.0},
-      {'name': 'Sunflower', 'category': 'Oil Seeds', 'baseUnit': 'Quintal', 'basePrice': 5500.0},
-      {'name': 'Mustard', 'category': 'Oil Seeds', 'baseUnit': 'Quintal', 'basePrice': 4800.0},
-      
+      {
+        'name': 'Groundnut',
+        'category': 'Oil Seeds',
+        'baseUnit': 'Quintal',
+        'basePrice': 5800.0
+      },
+      {
+        'name': 'Soybean',
+        'category': 'Oil Seeds',
+        'baseUnit': 'Quintal',
+        'basePrice': 4200.0
+      },
+      {
+        'name': 'Sunflower',
+        'category': 'Oil Seeds',
+        'baseUnit': 'Quintal',
+        'basePrice': 5500.0
+      },
+      {
+        'name': 'Mustard',
+        'category': 'Oil Seeds',
+        'baseUnit': 'Quintal',
+        'basePrice': 4800.0
+      },
+
       // Cash Crops
-      {'name': 'Cotton', 'category': 'Cash Crops', 'baseUnit': 'Quintal', 'basePrice': 5200.0},
-      {'name': 'Sugarcane', 'category': 'Cash Crops', 'baseUnit': 'Ton', 'basePrice': 320.0},
-      {'name': 'Tobacco', 'category': 'Cash Crops', 'baseUnit': 'Kg', 'basePrice': 180.0},
+      {
+        'name': 'Cotton',
+        'category': 'Cash Crops',
+        'baseUnit': 'Quintal',
+        'basePrice': 5200.0
+      },
+      {
+        'name': 'Sugarcane',
+        'category': 'Cash Crops',
+        'baseUnit': 'Ton',
+        'basePrice': 320.0
+      },
+      {
+        'name': 'Tobacco',
+        'category': 'Cash Crops',
+        'baseUnit': 'Kg',
+        'basePrice': 180.0
+      },
     ];
 
     _marketData = products.map((product) {
       final priceVariation = random.nextDouble() * 0.4 - 0.2; // ±20% variation
       final currentPrice = product['basePrice']! as double;
       final variatedPrice = currentPrice * (1 + priceVariation);
-      final yesterdayPrice = variatedPrice * (1 + (random.nextDouble() * 0.1 - 0.05));
-      
+      final yesterdayPrice =
+          variatedPrice * (1 + (random.nextDouble() * 0.1 - 0.05));
+
       return APMCMarketData(
         id: (product['name']! as String).toLowerCase().replaceAll(' ', '_'),
         productName: product['name']! as String,
@@ -183,8 +353,10 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
         quantity: random.nextInt(5000) + 500,
         state: _states[random.nextInt(_states.length - 1) + 1],
         city: _cities[random.nextInt(_cities.length - 1) + 1],
-        marketName: _generateMarketName(_cities[random.nextInt(_cities.length - 1) + 1]),
-        lastUpdated: DateTime.now().subtract(Duration(minutes: random.nextInt(120))),
+        marketName: _generateMarketName(
+            _cities[random.nextInt(_cities.length - 1) + 1]),
+        lastUpdated:
+            DateTime.now().subtract(Duration(minutes: random.nextInt(120))),
         volume: random.nextInt(100000) + 10000,
         qualityGrade: ['A', 'B', 'C'][random.nextInt(3)],
         trend: _calculateTrend(variatedPrice, yesterdayPrice),
@@ -195,7 +367,12 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   }
 
   String _generateMarketName(String city) {
-    final marketTypes = ['APMC', 'Krishi Upaj Mandi', 'Agricultural Market', 'Wholesale Market'];
+    final marketTypes = [
+      'APMC',
+      'Krishi Upaj Mandi',
+      'Agricultural Market',
+      'Wholesale Market'
+    ];
     return '$city ${marketTypes[Random().nextInt(marketTypes.length)]}';
   }
 
@@ -208,7 +385,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
 
   void _updateLiveData() {
     if (!mounted) return;
-    
+
     final random = Random();
     for (var item in _marketData) {
       final change = (random.nextDouble() - 0.5) * 0.04; // ±2% max change
@@ -219,7 +396,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
       item.lastUpdated = DateTime.now();
       item.trend = _calculateTrend(item.currentPrice, item.yesterdayPrice);
     }
-    
+
     if (mounted) {
       setState(() {
         _filterData();
@@ -229,9 +406,12 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
 
   void _filterData() {
     _filteredData = _marketData.where((item) {
-      final stateMatch = _selectedState == 'All States' || item.state == _selectedState;
-      final cityMatch = _selectedCity == 'All Cities' || item.city == _selectedCity;
-      final categoryMatch = _selectedCategory == 'All Products' || item.category == _selectedCategory;
+      final stateMatch =
+          _selectedState == 'All States' || item.state == _selectedState;
+      final cityMatch =
+          _selectedCity == 'All Cities' || item.city == _selectedCity;
+      final categoryMatch = _selectedCategory == 'All Products' ||
+          item.category == _selectedCategory;
       return stateMatch && cityMatch && categoryMatch;
     }).toList();
 
@@ -245,14 +425,15 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   }
 
   void _convertUnit(APMCMarketData item) {
-    if (_selectedUnit == 'Original Unit' || item.originalUnit == _selectedUnit.replaceAll('Per ', '')) {
+    if (_selectedUnit == 'Original Unit' ||
+        item.originalUnit == _selectedUnit.replaceAll('Per ', '')) {
       item.displayUnit = item.originalUnit;
       return;
     }
 
     final originalUnit = item.originalUnit;
     final targetUnit = _selectedUnit.replaceAll('Per ', '');
-    
+
     // Base conversion rates (everything converted to kg first)
     final toKgRates = {
       'Kg': 1.0,
@@ -276,9 +457,9 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
 
     final originalToKg = toKgRates[originalUnit] ?? 1.0;
     final kgToTarget = fromKgRates[targetUnit] ?? 1.0;
-    
+
     final conversionRate = originalToKg * kgToTarget;
-    
+
     if (conversionRate != 1.0) {
       item.currentPrice = item.currentPrice * conversionRate;
       item.yesterdayPrice = item.yesterdayPrice * conversionRate;
@@ -334,7 +515,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
           });
         },
         backgroundColor: AppTheme.primaryGreen,
-        child: _isLoading 
+        child: _isLoading
             ? const SizedBox(
                 width: 20,
                 height: 20,
@@ -366,7 +547,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
@@ -382,25 +563,27 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                   children: [
                     Text(
                       'APMC Live Market',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Real-time commodity prices across India',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.3),
+                  color: Colors.green.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -432,8 +615,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
           Text(
             'Last updated: ${_formatTime(DateTime.now())}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white.withOpacity(0.8),
-            ),
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
           ),
         ],
       ),
@@ -459,9 +642,9 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
               Text(
                 'Filters',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryGreen,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryGreen,
+                    ),
               ),
             ],
           ),
@@ -473,7 +656,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
             children: [
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 72) / 2,
-                child: _buildDropdown('State', _selectedState, _states, (value) {
+                child:
+                    _buildDropdown('State', _selectedState, _states, (value) {
                   setState(() {
                     _selectedState = value!;
                     _filterData();
@@ -491,7 +675,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
               ),
               SizedBox(
                 width: (MediaQuery.of(context).size.width - 72) / 2,
-                child: _buildDropdown('Category', _selectedCategory, _categories, (value) {
+                child: _buildDropdown(
+                    'Category', _selectedCategory, _categories, (value) {
                   setState(() {
                     _selectedCategory = value!;
                     _filterData();
@@ -526,9 +711,9 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textGrey,
-          ),
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textGrey,
+              ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -562,11 +747,14 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
 
   Widget _buildMarketSummary() {
     final totalProducts = _filteredData.length;
-    final avgPrice = _filteredData.isEmpty 
-        ? 0.0 
-        : _filteredData.map((d) => d.currentPrice).reduce((a, b) => a + b) / totalProducts;
-    final risingCount = _filteredData.where((d) => d.trend == PriceTrend.up).length;
-    final fallingCount = _filteredData.where((d) => d.trend == PriceTrend.down).length;
+    final avgPrice = _filteredData.isEmpty
+        ? 0.0
+        : _filteredData.map((d) => d.currentPrice).reduce((a, b) => a + b) /
+            totalProducts;
+    final risingCount =
+        _filteredData.where((d) => d.trend == PriceTrend.up).length;
+    final fallingCount =
+        _filteredData.where((d) => d.trend == PriceTrend.down).length;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -586,9 +774,9 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
               Text(
                 'Market Summary',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryGreen,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryGreen,
+                    ),
               ),
             ],
           ),
@@ -641,11 +829,12 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -693,7 +882,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
         tabs: const [
           Tab(text: 'All Products'),
           Tab(text: 'Trending'),
-          Tab(text: 'Locations'), 
+          Tab(text: 'Locations'),
           Tab(text: 'Analytics'),
         ],
       ),
@@ -730,7 +919,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   Widget _buildProductCard(APMCMarketData data) {
     final priceChange = data.currentPrice - data.yesterdayPrice;
     final percentageChange = (priceChange / data.yesterdayPrice) * 100;
-    
+
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -746,7 +935,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -813,9 +1002,10 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                 runSpacing: 8,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getTrendColor(data.trend).withOpacity(0.1),
+                      color: _getTrendColor(data.trend).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
@@ -869,10 +1059,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   }
 
   Widget _buildTrendingTab() {
-    final trendingData = _filteredData
-        .where((d) => d.trend == PriceTrend.up)
-        .take(20)
-        .toList();
+    final trendingData =
+        _filteredData.where((d) => d.trend == PriceTrend.up).take(20).toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -915,7 +1103,9 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
         itemBuilder: (context, index) {
           final location = locationGroups.keys.elementAt(index);
           final products = locationGroups[location]!;
-          final avgPrice = products.map((p) => p.currentPrice).reduce((a, b) => a + b) / products.length;
+          final avgPrice =
+              products.map((p) => p.currentPrice).reduce((a, b) => a + b) /
+                  products.length;
 
           return CustomCard(
             margin: const EdgeInsets.only(bottom: 12),
@@ -924,8 +1114,11 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                 location,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text('${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}'),
-              children: products.map((product) => _buildProductCard(product)).toList(),
+              subtitle: Text(
+                  '${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}'),
+              children: products
+                  .map((product) => _buildProductCard(product))
+                  .toList(),
             ),
           );
         },
@@ -954,9 +1147,10 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   Widget _buildCategoryAnalysis() {
     final categoryData = <String, double>{};
     final categoryCount = <String, int>{};
-    
+
     for (var data in _filteredData) {
-      categoryData[data.category] = (categoryData[data.category] ?? 0) + data.currentPrice;
+      categoryData[data.category] =
+          (categoryData[data.category] ?? 0) + data.currentPrice;
       categoryCount[data.category] = (categoryCount[data.category] ?? 0) + 1;
     }
 
@@ -982,12 +1176,12 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
               final totalPrice = entry.value;
               final count = categoryCount[category]!;
               final avgPrice = totalPrice / count;
-              
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.05),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1020,7 +1214,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -1050,7 +1244,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
           children: [
             Row(
               children: [
-                Icon(Icons.analytics_outlined, color: AppTheme.primaryGreen, size: 20),
+                Icon(Icons.analytics_outlined,
+                    color: AppTheme.primaryGreen, size: 20),
                 const SizedBox(width: 8),
                 const Text(
                   'Price Analysis',
@@ -1062,13 +1257,16 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
             Row(
               children: [
                 Expanded(
-                  child: _buildAnalyticsItem('Minimum', '₹${minPrice.toStringAsFixed(0)}', Colors.green),
+                  child: _buildAnalyticsItem('Minimum',
+                      '₹${minPrice.toStringAsFixed(0)}', Colors.green),
                 ),
                 Expanded(
-                  child: _buildAnalyticsItem('Maximum', '₹${maxPrice.toStringAsFixed(0)}', Colors.red),
+                  child: _buildAnalyticsItem(
+                      'Maximum', '₹${maxPrice.toStringAsFixed(0)}', Colors.red),
                 ),
                 Expanded(
-                  child: _buildAnalyticsItem('Median', '₹${medianPrice.toStringAsFixed(0)}', Colors.blue),
+                  child: _buildAnalyticsItem('Median',
+                      '₹${medianPrice.toStringAsFixed(0)}', Colors.blue),
                 ),
               ],
             ),
@@ -1103,13 +1301,18 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
             Row(
               children: [
                 Expanded(
-                  child: _buildAnalyticsItem('Farmers', totalFarmers.toString(), AppTheme.primaryGreen),
+                  child: _buildAnalyticsItem('Farmers', totalFarmers.toString(),
+                      AppTheme.primaryGreen),
                 ),
                 Expanded(
-                  child: _buildAnalyticsItem('Buyers', totalBuyers.toString(), AppTheme.skyBlue),
+                  child: _buildAnalyticsItem(
+                      'Buyers', totalBuyers.toString(), AppTheme.skyBlue),
                 ),
                 Expanded(
-                  child: _buildAnalyticsItem('Volume', '${(totalVolume / 1000).toStringAsFixed(0)}K', AppTheme.accentOrange),
+                  child: _buildAnalyticsItem(
+                      'Volume',
+                      '${(totalVolume / 1000).toStringAsFixed(0)}K',
+                      AppTheme.accentOrange),
                 ),
               ],
             ),
@@ -1124,7 +1327,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1153,15 +1356,23 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
 
   IconData _getProductIcon(String productName) {
     final name = productName.toLowerCase();
-    if (name.contains('tomato') || name.contains('potato') || name.contains('onion')) {
+    if (name.contains('tomato') ||
+        name.contains('potato') ||
+        name.contains('onion')) {
       return Icons.eco;
-    } else if (name.contains('apple') || name.contains('banana') || name.contains('orange')) {
+    } else if (name.contains('apple') ||
+        name.contains('banana') ||
+        name.contains('orange')) {
       return Icons.local_florist;
-    } else if (name.contains('rice') || name.contains('wheat') || name.contains('maize')) {
+    } else if (name.contains('rice') ||
+        name.contains('wheat') ||
+        name.contains('maize')) {
       return Icons.grain;
     } else if (name.contains('cotton') || name.contains('sugarcane')) {
       return Icons.grass;
-    } else if (name.contains('turmeric') || name.contains('chili') || name.contains('coriander')) {
+    } else if (name.contains('turmeric') ||
+        name.contains('chili') ||
+        name.contains('coriander')) {
       return Icons.spa;
     }
     return Icons.agriculture;
@@ -1192,7 +1403,7 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    
+
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';
@@ -1246,7 +1457,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryGreen.withOpacity(0.1),
+                                color: AppTheme.primaryGreen
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Icon(
@@ -1280,12 +1492,13 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                           ],
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Price Information
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryGreen.withOpacity(0.05),
+                            color:
+                                AppTheme.primaryGreen.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -1321,9 +1534,11 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: _getTrendColor(data.trend).withOpacity(0.2),
+                                  color: _getTrendColor(data.trend)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Row(
@@ -1349,23 +1564,31 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 20),
-                        
+
                         // Market Details
                         _buildDetailRow('Market', data.marketName),
-                        _buildDetailRow('Location', '${data.city}, ${data.state}'),
+                        _buildDetailRow(
+                            'Location', '${data.city}, ${data.state}'),
                         _buildDetailRow('Quality Grade', data.qualityGrade),
-                        _buildDetailRow('Available Quantity', '${data.quantity} ${data.displayUnit}'),
-                        _buildDetailRow('High Price', '₹${data.highPrice.toStringAsFixed(2)}'),
-                        _buildDetailRow('Low Price', '₹${data.lowPrice.toStringAsFixed(2)}'),
-                        _buildDetailRow('Volume Traded', '${(data.volume / 1000).toStringAsFixed(1)}K ${data.displayUnit}'),
-                        _buildDetailRow('Active Farmers', data.farmers.toString()),
-                        _buildDetailRow('Active Buyers', data.buyers.toString()),
-                        _buildDetailRow('Last Updated', _formatTime(data.lastUpdated)),
-                        
+                        _buildDetailRow('Available Quantity',
+                            '${data.quantity} ${data.displayUnit}'),
+                        _buildDetailRow('High Price',
+                            '₹${data.highPrice.toStringAsFixed(2)}'),
+                        _buildDetailRow('Low Price',
+                            '₹${data.lowPrice.toStringAsFixed(2)}'),
+                        _buildDetailRow('Volume Traded',
+                            '${(data.volume / 1000).toStringAsFixed(1)}K ${data.displayUnit}'),
+                        _buildDetailRow(
+                            'Active Farmers', data.farmers.toString()),
+                        _buildDetailRow(
+                            'Active Buyers', data.buyers.toString()),
+                        _buildDetailRow(
+                            'Last Updated', _formatTime(data.lastUpdated)),
+
                         const SizedBox(height: 24),
-                        
+
                         // Action Buttons
                         Row(
                           children: [
@@ -1375,7 +1598,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Contact seller feature coming soon!'),
+                                      content: Text(
+                                          'Contact seller feature coming soon!'),
                                       backgroundColor: AppTheme.primaryGreen,
                                     ),
                                   );
@@ -1385,7 +1609,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryGreen,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                 ),
                               ),
                             ),
@@ -1396,7 +1621,8 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Add to watchlist feature coming soon!'),
+                                      content: Text(
+                                          'Add to watchlist feature coming soon!'),
                                       backgroundColor: AppTheme.skyBlue,
                                     ),
                                   );
@@ -1405,8 +1631,10 @@ class _EnhancedAPMCMarketLiveState extends State<EnhancedAPMCMarketLive>
                                 label: const Text('Add to Watchlist'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppTheme.primaryGreen,
-                                  side: const BorderSide(color: AppTheme.primaryGreen),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  side: const BorderSide(
+                                      color: AppTheme.primaryGreen),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                 ),
                               ),
                             ),

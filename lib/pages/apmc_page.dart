@@ -8,28 +8,32 @@ final List<Map<String, String>> apmcMarkets = [
     'location': 'Pune, Maharashtra',
     'timings': '8:00 AM - 6:00 PM',
     'price': 'Wheat: ₹2200/quintal, Rice: ₹3000/quintal',
-    'details': 'One of the biggest markets in Maharashtra with modern facilities and large farmer participation.'
+    'details':
+        'One of the biggest markets in Maharashtra with modern facilities and large farmer participation.'
   },
   {
     'name': 'Nagpur APMC Market',
     'location': 'Nagpur, Maharashtra',
     'timings': '9:00 AM - 5:00 PM',
     'price': 'Cotton: ₹4500/quintal, Soybean: ₹3800/quintal',
-    'details': 'Famous for cotton and soybean trading, with a focus on organic produce.'
+    'details':
+        'Famous for cotton and soybean trading, with a focus on organic produce.'
   },
   {
     'name': 'Nashik APMC Market',
     'location': 'Nashik, Maharashtra',
     'timings': '7:00 AM - 4:00 PM',
     'price': 'Onion: ₹8000/quintal, Grapes: ₹12000/quintal',
-    'details': 'Key market for horticultural products with advanced cold storage.'
+    'details':
+        'Key market for horticultural products with advanced cold storage.'
   },
   {
     'name': 'Solapur APMC Market',
     'location': 'Solapur, Maharashtra',
     'timings': '8:30 AM - 5:30 PM',
     'price': 'Sugarcane: ₹3000/quintal, Turmeric: ₹7000/quintal',
-    'details': 'Known for sugarcane and spice trade, supporting local farmers extensively.'
+    'details':
+        'Known for sugarcane and spice trade, supporting local farmers extensively.'
   },
 ];
 
@@ -54,7 +58,8 @@ class APMCPage extends StatelessWidget {
           return Card(
             elevation: 2,
             margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
@@ -62,11 +67,13 @@ class APMCPage extends StatelessWidget {
                   color: AppTheme.getIconBackgroundColor(context),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.store, color: AppTheme.getPrimaryAccent(context)),
+                child: Icon(Icons.store,
+                    color: AppTheme.getPrimaryAccent(context)),
               ),
               title: Text(
                 market['name']!,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               subtitle: Text(market['location']!),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -95,7 +102,8 @@ class APMCDetailPage extends StatefulWidget {
   State<APMCDetailPage> createState() => _APMCDetailPageState();
 }
 
-class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProviderStateMixin {
+class _APMCDetailPageState extends State<APMCDetailPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
 
@@ -142,13 +150,17 @@ class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProvid
                     color: AppTheme.getIconBackgroundColor(context),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.store, size: 60, color: AppTheme.getPrimaryAccent(context)),
+                  child: Icon(Icons.store,
+                      size: 60, color: AppTheme.getPrimaryAccent(context)),
                 ),
               ),
               const SizedBox(height: 32),
-              _buildInfoSection(context, Icons.location_on, 'Location', market['location']!),
-              _buildInfoSection(context, Icons.access_time, 'Timings', market['timings']!),
-              _buildInfoSection(context, Icons.price_change, 'Current Prices', market['price']!),
+              _buildInfoSection(
+                  context, Icons.location_on, 'Location', market['location']!),
+              _buildInfoSection(
+                  context, Icons.access_time, 'Timings', market['timings']!),
+              _buildInfoSection(context, Icons.price_change, 'Current Prices',
+                  market['price']!),
               const SizedBox(height: 24),
               Text(
                 'Market Details',
@@ -162,9 +174,9 @@ class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProvid
               Text(
                 market['details']!,
                 style: TextStyle(
-                  fontSize: 16, 
+                  fontSize: 16,
                   height: 1.6,
-                  color: AppTheme.getTextColor(context).withOpacity(0.8),
+                  color: AppTheme.getTextColor(context).withValues(alpha: 0.8),
                 ),
               ),
               const SizedBox(height: 48),
@@ -176,9 +188,12 @@ class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProvid
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.getPrimaryAccent(context),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text('Back to Markets', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text('Back to Markets',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               )
             ],
@@ -188,7 +203,8 @@ class _APMCDetailPageState extends State<APMCDetailPage> with SingleTickerProvid
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoSection(
+      BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(

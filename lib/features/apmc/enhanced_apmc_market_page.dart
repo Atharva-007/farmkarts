@@ -8,7 +8,8 @@ class EnhancedAPMCMarketLivePage extends StatefulWidget {
   const EnhancedAPMCMarketLivePage({super.key});
 
   @override
-  State<EnhancedAPMCMarketLivePage> createState() => _EnhancedAPMCMarketLivePageState();
+  State<EnhancedAPMCMarketLivePage> createState() =>
+      _EnhancedAPMCMarketLivePageState();
 }
 
 class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
@@ -16,27 +17,48 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   late TabController _tabController;
   late Timer _refreshTimer;
   late APMCApiService _apiService;
-  
+
   String _selectedState = 'All States';
   String _selectedCity = 'All Cities';
   String _selectedCategory = 'All Products';
   bool _isLoading = false;
   bool _isInitialLoading = true;
   String? _errorMessage;
-  
+
   final List<String> _states = [
-    'All States', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Gujarat', 
-    'Uttar Pradesh', 'Madhya Pradesh', 'Rajasthan', 'Punjab', 'Haryana',
+    'All States',
+    'Maharashtra',
+    'Karnataka',
+    'Tamil Nadu',
+    'Gujarat',
+    'Uttar Pradesh',
+    'Madhya Pradesh',
+    'Rajasthan',
+    'Punjab',
+    'Haryana',
   ];
 
   final List<String> _cities = [
-    'All Cities', 'Mumbai', 'Pune', 'Nashik', 'Bangalore', 'Chennai',
-    'Ahmedabad', 'Delhi', 'Kolkata', 'Hyderabad', 'Indore',
+    'All Cities',
+    'Mumbai',
+    'Pune',
+    'Nashik',
+    'Bangalore',
+    'Chennai',
+    'Ahmedabad',
+    'Delhi',
+    'Kolkata',
+    'Hyderabad',
+    'Indore',
   ];
 
   final List<String> _categories = [
-    'All Products', 'Vegetables', 'Fruits', 'Grains & Cereals',
-    'Pulses & Legumes', 'Spices & Condiments',
+    'All Products',
+    'Vegetables',
+    'Fruits',
+    'Grains & Cereals',
+    'Pulses & Legumes',
+    'Spices & Condiments',
   ];
 
   List<MarketRate> _marketData = [];
@@ -47,7 +69,7 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _apiService = APMCApiService();
-    
+
     _initializeData();
     _startAutoRefresh();
   }
@@ -61,20 +83,24 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
 
   Future<void> _initializeData() async {
     try {
-      setState(() {
-        _isInitialLoading = true;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = true;
+          _errorMessage = null;
+        });
+      }
 
       _marketData = await _apiService.fetchMarketRates();
       _filterData();
 
-      setState(() => _isInitialLoading = false);
+      if (mounted) setState(() => _isInitialLoading = false);
     } catch (e) {
-      setState(() {
-        _isInitialLoading = false;
-        _errorMessage = 'Failed to load market data: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+          _errorMessage = 'Failed to load market data: ${e.toString()}';
+        });
+      }
     }
   }
 
@@ -86,16 +112,18 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
 
   Future<void> _refreshData() async {
     if (_isLoading) return;
-    
-    setState(() => _isLoading = true);
-    
+
+    if (mounted) setState(() => _isLoading = true);
+
     try {
       _marketData = await _apiService.fetchMarketRates();
       _filterData();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to refresh: $e')),
+          SnackBar(
+              content: Text('Failed to refresh: $e'),
+              backgroundColor: AppTheme.getErrorColor(context)),
         );
       }
     } finally {
@@ -105,33 +133,34 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
 
   void _filterData() {
     _filteredData = _marketData.where((item) {
-      bool matchesState = _selectedState == 'All States' || 
-          item.state == _selectedState;
-      bool matchesCity = _selectedCity == 'All Cities' || 
-          item.market == _selectedCity;
-      bool matchesCategory = _selectedCategory == 'All Products' || 
+      bool matchesState =
+          _selectedState == 'All States' || item.state == _selectedState;
+      bool matchesCity =
+          _selectedCity == 'All Cities' || item.market == _selectedCity;
+      bool matchesCategory = _selectedCategory == 'All Products' ||
           item.category == _selectedCategory;
-      
+
       return matchesState && matchesCity && matchesCategory;
     }).toList();
-    
+
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
         title: const Text('APMC Live Market Rates'),
-        backgroundColor: AppTheme.primaryGreen,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.getAppBarColor(context),
+        foregroundColor: AppTheme.getAppBarTextColor(context),
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
+          labelColor: AppTheme.getAppBarTextColor(context),
+          unselectedLabelColor:
+              AppTheme.getAppBarTextColor(context).withValues(alpha: 0.6),
+          indicatorColor: AppTheme.getAppBarTextColor(context),
           tabs: const [
             Tab(text: 'All Rates', icon: Icon(Icons.list, size: 18)),
             Tab(text: 'Trending', icon: Icon(Icons.trending_up, size: 18)),
@@ -143,25 +172,30 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
         children: [
           _buildFilterSection(),
           Expanded(
-            child: _isInitialLoading
-                ? _buildLoadingWidget()
-                : _errorMessage != null
-                    ? _buildErrorWidget()
-                    : TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildMarketList(),
-                          _buildTrendingList(),
-                          _buildFavoritesList(),
-                        ],
-                      ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _isInitialLoading
+                  ? _buildLoadingWidget(key: const ValueKey('loading'))
+                  : _errorMessage != null
+                      ? _buildErrorWidget(key: const ValueKey('error'))
+                      : TabBarView(
+                          key: const ValueKey('content'),
+                          controller: _tabController,
+                          children: [
+                            _buildMarketList(),
+                            _buildTrendingList(),
+                            _buildFavoritesList(),
+                          ],
+                        ),
+            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'apmc_refresh_fab',
         onPressed: _refreshData,
-        backgroundColor: AppTheme.primaryGreen,
+        backgroundColor: AppTheme.getPrimaryAccent(context),
+        elevation: 4,
         child: _isLoading
             ? const SizedBox(
                 width: 24,
@@ -177,17 +211,25 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   }
 
   Widget _buildFilterSection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.getCardColor(context),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+        border: Border(
+            bottom: BorderSide(
+                color:
+                    AppTheme.getBorderColor(context).withValues(alpha: 0.5))),
       ),
       child: Column(
         children: [
@@ -245,60 +287,82 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
     List<String> items,
     ValueChanged<String?> onChanged,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return DropdownButtonFormField<String>(
       value: value,
+      dropdownColor: AppTheme.getCardColor(context),
+      style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppTheme.getBorderColor(context)),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+              color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor:
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[50],
       ),
       items: items.map((item) {
-        return DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(fontSize: 14)));
+        return DropdownMenuItem(value: item, child: Text(item));
       }).toList(),
       onChanged: onChanged,
       isExpanded: true,
     );
   }
 
-  Widget _buildLoadingWidget() {
-    return const Center(
+  Widget _buildLoadingWidget({Key? key}) {
+    return Center(
+      key: key,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.primaryGreen),
-          SizedBox(height: 16),
-          Text('Loading market rates...'),
+          CircularProgressIndicator(color: AppTheme.getPrimaryAccent(context)),
+          const SizedBox(height: 16),
+          Text('Loading market rates...',
+              style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
         ],
       ),
     );
   }
 
-  Widget _buildErrorWidget() {
+  Widget _buildErrorWidget({Key? key}) {
     return Center(
+      key: key,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            Icon(Icons.error_outline,
+                size: 64,
+                color: AppTheme.getErrorColor(context).withValues(alpha: 0.7)),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'Unknown error',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(
+                  fontSize: 16, color: AppTheme.getTextColor(context)),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _initializeData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              label: const Text('Retry', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.getPrimaryAccent(context),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -314,6 +378,7 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
 
     return RefreshIndicator(
       onRefresh: _refreshData,
+      color: AppTheme.getPrimaryAccent(context),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _filteredData.length,
@@ -325,16 +390,23 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   }
 
   Widget _buildCommodityCard(MarketRate rate) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final priceChange = (rate.modalPrice - rate.minPrice) / rate.minPrice * 100;
     final isPositive = priceChange >= 0;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: isDark ? 0 : 2,
+      color: AppTheme.getCardColor(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+            color: AppTheme.getBorderColor(context)
+                .withValues(alpha: isDark ? 0.1 : 0.5)),
+      ),
       child: InkWell(
         onTap: () => _navigateToDetail(rate),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -343,14 +415,15 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppTheme.getPrimaryAccent(context)
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.eco,
-                      color: AppTheme.primaryGreen,
+                    child: Icon(
+                      Icons.eco_rounded,
+                      color: AppTheme.getPrimaryAccent(context),
                       size: 24,
                     ),
                   ),
@@ -360,22 +433,31 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          rate.commodity,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          rate.productName,
+                          style: TextStyle(
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
+                            color: AppTheme.getTextColor(context),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                            Icon(Icons.location_on_rounded,
+                                size: 14,
+                                color: AppTheme.getSecondaryTextColor(context)
+                                    .withValues(alpha: 0.7)),
                             const SizedBox(width: 4),
-                            Text(
-                              '${rate.market}, ${rate.state}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
+                            Expanded(
+                              child: Text(
+                                '${rate.market}, ${rate.state}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                      AppTheme.getSecondaryTextColor(context),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -384,16 +466,21 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: isPositive ? Colors.green.shade50 : Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(4),
+                      color: isPositive
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isPositive ? Icons.trending_up : Icons.trending_down,
+                          isPositive
+                              ? Icons.trending_up_rounded
+                              : Icons.trending_down_rounded,
                           size: 14,
                           color: isPositive ? Colors.green : Colors.red,
                         ),
@@ -411,13 +498,20 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildPriceInfo('Min', '₹${rate.minPrice.toStringAsFixed(2)}', Colors.orange),
-                  _buildPriceInfo('Max', '₹${rate.maxPrice.toStringAsFixed(2)}', Colors.blue),
-                  _buildPriceInfo('Modal', '₹${rate.modalPrice.toStringAsFixed(2)}', AppTheme.primaryGreen),
+                  _buildPriceInfo('Min', '₹${rate.minPrice.toStringAsFixed(0)}',
+                      Colors.orange),
+                  const SizedBox(width: 12),
+                  _buildPriceInfo('Max', '₹${rate.maxPrice.toStringAsFixed(0)}',
+                      Colors.blue),
+                  const SizedBox(width: 12),
+                  _buildPriceInfo(
+                      'Modal',
+                      '₹${rate.modalPrice.toStringAsFixed(0)}',
+                      AppTheme.primaryGreen),
                 ],
               ),
             ],
@@ -430,10 +524,11 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   Widget _buildPriceInfo(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.1)),
         ),
         child: Column(
           children: [
@@ -441,14 +536,16 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+                color: AppTheme.getSecondaryTextColor(context)
+                    .withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               value,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -460,12 +557,12 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   }
 
   Widget _buildTrendingList() {
-    final trending = _filteredData.where((r) => 
-      ((r.modalPrice - r.minPrice) / r.minPrice * 100) > 5
-    ).toList();
+    final trending = _filteredData
+        .where((r) => ((r.modalPrice - r.minPrice) / r.minPrice * 100) > 5)
+        .toList();
 
     if (trending.isEmpty) {
-      return _buildEmptyState(message: 'No trending commodities');
+      return _buildEmptyState(message: 'No significant price trends today');
     }
 
     return ListView.builder(
@@ -476,19 +573,25 @@ class _EnhancedAPMCMarketLivePageState extends State<EnhancedAPMCMarketLivePage>
   }
 
   Widget _buildFavoritesList() {
-    return _buildEmptyState(message: 'No favorites yet');
+    return _buildEmptyState(message: 'Save products to track them here');
   }
 
-  Widget _buildEmptyState({String message = 'No data available'}) {
+  Widget _buildEmptyState({String message = 'No market data found'}) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+          Icon(Icons.analytics_outlined,
+              size: 80,
+              color: AppTheme.getSecondaryTextColor(context)
+                  .withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             message,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(
+                fontSize: 16,
+                color: AppTheme.getSecondaryTextColor(context),
+                fontWeight: FontWeight.w500),
           ),
         ],
       ),

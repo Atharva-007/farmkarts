@@ -32,16 +32,17 @@ class MarketplaceService {
   /// Add new product directly to Firebase
   Future<String> addProduct(Product product, String sellerId) async {
     try {
-      print('MarketplaceService: Starting product addition...');
-      
+      // print('MarketplaceService: Starting product addition...');
+
       // Get current user for authentication check
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        throw Exception('🔐 User not authenticated. Please login and try again.');
+        throw Exception(
+            '🔐 User not authenticated. Please login and try again.');
       }
-      
-      print('MarketplaceService: User authenticated: ${user.uid}');
-      
+
+      // print('MarketplaceService: User authenticated: ${user.uid}');
+
       final productData = product.toMap();
       productData['sellerId'] = sellerId;
       productData['timestamp'] = FieldValue.serverTimestamp();
@@ -49,29 +50,32 @@ class MarketplaceService {
       productData['createdAt'] = FieldValue.serverTimestamp();
       productData['updatedAt'] = FieldValue.serverTimestamp();
 
-      print('MarketplaceService: Product data prepared: ${productData['name']}');
-      print('MarketplaceService: Attempting to write to Firestore...');
-      
+      // print('MarketplaceService: Product data prepared: ${productData['name']}');
+      // print('MarketplaceService: Attempting to write to Firestore...');
+
       // Add to Firestore directly with detailed error handling
       DocumentReference docRef;
       try {
         docRef = await _firestore.collection('products').add(productData);
-        print('MarketplaceService: Product document created with ID: ${docRef.id}');
+        // print('MarketplaceService: Product document created with ID: ${docRef.id}');
       } catch (firestoreError) {
-        print('MarketplaceService: Firestore write error: $firestoreError');
-        print('MarketplaceService: Error details: ${firestoreError.toString()}');
-        
+        // print('MarketplaceService: Firestore write error: $firestoreError');
+        // print('MarketplaceService: Error details: ${firestoreError.toString()}');
+
         if (firestoreError.toString().contains('permission-denied')) {
-          throw Exception('🔒 Permission denied. Please check your Firestore security rules and authentication.');
-        } else if (firestoreError.toString().contains('network') || firestoreError.toString().contains('unavailable')) {
-          throw Exception('🌐 Network error. Please check your internet connection and try again.');
+          throw Exception(
+              '🔒 Permission denied. Please check your Firestore security rules and authentication.');
+        } else if (firestoreError.toString().contains('network') ||
+            firestoreError.toString().contains('unavailable')) {
+          throw Exception(
+              '🌐 Network error. Please check your internet connection and try again.');
         } else {
           throw Exception('💾 Database error: ${firestoreError.toString()}');
         }
       }
-      
+
       // Create selling history entry
-      print('MarketplaceService: Creating selling history entry...');
+      // print('MarketplaceService: Creating selling history entry...');
       final sellingHistoryData = {
         'productId': docRef.id,
         'productName': product.name,
@@ -96,38 +100,45 @@ class MarketplaceService {
 
       try {
         await _firestore.collection('selling_history').add(sellingHistoryData);
-        print('MarketplaceService: Selling history created successfully');
+        // print('MarketplaceService: Selling history created successfully');
       } catch (historyError) {
-        print('MarketplaceService: Warning - Failed to create selling history: $historyError');
+        // print('MarketplaceService: Warning - Failed to create selling history: $historyError');
         // Don't fail the entire operation if selling history fails
       }
-      
+
       // Clear relevant caches
       _clearProductCaches();
-      
-      print('MarketplaceService: Product added successfully with ID: ${docRef.id}');
+
+      // print('MarketplaceService: Product added successfully with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      print('MarketplaceService: Error adding product: $e');
-      print('MarketplaceService: Error type: ${e.runtimeType}');
-      print('MarketplaceService: Stack trace: ${StackTrace.current}');
-      
+      // print('MarketplaceService: Error adding product: $e');
+      // print('MarketplaceService: Error type: ${e.runtimeType}');
+      // print('MarketplaceService: Stack trace: ${StackTrace.current}');
+
       // Re-throw exception with better error message
       String errorMessage = e.toString();
       if (errorMessage.startsWith('Exception: ')) {
-        errorMessage = errorMessage.substring(11); // Remove "Exception: " prefix
+        errorMessage =
+            errorMessage.substring(11); // Remove "Exception: " prefix
       }
-      
+
       // Return the original error message if it already has emoji or is formatted
-      if (errorMessage.contains('🔐') || errorMessage.contains('🌐') || errorMessage.contains('💾')) {
+      if (errorMessage.contains('🔐') ||
+          errorMessage.contains('🌐') ||
+          errorMessage.contains('💾')) {
         throw Exception(errorMessage);
       }
-      
+
       // Handle specific error cases
       if (errorMessage.contains('permission-denied')) {
-        throw Exception('🔒 Permission denied. Please check your authentication and try again.');
-      } else if (errorMessage.contains('network') || errorMessage.contains('XMLHttpRequest error') || errorMessage.contains('unavailable')) {
-        throw Exception('🌐 Network connection failed. Please check your internet connection and try again.');
+        throw Exception(
+            '🔒 Permission denied. Please check your authentication and try again.');
+      } else if (errorMessage.contains('network') ||
+          errorMessage.contains('XMLHttpRequest error') ||
+          errorMessage.contains('unavailable')) {
+        throw Exception(
+            '🌐 Network connection failed. Please check your internet connection and try again.');
       } else if (errorMessage.contains('timeout')) {
         throw Exception('⏰ Request timed out. Please try again.');
       } else if (errorMessage.contains('quota')) {
@@ -137,8 +148,6 @@ class MarketplaceService {
       }
     }
   }
-
-
 
   /// Get products with pagination and caching for better performance
   /// Excludes current user's products from buying section
@@ -151,20 +160,22 @@ class MarketplaceService {
   }) async {
     try {
       final cacheKey = '${category ?? 'all'}_${userRole?.toString() ?? 'all'}';
-      
+
       // Check cache first (unless force refresh or loading more)
       if (!forceRefresh && !loadMore && _isCacheValid(cacheKey)) {
-        print('MarketplaceService: Returning cached products for $cacheKey');
+        // print('MarketplaceService: Returning cached products for $cacheKey');
         List<Product> cachedProducts = _productCache[cacheKey] ?? [];
-        
+
         // Apply current user exclusion to cached results if needed
         if (excludeCurrentUser) {
           final currentUser = FirebaseAuth.instance.currentUser;
           if (currentUser != null) {
-            cachedProducts = cachedProducts.where((product) => product.sellerId != currentUser.uid).toList();
+            cachedProducts = cachedProducts
+                .where((product) => product.sellerId != currentUser.uid)
+                .toList();
           }
         }
-        
+
         return cachedProducts;
       }
 
@@ -174,11 +185,11 @@ class MarketplaceService {
         _hasMoreData = true;
       }
 
-      print('MarketplaceService: Fetching products from Firestore...');
-      
+      // print('MarketplaceService: Fetching products from Firestore...');
+
       // Use the simplest possible queries to avoid index issues
       List<Product> allProducts = [];
-      
+
       if (category != null && category != 'All') {
         // Category-specific query
         allProducts = await _getProductsByCategory(category);
@@ -186,20 +197,23 @@ class MarketplaceService {
         // Default query - get all products with simple ordering
         allProducts = await _getAllProducts();
       }
-      
+
       // Apply all filters in application layer
       List<Product> filteredProducts = allProducts;
-      
+
       // Filter by availability for farmers
       if (userRole == UserRole.farmer) {
-        filteredProducts = filteredProducts.where((product) => product.isAvailable).toList();
+        filteredProducts =
+            filteredProducts.where((product) => product.isAvailable).toList();
       }
-      
+
       // Filter out current user's products if needed
       if (excludeCurrentUser) {
         final currentUser = FirebaseAuth.instance.currentUser;
         if (currentUser != null) {
-          filteredProducts = filteredProducts.where((product) => product.sellerId != currentUser.uid).toList();
+          filteredProducts = filteredProducts
+              .where((product) => product.sellerId != currentUser.uid)
+              .toList();
         }
       }
 
@@ -221,15 +235,17 @@ class MarketplaceService {
         _cacheTimestamps[cacheKey] = DateTime.now();
       }
 
-      print('MarketplaceService: Fetched ${filteredProducts.length} products');
+      // print('MarketplaceService: Fetched ${filteredProducts.length} products');
       return filteredProducts;
-
     } catch (e) {
-      print('MarketplaceService: Error fetching products: $e');
-      
+      // print('MarketplaceService: Error fetching products: $e');
+
       // Always use fallback for any error
-      print('MarketplaceService: Using fallback query...');
-      return _getFallbackProducts(category: category, userRole: userRole, excludeCurrentUser: excludeCurrentUser);
+      // print('MarketplaceService: Using fallback query...');
+      return _getFallbackProducts(
+          category: category,
+          userRole: userRole,
+          excludeCurrentUser: excludeCurrentUser);
     }
   }
 
@@ -240,16 +256,16 @@ class MarketplaceService {
           .collection('products')
           .where('category', isEqualTo: category)
           .limit(_pageSize * 2);
-      
+
       final querySnapshot = await query.get();
-      
+
       return querySnapshot.docs.map<Product>((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         return Product.fromMap(doc.id, data);
       }).toList();
     } catch (e) {
-      print('MarketplaceService: Error in _getProductsByCategory: $e');
-      throw e;
+      // print('MarketplaceService: Error in _getProductsByCategory: $e');
+      rethrow;
     }
   }
 
@@ -261,16 +277,16 @@ class MarketplaceService {
         Query query = _firestore
             .collection('products')
             .orderBy('createdAt', descending: true);
-        
+
         // Apply pagination if we have a last document
         if (_lastDocument != null) {
           query = query.startAfterDocument(_lastDocument!);
         }
-        
+
         query = query.limit(_pageSize);
-        
+
         final querySnapshot = await query.get();
-        
+
         // Update pagination state
         if (querySnapshot.docs.isNotEmpty) {
           _lastDocument = querySnapshot.docs.last;
@@ -278,7 +294,7 @@ class MarketplaceService {
         } else {
           _hasMoreData = false;
         }
-        
+
         return querySnapshot.docs.map<Product>((doc) {
           final data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
@@ -286,13 +302,11 @@ class MarketplaceService {
         }).toList();
       } catch (e) {
         // If createdAt fails, try without ordering
-        print('MarketplaceService: CreatedAt ordering failed, trying without ordering: $e');
-        final query = _firestore
-            .collection('products')
-            .limit(_pageSize);
-        
+        // print('MarketplaceService: CreatedAt ordering failed, trying without ordering: $e');
+        final query = _firestore.collection('products').limit(_pageSize);
+
         final querySnapshot = await query.get();
-        
+
         // Update pagination state
         if (querySnapshot.docs.isNotEmpty) {
           _lastDocument = querySnapshot.docs.last;
@@ -300,16 +314,16 @@ class MarketplaceService {
         } else {
           _hasMoreData = false;
         }
-        
+
         return querySnapshot.docs.map<Product>((doc) {
-          final data = doc.data() as Map<String, dynamic>;
+          final data = doc.data();
           data['id'] = doc.id;
           return Product.fromMap(doc.id, data);
         }).toList();
       }
     } catch (e) {
-      print('MarketplaceService: Error in _getAllProducts: $e');
-      throw e;
+      // print('MarketplaceService: Error in _getAllProducts: $e');
+      rethrow;
     }
   }
 
@@ -326,15 +340,15 @@ class MarketplaceService {
 
       // Fetch from Firestore
       final doc = await _firestore.collection('products').doc(productId).get();
-      
+
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         return Product.fromMap(doc.id, data);
       }
-      
+
       return null;
     } catch (e) {
-      print('MarketplaceService: Error fetching product by ID: $e');
+      // print('MarketplaceService: Error fetching product by ID: $e');
       rethrow;
     }
   }
@@ -343,18 +357,19 @@ class MarketplaceService {
   /// Uses Firebase directly with optional backend sync
 
   /// Update product
-  Future<void> updateProduct(String productId, Map<String, dynamic> updates) async {
+  Future<void> updateProduct(
+      String productId, Map<String, dynamic> updates) async {
     try {
       updates['updatedAt'] = FieldValue.serverTimestamp();
-      
+
       await _firestore.collection('products').doc(productId).update(updates);
-      
+
       // Clear relevant caches
       _clearProductCaches();
-      
-      print('MarketplaceService: Product updated: $productId');
+
+      // print('MarketplaceService: Product updated: $productId');
     } catch (e) {
-      print('MarketplaceService: Error updating product: $e');
+      // print('MarketplaceService: Error updating product: $e');
       rethrow;
     }
   }
@@ -363,72 +378,78 @@ class MarketplaceService {
   Future<void> deleteProduct(String productId) async {
     try {
       await _firestore.collection('products').doc(productId).delete();
-      
+
       // Clear relevant caches
       _clearProductCaches();
-      
-      print('MarketplaceService: Product deleted: $productId');
+
+      // print('MarketplaceService: Product deleted: $productId');
     } catch (e) {
-      print('MarketplaceService: Error deleting product: $e');
+      // print('MarketplaceService: Error deleting product: $e');
       rethrow;
     }
   }
 
   /// Get selling history for current user
-  Future<List<Map<String, dynamic>>> getSellingHistoryByUser(String sellerId) async {
+  Future<List<Map<String, dynamic>>> getSellingHistoryByUser(
+      String sellerId) async {
     try {
-      print('MarketplaceService: Fetching selling history for seller: $sellerId');
-      
+      // print('MarketplaceService: Fetching selling history for seller: $sellerId');
+
       final query = _firestore
           .collection('selling_history')
           .where('sellerId', isEqualTo: sellerId)
           .orderBy('listedDate', descending: true);
-      
+
       final querySnapshot = await query.get();
-      
-      final sellingHistory = querySnapshot.docs.map<Map<String, dynamic>>((doc) {
+
+      final sellingHistory =
+          querySnapshot.docs.map<Map<String, dynamic>>((doc) {
         final data = doc.data();
         data['id'] = doc.id;
         return data;
       }).toList();
-      
-      print('MarketplaceService: Found ${sellingHistory.length} selling history records');
+
+      // print('MarketplaceService: Found ${sellingHistory.length} selling history records');
       return sellingHistory;
-      
     } catch (e) {
-      print('MarketplaceService: Error fetching selling history: $e');
-      
+      // print('MarketplaceService: Error fetching selling history: $e');
+
       // Fallback: Try without ordering if index doesn't exist
       try {
-        print('MarketplaceService: Trying fallback query without ordering...');
+        // print('MarketplaceService: Trying fallback query without ordering...');
         final fallbackQuery = _firestore
             .collection('selling_history')
             .where('sellerId', isEqualTo: sellerId);
-        
+
         final fallbackSnapshot = await fallbackQuery.get();
-        
-        final sellingHistory = fallbackSnapshot.docs.map<Map<String, dynamic>>((doc) {
+
+        final sellingHistory =
+            fallbackSnapshot.docs.map<Map<String, dynamic>>((doc) {
           final data = doc.data();
           data['id'] = doc.id;
           return data;
         }).toList();
-        
+
         // Sort in memory by listedDate if available
         sellingHistory.sort((a, b) {
           final aDate = a['listedDate'];
           final bDate = b['listedDate'];
           if (aDate != null && bDate != null) {
-            final aTimestamp = aDate is int ? aDate : (aDate as dynamic).millisecondsSinceEpoch;
-            final bTimestamp = bDate is int ? bDate : (bDate as dynamic).millisecondsSinceEpoch;
+            final aTimestamp = aDate is int
+                ? aDate
+                : (aDate as dynamic).millisecondsSinceEpoch;
+            final bTimestamp = bDate is int
+                ? bDate
+                : (bDate as dynamic).millisecondsSinceEpoch;
             return bTimestamp.compareTo(aTimestamp); // Descending order
           }
           return 0;
         });
-        
-        print('MarketplaceService: Fallback query returned ${sellingHistory.length} records');
+
+        // print('MarketplaceService: Fallback query returned ${sellingHistory.length} records');
         return sellingHistory;
       } catch (fallbackError) {
-        print('MarketplaceService: Fallback query also failed: $fallbackError');
+        // print('MarketplaceService: Fallback query also failed: $fallbackError');
         return [];
       }
     }
@@ -442,36 +463,36 @@ class MarketplaceService {
           .collection('products')
           .where('sellerId', isEqualTo: sellerId)
           .orderBy('createdAt', descending: true);
-      
+
       final querySnapshot = await query.get();
-      
+
       return querySnapshot.docs.map<Product>((doc) {
         final data = doc.data();
         return Product.fromMap(doc.id, data);
       }).toList();
     } catch (e) {
-      print('MarketplaceService: Error fetching products by seller: $e');
-      
+      // print('MarketplaceService: Error fetching products by seller: $e');
+
       // Fallback: Try without ordering if index doesn't exist
       try {
-        print('MarketplaceService: Trying fallback query without ordering...');
+        // print('MarketplaceService: Trying fallback query without ordering...');
         final fallbackQuery = _firestore
             .collection('products')
             .where('sellerId', isEqualTo: sellerId);
-        
+
         final fallbackSnapshot = await fallbackQuery.get();
-        
+
         final products = fallbackSnapshot.docs.map<Product>((doc) {
           final data = doc.data();
           return Product.fromMap(doc.id, data);
         }).toList();
-        
+
         // Sort in memory
         products.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        
+
         return products;
       } catch (fallbackError) {
-        print('MarketplaceService: Fallback query also failed: $fallbackError');
+        // print('MarketplaceService: Fallback query also failed: $fallbackError');
         rethrow;
       }
     }
@@ -505,7 +526,7 @@ class MarketplaceService {
       final querySnapshot = await query.get();
 
       final searchLower = searchQuery.toLowerCase();
-      
+
       return querySnapshot.docs
           .map<Product>((doc) {
             final data = doc.data() as Map<String, dynamic>;
@@ -514,10 +535,11 @@ class MarketplaceService {
           .where((product) =>
               product.name.toLowerCase().contains(searchLower) ||
               product.description.toLowerCase().contains(searchLower) ||
-              product.tags.any((tag) => tag.toLowerCase().contains(searchLower)))
+              product.tags
+                  .any((tag) => tag.toLowerCase().contains(searchLower)))
           .toList();
     } catch (e) {
-      print('MarketplaceService: Error searching products: $e');
+      // print('MarketplaceService: Error searching products: $e');
       rethrow;
     }
   }
@@ -525,17 +547,18 @@ class MarketplaceService {
   /// Get categories
   Future<List<String>> getCategories() async {
     try {
-      final doc = await _firestore.collection('app_config').doc('categories').get();
-      
+      final doc =
+          await _firestore.collection('app_config').doc('categories').get();
+
       if (doc.exists) {
         final data = doc.data() as Map<String, dynamic>;
         return List<String>.from(data['categories'] ?? []);
       }
-      
+
       // Return default categories if not found
       return [
         'Vegetables',
-        'Fruits', 
+        'Fruits',
         'Grains',
         'Seeds',
         'Equipment',
@@ -544,11 +567,11 @@ class MarketplaceService {
         'Fertilizers'
       ];
     } catch (e) {
-      print('MarketplaceService: Error fetching categories: $e');
+      // print('MarketplaceService: Error fetching categories: $e');
       // Return default categories on error
       return [
         'Vegetables',
-        'Fruits', 
+        'Fruits',
         'Grains',
         'Seeds',
         'Equipment',
@@ -570,10 +593,11 @@ class MarketplaceService {
 
   /// Check if cache is still valid
   bool _isCacheValid(String cacheKey) {
-    if (!_productCache.containsKey(cacheKey) || !_cacheTimestamps.containsKey(cacheKey)) {
+    if (!_productCache.containsKey(cacheKey) ||
+        !_cacheTimestamps.containsKey(cacheKey)) {
       return false;
     }
-    
+
     final cacheTime = _cacheTimestamps[cacheKey]!;
     return DateTime.now().difference(cacheTime) < _cacheValidDuration;
   }
@@ -585,47 +609,49 @@ class MarketplaceService {
     bool excludeCurrentUser = false,
   }) async {
     try {
-      print('MarketplaceService: Using fallback query...');
-      
+      // print('MarketplaceService: Using fallback query...');
+
       // Use the simplest possible query
       Query query = _firestore.collection('products').limit(_pageSize * 2);
-      
+
       final QuerySnapshot querySnapshot = await query.get();
-      
+
       List<Product> products = querySnapshot.docs.map<Product>((doc) {
         final data = doc.data() as Map<String, dynamic>;
         return Product.fromMap(doc.id, data);
       }).toList();
-      
+
       // Apply all filters in memory
       if (category != null && category != 'All') {
-        products = products.where((product) => product.category == category).toList();
+        products =
+            products.where((product) => product.category == category).toList();
       }
-      
+
       if (userRole == UserRole.farmer) {
         products = products.where((product) => product.isAvailable).toList();
       }
-      
+
       if (excludeCurrentUser) {
         final currentUser = FirebaseAuth.instance.currentUser;
         if (currentUser != null) {
-          products = products.where((product) => product.sellerId != currentUser.uid).toList();
+          products = products
+              .where((product) => product.sellerId != currentUser.uid)
+              .toList();
         }
       }
-      
+
       // Sort by timestamp in memory
       products.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      
+
       // Take only the page size after filtering
       if (products.length > _pageSize) {
         products = products.take(_pageSize).toList();
       }
-      
-      print('MarketplaceService: Fallback query returned ${products.length} products');
+
+      // print('MarketplaceService: Fallback query returned ${products.length} products');
       return products;
-      
     } catch (e) {
-      print('MarketplaceService: Fallback query also failed: $e');
+      // print('MarketplaceService: Fallback query also failed: $e');
       return [];
     }
   }
@@ -644,9 +670,9 @@ class MarketplaceService {
     try {
       final conversationService = ConversationService();
       final currentUser = FirebaseAuth.instance.currentUser;
-      
+
       if (currentUser == null) throw Exception('User not authenticated');
-      
+
       final conversationId = await conversationService.createOrGetConversation(
         productId: product.id,
         productName: product.name,
@@ -655,7 +681,7 @@ class MarketplaceService {
         sellerId: product.sellerId,
         sellerName: product.sellerName,
       );
-      
+
       // Send initial message if provided
       if (initialMessage != null && initialMessage.isNotEmpty) {
         await conversationService.sendMessage(
@@ -665,23 +691,24 @@ class MarketplaceService {
           type: MessageType.text,
         );
       }
-      
+
       return conversationId;
     } catch (e) {
       throw Exception('Failed to contact seller: $e');
     }
   }
+
   Future<void> preloadProducts({UserRole? userRole}) async {
     try {
       // Preload main category data
       await getProducts(userRole: userRole);
-      
+
       // Preload categories
       await getCategories();
-      
-      print('MarketplaceService: Preloading completed');
+
+      // print('MarketplaceService: Preloading completed');
     } catch (e) {
-      print('MarketplaceService: Error preloading data: $e');
+      // print('MarketplaceService: Error preloading data: $e');
     }
   }
 
@@ -693,7 +720,8 @@ class MarketplaceService {
   }) async {
     return await _monitor.trackOperation('getProducts', () async {
       // Check cache first
-      final cacheKey = CacheKeys.productList(category ?? 'all', startAfter ?? '');
+      final cacheKey =
+          CacheKeys.productList(category ?? 'all', startAfter ?? '');
       final cached = _cache.get<List<Product>>(cacheKey);
       if (cached != null) {
         return cached;
@@ -701,14 +729,16 @@ class MarketplaceService {
 
       // Fetch from Firestore with rate limiting
       Query query = _firestore.collection('products').limit(limit);
-      
+
       if (category != null && category != 'All') {
         query = query.where('category', isEqualTo: category);
       }
 
-      final snapshot = await _pool.rateLimitedQuery(query, 'products_$category');
+      final snapshot =
+          await _pool.rateLimitedQuery(query, 'products_$category');
       final products = snapshot.docs
-          .map((doc) => Product.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map((doc) =>
+              Product.fromMap(doc.id, doc.data() as Map<String, dynamic>))
           .toList();
 
       // Cache the results
@@ -743,7 +773,7 @@ class MarketplaceService {
       }
 
       await _pool.batchWrite(batches);
-      
+
       // Clear cache after updates
       _cache.removePattern(r'products_.*');
     });
@@ -765,7 +795,8 @@ class MarketplaceService {
     final metrics = getPerformanceMetrics();
     debugPrint('Performance: ${metrics['performance']}');
     debugPrint('Cache: ${metrics['cache']}');
-    debugPrint('System Load: ${(metrics['systemLoad'] * 100).toStringAsFixed(1)}%');
+    debugPrint(
+        'System Load: ${(metrics['systemLoad'] * 100).toStringAsFixed(1)}%');
     debugPrint('Overloaded: ${metrics['isOverloaded']}');
   }
 }

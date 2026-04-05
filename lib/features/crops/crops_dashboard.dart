@@ -12,7 +12,8 @@ class CropsDashboard extends StatefulWidget {
   State<CropsDashboard> createState() => _CropsDashboardState();
 }
 
-class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProviderStateMixin {
+class _CropsDashboardState extends State<CropsDashboard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -97,8 +98,8 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
             Text(
               'Crop Overview',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             LayoutBuilder(
@@ -108,17 +109,28 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
                     children: [
                       Row(
                         children: [
-                          Expanded(child: _buildOverviewCard('Active Crops', '12', Icons.eco, AppTheme.primaryGreen)),
+                          Expanded(
+                              child: _buildOverviewCard('Active Crops', '12',
+                                  Icons.eco, AppTheme.primaryGreen)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildOverviewCard('Total Area', '45 acres', Icons.landscape, AppTheme.skyBlue)),
+                          Expanded(
+                              child: _buildOverviewCard(
+                                  'Total Area',
+                                  '45 acres',
+                                  Icons.landscape,
+                                  AppTheme.skyBlue)),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: _buildOverviewCard('Health Score', '92%', Icons.favorite, AppTheme.success)),
+                          Expanded(
+                              child: _buildOverviewCard('Health Score', '92%',
+                                  Icons.favorite, AppTheme.success)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildOverviewCard('Harvest Ready', '3', Icons.agriculture, AppTheme.accentOrange)),
+                          Expanded(
+                              child: _buildOverviewCard('Harvest Ready', '3',
+                                  Icons.agriculture, AppTheme.accentOrange)),
                         ],
                       ),
                     ],
@@ -126,13 +138,21 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
                 } else {
                   return Row(
                     children: [
-                      Expanded(child: _buildOverviewCard('Active Crops', '12', Icons.eco, AppTheme.primaryGreen)),
+                      Expanded(
+                          child: _buildOverviewCard('Active Crops', '12',
+                              Icons.eco, AppTheme.primaryGreen)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildOverviewCard('Total Area', '45 acres', Icons.landscape, AppTheme.skyBlue)),
+                      Expanded(
+                          child: _buildOverviewCard('Total Area', '45 acres',
+                              Icons.landscape, AppTheme.skyBlue)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildOverviewCard('Health Score', '92%', Icons.favorite, AppTheme.success)),
+                      Expanded(
+                          child: _buildOverviewCard('Health Score', '92%',
+                              Icons.favorite, AppTheme.success)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildOverviewCard('Harvest Ready', '3', Icons.agriculture, AppTheme.accentOrange)),
+                      Expanded(
+                          child: _buildOverviewCard('Harvest Ready', '3',
+                              Icons.agriculture, AppTheme.accentOrange)),
                     ],
                   );
                 }
@@ -144,16 +164,17 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
     );
   }
 
-  Widget _buildOverviewCard(String title, String value, IconData icon, Color color) {
+  Widget _buildOverviewCard(
+      String title, String value, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayColor = isDark ? AppTheme.getPrimaryAccent(context) : color;
-    
+
     return Container(
       padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
       decoration: BoxDecoration(
-        color: displayColor.withOpacity(0.1),
+        color: displayColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: displayColor.withOpacity(0.3)),
+        border: Border.all(color: displayColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -186,12 +207,36 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
 
   Widget _buildCropManagementGrid() {
     final managementOptions = [
-      {'title': 'Add New Crop', 'icon': Icons.add_circle, 'color': AppTheme.primaryGreen},
-      {'title': 'Disease Detection', 'icon': Icons.camera_alt, 'color': AppTheme.error},
-      {'title': 'Irrigation Schedule', 'icon': Icons.water_drop, 'color': AppTheme.skyBlue},
-      {'title': 'Fertilizer Plan', 'icon': Icons.grass, 'color': AppTheme.lightGreen},
-      {'title': 'Pest Control', 'icon': Icons.bug_report, 'color': AppTheme.warning},
-      {'title': 'Yield Prediction', 'icon': Icons.trending_up, 'color': AppTheme.accentOrange},
+      {
+        'title': 'Add New Crop',
+        'icon': Icons.add_circle,
+        'color': AppTheme.primaryGreen
+      },
+      {
+        'title': 'Disease Detection',
+        'icon': Icons.camera_alt,
+        'color': AppTheme.error
+      },
+      {
+        'title': 'Irrigation Schedule',
+        'icon': Icons.water_drop,
+        'color': AppTheme.skyBlue
+      },
+      {
+        'title': 'Fertilizer Plan',
+        'icon': Icons.grass,
+        'color': AppTheme.lightGreen
+      },
+      {
+        'title': 'Pest Control',
+        'icon': Icons.bug_report,
+        'color': AppTheme.warning
+      },
+      {
+        'title': 'Yield Prediction',
+        'icon': Icons.trending_up,
+        'color': AppTheme.accentOrange
+      },
     ];
 
     return Card(
@@ -204,8 +249,8 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
             Text(
               'Crop Management Tools',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
             GridView.builder(
@@ -241,7 +286,7 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
   Widget _buildManagementCard(String title, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayColor = isDark ? AppTheme.getPrimaryAccent(context) : color;
-    
+
     return Card(
       elevation: 1,
       child: InkWell(
@@ -262,7 +307,7 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: displayColor.withOpacity(0.1),
+                  color: displayColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -275,8 +320,8 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -299,31 +344,38 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
             Text(
               'Crop Health Monitoring',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            _buildHealthItem('Wheat Field A', 95, AppTheme.success, 'Excellent'),
+            _buildHealthItem(
+                'Wheat Field A', 95, AppTheme.success, 'Excellent'),
             const SizedBox(height: 12),
             _buildHealthItem('Corn Field B', 78, AppTheme.warning, 'Good'),
             const SizedBox(height: 12),
-            _buildHealthItem('Rice Field C', 65, AppTheme.error, 'Needs Attention'),
+            _buildHealthItem(
+                'Rice Field C', 65, AppTheme.error, 'Needs Attention'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHealthItem(String cropName, int healthScore, Color color, String status) {
+  Widget _buildHealthItem(
+      String cropName, int healthScore, Color color, String status) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final displayColor = isDark ? (healthScore > 80 ? AppTheme.success : (healthScore > 60 ? AppTheme.warning : AppTheme.error)) : color;
-    
+    final displayColor = isDark
+        ? (healthScore > 80
+            ? AppTheme.success
+            : (healthScore > 60 ? AppTheme.warning : AppTheme.error))
+        : color;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: displayColor.withOpacity(0.1),
+        color: displayColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: displayColor.withOpacity(0.3)),
+        border: Border.all(color: displayColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -336,14 +388,14 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
                 Text(
                   cropName,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Text(
                   status,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.getSecondaryTextColor(context),
-                  ),
+                        color: AppTheme.getSecondaryTextColor(context),
+                      ),
                 ),
               ],
             ),
@@ -363,7 +415,8 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
                 width: 60,
                 child: LinearProgressIndicator(
                   value: healthScore / 100,
-                  backgroundColor: isDark ? AppTheme.darkHighlight : AppTheme.borderGrey,
+                  backgroundColor:
+                      isDark ? AppTheme.darkHighlight : AppTheme.borderGrey,
                   valueColor: AlwaysStoppedAnimation<Color>(displayColor),
                 ),
               ),
@@ -385,31 +438,35 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
             Text(
               'Harvest Planning',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             SizedBox(height: AppConstants.getResponsiveSpacing(context)),
-            _buildHarvestItem('Wheat Field A', 'Ready in 5 days', Icons.agriculture, AppTheme.success),
+            _buildHarvestItem('Wheat Field A', 'Ready in 5 days',
+                Icons.agriculture, AppTheme.success),
             const SizedBox(height: 12),
-            _buildHarvestItem('Corn Field B', 'Ready in 12 days', Icons.grain, AppTheme.warning),
+            _buildHarvestItem('Corn Field B', 'Ready in 12 days', Icons.grain,
+                AppTheme.warning),
             const SizedBox(height: 12),
-            _buildHarvestItem('Rice Field C', 'Ready in 25 days', Icons.grass, AppTheme.info),
+            _buildHarvestItem(
+                'Rice Field C', 'Ready in 25 days', Icons.grass, AppTheme.info),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHarvestItem(String cropName, String timeToHarvest, IconData icon, Color color) {
+  Widget _buildHarvestItem(
+      String cropName, String timeToHarvest, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayColor = isDark ? AppTheme.getPrimaryAccent(context) : color;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: displayColor.withOpacity(0.1),
+        color: displayColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: displayColor.withOpacity(0.3)),
+        border: Border.all(color: displayColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -422,20 +479,21 @@ class _CropsDashboardState extends State<CropsDashboard> with SingleTickerProvid
                 Text(
                   cropName,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Text(
                   timeToHarvest,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: displayColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        color: displayColor,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
+          Icon(Icons.chevron_right,
+              color: AppTheme.getSecondaryTextColor(context)),
         ],
       ),
     );

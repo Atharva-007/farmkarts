@@ -37,7 +37,6 @@ class FCMService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        
         // Get FCM token
         _fcmToken = await _firebaseMessaging.getToken();
         debugPrint('FCM Token: $_fcmToken');
@@ -88,7 +87,7 @@ class FCMService {
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
     debugPrint('Foreground message received: ${message.messageId}');
-    
+
     if (message.notification != null) {
       final user = _auth.currentUser;
       if (user != null) {
@@ -105,12 +104,18 @@ class FCMService {
 
   NotificationType _getNotificationType(String? type) {
     switch (type) {
-      case 'order': return NotificationType.order;
-      case 'message': return NotificationType.message;
-      case 'bid': return NotificationType.bid;
-      case 'market': return NotificationType.market;
-      case 'weather': return NotificationType.weather;
-      default: return NotificationType.system;
+      case 'order':
+        return NotificationType.order;
+      case 'message':
+        return NotificationType.message;
+      case 'bid':
+        return NotificationType.bid;
+      case 'market':
+        return NotificationType.market;
+      case 'weather':
+        return NotificationType.weather;
+      default:
+        return NotificationType.system;
     }
   }
 
@@ -149,7 +154,6 @@ class FCMService {
 
       // In production, call your backend API to send FCM message
       debugPrint('Notification sent to user: $userId');
-      
     } catch (e) {
       debugPrint('Error sending notification: $e');
     }

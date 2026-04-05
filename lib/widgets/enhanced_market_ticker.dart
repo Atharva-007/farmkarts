@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'dart:math';
 import '../theme/app_theme.dart';
 import '../services/apmc_api_service.dart';
 
@@ -67,10 +66,10 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
       });
 
       final rates = await _apiService.fetchMarketRates();
-      
+
       // Select top trending items
       final selectedRates = rates.take(widget.maxItems).toList();
-      
+
       setState(() {
         _marketRates = selectedRates;
         _isLoading = false;
@@ -104,13 +103,13 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryGreen.withOpacity(0.1),
-            AppTheme.primaryGreen.withOpacity(0.05),
+            AppTheme.primaryGreen.withValues(alpha: 0.1),
+            AppTheme.primaryGreen.withValues(alpha: 0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppTheme.primaryGreen.withOpacity(0.3),
+          color: AppTheme.primaryGreen.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -227,7 +226,7 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.3),
+            color: Colors.red.withValues(alpha: 0.3),
             blurRadius: 4,
             spreadRadius: 1,
           ),
@@ -261,20 +260,20 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final totalWidth = _calculateTotalWidth();
-          
+
           return AnimatedBuilder(
             animation: _scrollController,
             builder: (context, child) {
-              final offset = _scrollController.value * (totalWidth + constraints.maxWidth);
+              final offset =
+                  _scrollController.value * (totalWidth + constraints.maxWidth);
               return Transform.translate(
                 offset: Offset(constraints.maxWidth - offset, 0),
                 child: child,
               );
             },
             child: Row(
-              children: _marketRates
-                  .map((rate) => _buildMarketItem(rate))
-                  .toList(),
+              children:
+                  _marketRates.map((rate) => _buildMarketItem(rate)).toList(),
             ),
           );
         },
@@ -290,7 +289,7 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
   Widget _buildMarketItem(MarketRate rate) {
     final priceChange = rate.maxPrice - rate.minPrice;
     final isPositive = priceChange >= 0;
-    
+
     return Container(
       margin: const EdgeInsets.only(right: 24),
       child: Row(
@@ -299,7 +298,7 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppTheme.primaryGreen.withOpacity(0.1),
+              color: AppTheme.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -358,13 +357,21 @@ class _EnhancedMarketTickerState extends State<EnhancedMarketTicker>
 
   IconData _getProductIcon(String productName) {
     final name = productName.toLowerCase();
-    if (name.contains('rice') || name.contains('wheat') || name.contains('grain')) {
+    if (name.contains('rice') ||
+        name.contains('wheat') ||
+        name.contains('grain')) {
       return Icons.grain;
-    } else if (name.contains('tomato') || name.contains('onion') || name.contains('potato')) {
+    } else if (name.contains('tomato') ||
+        name.contains('onion') ||
+        name.contains('potato')) {
       return Icons.eco;
-    } else if (name.contains('fruit') || name.contains('mango') || name.contains('apple')) {
+    } else if (name.contains('fruit') ||
+        name.contains('mango') ||
+        name.contains('apple')) {
       return Icons.apple;
-    } else if (name.contains('spice') || name.contains('turmeric') || name.contains('chili')) {
+    } else if (name.contains('spice') ||
+        name.contains('turmeric') ||
+        name.contains('chili')) {
       return Icons.restaurant;
     } else if (name.contains('oil') || name.contains('seed')) {
       return Icons.water_drop;
@@ -400,9 +407,9 @@ class CompactMarketTicker extends StatelessWidget {
                 Text(
                   'Live Market Rates',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryGreen,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGreen,
+                      ),
                 ),
                 const Spacer(),
                 if (onTap != null)

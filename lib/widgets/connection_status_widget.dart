@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 
 class ConnectionStatusWidget extends StatelessWidget {
   final Widget child;
-  
+
   const ConnectionStatusWidget({
     super.key,
     required this.child,
@@ -18,7 +18,7 @@ class ConnectionStatusWidget extends StatelessWidget {
         return Stack(
           children: [
             child,
-            
+
             // Show connection status banner when offline or error
             if (!userState.isOnline || userState.error != null)
               Positioned(
@@ -33,12 +33,11 @@ class ConnectionStatusWidget extends StatelessWidget {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: !userState.isOnline 
-                          ? Colors.orange 
-                          : AppTheme.error,
+                      color:
+                          !userState.isOnline ? Colors.orange : AppTheme.error,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -47,8 +46,8 @@ class ConnectionStatusWidget extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(
-                          !userState.isOnline 
-                              ? Icons.wifi_off 
+                          !userState.isOnline
+                              ? Icons.wifi_off
                               : Icons.error_outline,
                           color: Colors.white,
                           size: 20,
@@ -56,7 +55,7 @@ class ConnectionStatusWidget extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            !userState.isOnline 
+                            !userState.isOnline
                                 ? 'No internet connection'
                                 : userState.error ?? 'Connection error',
                             style: const TextStyle(

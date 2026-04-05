@@ -79,7 +79,7 @@ class ProductCard extends StatelessWidget {
             right: 8,
             child: CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.white.withOpacity(0.8),
+              backgroundColor: Colors.white.withValues(alpha: 0.8),
               child: IconButton(
                 padding: EdgeInsets.zero,
                 iconSize: 16,
@@ -239,11 +239,12 @@ class ProductPriceDisplay extends StatelessWidget {
             ),
           TextSpan(
             text: price.toInt().toString(),
-            style: textStyle ?? const TextStyle(
-              color: AppTheme.primaryGreen,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: textStyle ??
+                const TextStyle(
+                  color: AppTheme.primaryGreen,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
           ),
           TextSpan(
             text: '/$unit',
@@ -274,7 +275,7 @@ class ProductAvailabilityIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAvailable = quantity > 0;
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -286,7 +287,7 @@ class ProductAvailabilityIndicator extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           isAvailable
-              ? showQuantity 
+              ? showQuantity
                   ? 'Available: $quantity $unit'
                   : 'Available'
               : 'Out of Stock',
@@ -326,10 +327,10 @@ class CategoryChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? AppTheme.primaryGreen
-                : AppTheme.primaryGreen.withOpacity(0.1),
+                : AppTheme.primaryGreen.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppTheme.primaryGreen.withOpacity(0.3),
+              color: AppTheme.primaryGreen.withValues(alpha: 0.3),
             ),
           ),
           child: InkWell(
@@ -440,7 +441,7 @@ class SellerInfoCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+            backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
             child: Text(
               sellerName.isNotEmpty ? sellerName[0].toUpperCase() : 'S',
               style: const TextStyle(
@@ -563,9 +564,8 @@ class QuantitySelector extends StatelessWidget {
             children: [
               _buildQuantityButton(
                 icon: Icons.remove,
-                onPressed: quantity > 1 
-                    ? () => onQuantityChanged(quantity - 1) 
-                    : null,
+                onPressed:
+                    quantity > 1 ? () => onQuantityChanged(quantity - 1) : null,
               ),
               Container(
                 width: 60,
@@ -581,16 +581,17 @@ class QuantitySelector extends StatelessWidget {
               ),
               _buildQuantityButton(
                 icon: Icons.add,
-                onPressed: quantity < maxQuantity 
-                    ? () => onQuantityChanged(quantity + 1) 
+                onPressed: quantity < maxQuantity
+                    ? () => onQuantityChanged(quantity + 1)
                     : null,
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -615,13 +616,13 @@ class QuantitySelector extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: onPressed != null 
-            ? AppTheme.primaryGreen.withOpacity(0.1) 
+        color: onPressed != null
+            ? AppTheme.primaryGreen.withValues(alpha: 0.1)
             : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: onPressed != null 
-              ? AppTheme.primaryGreen.withOpacity(0.3) 
+          color: onPressed != null
+              ? AppTheme.primaryGreen.withValues(alpha: 0.3)
               : Colors.grey.shade300,
         ),
       ),

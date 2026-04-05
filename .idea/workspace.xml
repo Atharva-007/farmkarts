@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AndroidLayouts">
-    <shared>
-      <config />
-    </shared>
-  </component>
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="NONE" />
+    <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bceab694-d316-4791-9006-a2beedfb55a5" name="Changes" comment="">
@@ -14,11 +9,689 @@
       <change beforePath="$PROJECT_DIR$/.dart_tool/package_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.dart_tool/package_config_subset" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_config_subset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.dart_tool/package_graph.json" beforeDir="false" afterPath="$PROJECT_DIR$/.dart_tool/package_graph.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/ci-cd.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-cd.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.flutter-plugins-dependencies" beforeDir="false" afterPath="$PROJECT_DIR$/.flutter-plugins-dependencies" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DEVELOPER_QUICK_REFERENCE.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/APMCpage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/Detailspage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/MAHABEJpage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/MandiMapPage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/add_sell_item_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/auth_wrapper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/buy_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/colors.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/localization/app_localizations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/localization/app_localizations_en.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/localization/translations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/managers/locale_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/managers/theme_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/performance/batch_processor.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/performance/connection_pool_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/core/performance/memory_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/dashboard_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/apmc_commodity_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/apmc_commodity_detail_page_new.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/apmc_market_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/apmc_market_page_enhanced.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/enhanced_apmc_market_live.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/enhanced_apmc_market_live_fixed.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/apmc/enhanced_apmc_market_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/ai_chat_sessions_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/bid_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/buyer_profile_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/chat_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/conversation_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/conversations_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/chat/enhanced_ai_expert_chat_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/community/community_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/community/role_based_community_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/crops/crops_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/dashboard/dashboard_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/dashboard/dashboard_home_enhanced.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/dashboard/enhanced_dashboard_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/dashboard/main_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/add_product_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/buy_request_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/buyer_interests_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/buying_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/chat_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/clean_marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/clean_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/complete_functional_marketplace.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/complete_marketplace_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/complete_working_marketplace.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/complete_working_my_products.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/complete_working_product_detail.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_functional_buyer_interests_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_functional_chat_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_functional_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_marketplace_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_my_products_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_selling_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/enhanced_selling_products_list.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/fixed_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/functional_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/marketplace_home_fixed.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/optimized_marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/order_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/price_offers_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/product_detail_page.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/product_detail_page_new.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/seller_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/marketplace/working_marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/orders/order_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/orders/order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/profile/edit_profile_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/profile/license_management_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/profile/profile_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/features/weather/weather_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/firebase_options.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/geolocator.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/home_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/itemsForSale.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/l10n/app_localizations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/login_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/main.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/main_app_layout.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/mandi_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/ai_chat_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/chat_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/conversation_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/enhanced_chat_models.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/marketplace_models.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/order_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/payment_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/product_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/models/user_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/news_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/buyer_details_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/buyer_details_dialog.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/buyer_details_dialog.dart.corrupted2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/buying_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/cart_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/chat_conversation_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/chat_conversation_page.dart.backup2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/chat_conversation_page.dart.corrupted" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/checkout_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/complete_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/contacted_sellers_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/enhanced_contact_seller_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/enhanced_order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/enhanced_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/enhanced_settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/enhanced_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/help_support_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/improved_settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/inventory_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/license_management_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/optimized_order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/order_success_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/order_tracking_system_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/orders_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/seller_dashboard_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/whatsapp_continuation.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/whatsapp_input_and_actions.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/whatsapp_style_contact_seller_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/pages/wishlist_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/profile_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/sell_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/ai_chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/apmc_api_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/auth_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/buyer_interaction_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/cache_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/cart_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/connection_pool.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/conversation_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/enhanced_chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/enhanced_marketplace_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/enhanced_marketplace_service.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/fcm_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/firebase_marketplace_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/locale_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/localization_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/marketplace_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/multi_auth_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/notification_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/order_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/order_tracking_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/payment_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/performance_monitor.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/product_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/security_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/theme_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/user_state_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/services/wishlist_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/signup_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/test/auth_test_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/test/firebase_setup_checker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/test_functional_product_detail.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/test_marketplace_integration.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/theme/app_theme.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/utils/app_constants.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/utils/media_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/utils/performance_optimizer.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/utils/responsive_helper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/utils/toast_helper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/analytics_summary.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/base_layout_wrapper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/connection_status_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/crop_status_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/custom_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/enhanced_market_ticker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/live_market_rates_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/market_price_ticker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/news_carousel.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/product_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/product_detail_components.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/quick_action_grid.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/quick_action_grid_fixed.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/responsive_cards.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/search_filter_bar.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/universal_app_bar.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/universal_drawer.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/universal_header.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/weather_forecast_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase1_20260318_141611/lib/widgets/weather_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/APMCpage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/Detailspage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/MAHABEJpage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/MandiMapPage.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/auth_wrapper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/buy_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/colors.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/localization/app_localizations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/localization/app_localizations_en.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/localization/translations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/managers/locale_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/managers/theme_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/performance/batch_processor.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/performance/connection_pool_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/core/performance/memory_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/dashboard_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/apmc_commodity_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/apmc_commodity_detail_page_new.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/apmc_market_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/apmc_market_page_enhanced.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/enhanced_apmc_market_live.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/enhanced_apmc_market_live_fixed.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/apmc/enhanced_apmc_market_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/ai_chat_sessions_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/bid_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/buyer_profile_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/chat_screen.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/conversation_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/conversations_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/chat/enhanced_ai_expert_chat_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/community/community_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/community/role_based_community_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/crops/crops_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/dashboard/dashboard_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/add_product_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/buy_request_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/buyer_interests_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/buying_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/chat_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/complete_marketplace_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/enhanced_selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/marketplace_home.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/order_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/price_offers_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/product_detail_page.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/marketplace/selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/orders/order_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/orders/order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/profile/edit_profile_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/profile/license_management_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/profile/profile_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/features/weather/weather_dashboard.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/firebase_options.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/geolocator.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/home_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/itemsForSale.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/l10n/app_localizations.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/login_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/main.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/main_app_layout.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/mandi_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/ai_chat_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/chat_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/conversation_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/enhanced_chat_models.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/marketplace_models.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/order_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/payment_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/product_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/models/user_model.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/news_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/buyer_details_dialog.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/buyer_details_dialog.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/buyer_details_dialog.dart.corrupted2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/buying_list_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/cart_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/chat_conversation_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/chat_conversation_page.dart.backup2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/chat_conversation_page.dart.corrupted" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/checkout_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/complete_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/contacted_sellers_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/enhanced_contact_seller_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/enhanced_order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/enhanced_product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/enhanced_settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/enhanced_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/help_support_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/improved_settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/inventory_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/license_management_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/optimized_order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/order_success_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/order_tracking_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/order_tracking_system_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/orders_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/product_detail_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/seller_dashboard_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/selling_history_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/settings_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/whatsapp_continuation.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/whatsapp_input_and_actions.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/whatsapp_style_contact_seller_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/pages/wishlist_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/profile_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/sell_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/ai_chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/apmc_api_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/auth_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/buyer_interaction_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/cache_manager.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/cart_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/connection_pool.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/conversation_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/enhanced_chat_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/enhanced_marketplace_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/enhanced_marketplace_service.dart.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/fcm_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/locale_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/localization_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/marketplace_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/multi_auth_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/notification_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/order_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/order_tracking_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/payment_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/performance_monitor.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/product_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/security_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/theme_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/user_state_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/services/wishlist_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/signup_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/test/auth_test_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/test/firebase_setup_checker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/test_functional_product_detail.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/test_marketplace_integration.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/theme/app_theme.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/utils/app_constants.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/utils/media_service.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/utils/performance_optimizer.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/utils/responsive_helper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/utils/toast_helper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/analytics_summary.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/base_layout_wrapper.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/connection_status_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/crop_status_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/custom_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/enhanced_market_ticker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/live_market_rates_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/market_price_ticker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/news_carousel.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/product_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/product_detail_components.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/quick_action_grid.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/quick_action_grid_fixed.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/responsive_cards.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/search_filter_bar.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/universal_app_bar.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/universal_drawer.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/universal_header.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/weather_forecast_card.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backup_before_phase2_20260318_142603/lib/widgets/weather_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build_android.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy_production.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ALL_ISSUES_FIXED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ANDROID_APP_COMPLETE_FIXES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ANDROID_COMPLETE_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ANDROID_IMPROVEMENTS_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/APMC_ENHANCEMENT_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/APP_RUNNING_SUCCESS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/BUILD_SUCCESS_FINAL.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/BUILD_SUCCESS_SUMMARY.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/CART_AND_LICENSE_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/CHROME_FLUTTER_FIX.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/COMPLETE_APP_ENHANCEMENTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/COMPLETE_APP_IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/COMPLETE_APP_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/COMPLETE_FEATURE_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/COMPLETE_IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/CRITICAL_FIXES_IMPLEMENTED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/Copilot optimize propmpts.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DARK_MODE_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DARK_MODE_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DASHBOARD_APMC_ENHANCEMENTS_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DASHBOARD_APMC_QUICK_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DEEP_DARK_THEME_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/DEPLOYMENT_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/EMULATOR_FIX_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ENHANCEMENTS_QUICK_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/ERRORS_FIXED_FINAL.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/FARMKARTS_COMPLETE_FEATURES_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/FEATURES_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/FINAL_ENHANCEMENTS_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/FIXES_COMPLETED_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/Farmakart Mulitilingustica sarvam ai api key.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/GITHUB_RELEASE_NOTES.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/GRADLE_FIX_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/IMMEDIATE_FIXES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/IMPLEMENTATION_COMPLETE_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/IMPLEMENTATION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MARKETPLACE_APMC_PROFILE_FIXES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_IMPLEMENTATION_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEME_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEME_COMPLETE_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEME_COMPLETE_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEME_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEME_SYSTEM_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEMING_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/MULTILINGUAL_THEMING_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_AND_PROFILE_UPDATE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_AND_RESPONSIVENESS_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_AND_RESPONSIVENESS_FIXES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_AND_UI_IMPROVEMENTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_FIXES_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_HEADERS_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/NAVIGATION_WISHLIST_CART_UPDATES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PAYMENT_SYSTEM_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PERFECT_HEADER_FIX.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PERFECT_NAVIGATION_AND_RESPONSIVENESS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PERFORMANCE_OPTIMIZATION_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_1_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_1_EXECUTION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_1_FIXES_COMPLETED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_1_QUICK_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_2_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_2_PARTIAL_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_2_QUICK_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_DOCUMENTATION_INDEX.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_EXECUTION_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_FINAL_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_QUICK_START.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PHASE_3_TEST_REPORT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_COMPLETE_FINAL.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_DEPLOYMENT_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_DEPLOYMENT_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_FEATURES_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_READY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PRODUCTION_READY_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/PURE_DARK_MODE_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_FIX_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_MULTILINGUAL_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_NAVIGATION_FIX.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_NAVIGATION_SETUP.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_REFERENCE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_START.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/QUICK_START_MULTILINGUAL.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/README_MULTILINGUAL_THEME.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/RESPONSIVENESS_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/RESPONSIVENESS_QUICK_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SCALABILITY_DEPLOYMENT_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SCALABILITY_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SCALABILITY_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SCALABILITY_QUICK_REF.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SCALABILITY_SUMMARY.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SIDEBAR_UNIFIED_DESIGN.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/SIDEBAR_VISUAL_COMPARISON.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/TRENDING_MICROSERVICE_ANALYSIS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UI_CONSISTENCY_QUICK_GUIDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UI_UX_CONSISTENCY_UPDATE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UNIVERSAL_HEADER_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UNIVERSAL_NAVIGATION_AND_IMPROVEMENTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UNIVERSAL_NAVIGATION_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/UNIVERSAL_NAVIGATION_COMPLETE_IMPLEMENTATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/USER_QUICK_START.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/WISHLIST_AND_PROFILE_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/WISHLIST_INTEGRATION_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/build_output.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/deploy_firestore_rules.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/deploy_production.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/deploy_production_windows.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/setup_marketplace.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/start_ai_services.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/start_enhanced_ai.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/start_enhanced_marketplace.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/test_ai_setup.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/test_enhanced_ai.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/test_performance.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/firestore.indexes.json" beforeDir="false" afterPath="$PROJECT_DIR$/firestore.indexes.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/firestore.rules" beforeDir="false" afterPath="$PROJECT_DIR$/firestore.rules" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Flutter/Generated.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/Generated.xcconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Flutter/ephemeral/flutter_lldb_helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/ephemeral/flutter_lldb_helper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Flutter/ephemeral/flutter_lldbinit" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/ephemeral/flutter_lldbinit" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Flutter/flutter_export_environment.sh" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Flutter/flutter_export_environment.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" beforeDir="false" afterPath="$PROJECT_DIR$/ios/Runner/GeneratedPluginRegistrant.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/launch_farmkart.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/localization/app_localizations.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/localization/app_localizations.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/localization/app_localizations_en.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/localization/app_localizations_en.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/localization/translations.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/localization/translations.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/managers/locale_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/managers/locale_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/managers/theme_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/managers/theme_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/performance/batch_processor.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/performance/batch_processor.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/performance/connection_pool_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/performance/connection_pool_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/core/performance/memory_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/performance/memory_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/apmc_commodity_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/apmc_commodity_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/apmc_commodity_detail_page_new.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/apmc_commodity_detail_page_new.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/apmc_market_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/apmc_market_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/apmc_market_page_enhanced.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/apmc_market_page_enhanced.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_live.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_live.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_live_fixed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_live_fixed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/apmc/enhanced_apmc_market_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/chat/ai_chat_sessions_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/chat/ai_chat_sessions_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/chat/chat_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/chat/chat_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/chat/conversation_list_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/chat/conversation_list_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/chat/conversations_list_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/chat/conversations_list_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/chat/enhanced_ai_expert_chat_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/chat/enhanced_ai_expert_chat_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/community_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/community_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/community_group_chat_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/community_group_chat_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/crop_chat_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/crop_chat_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/role_based_community_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/role_based_community_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/video_library_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/video_library_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/community/video_player_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/community/video_player_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/crops/ai_crop_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/crops/ai_crop_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/crops/crops_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/crops/crops_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/dashboard/dashboard_home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/dashboard/dashboard_home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/buy_request_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/buy_request_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/buyer_interests_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/buyer_interests_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/chat_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/chat_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/enhanced_selling_history_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/enhanced_selling_history_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/order_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/order_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/price_offers_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/price_offers_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/marketplace/product_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/marketplace/product_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/orders/order_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/orders/order_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/edit_profile_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/edit_profile_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/license_management_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/license_management_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/profile/profile_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/profile/profile_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/features/weather/weather_dashboard.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/weather/weather_dashboard.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/firebase_options.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/firebase_options.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/ai_chat_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/ai_chat_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/chat_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/chat_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/community_group_chat_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/community_group_chat_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/conversation_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/conversation_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/enhanced_chat_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/enhanced_chat_models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/inventory_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/inventory_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/marketplace_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/marketplace_models.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/order_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/order_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/payment_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/payment_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/product_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/product_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/trending_video_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/trending_video_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/models/user_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/user_model.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/add_inventory_item_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/add_inventory_item_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/add_product_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/add_product_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/admin_panel_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/admin_panel_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/apmc_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/apmc_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/auth_wrapper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/auth_wrapper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/buyer_details_dialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/buyer_details_dialog.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/buying_list_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/buying_list_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/cart_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/cart_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/chat_conversation_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/chat_conversation_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/checkout_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/checkout_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/complete_marketplace_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/complete_marketplace_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/complete_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/contacted_sellers_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/contacted_sellers_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/dashboard_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/dashboard_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/enhanced_contact_seller_page.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/enhanced_order_tracking_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/enhanced_order_tracking_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/enhanced_product_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/enhanced_product_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/enhanced_whatsapp_contact_seller.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/help_support_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/help_support_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/inventory_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/inventory_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/license_management_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/license_management_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/login_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/login_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/mahabej_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/mahabej_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/main_app_layout.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/main_app_layout.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/mandi_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/mandi_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/market_history_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/market_history_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/news_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/news_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/order_success_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/order_success_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/orders_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/orders_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/product_detail_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/product_detail_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/seller_dashboard_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/seller_dashboard_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/selling_history_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/selling_history_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/settings_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/settings_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/signup_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/signup_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/whatsapp_continuation.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/whatsapp_input_and_actions.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/whatsapp_style_contact_seller_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/whatsapp_style_contact_seller_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/pages/wishlist_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/wishlist_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/scripts/seed_community_videos.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/scripts/seed_community_videos.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/ai_chat_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/ai_chat_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/analytics_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/analytics_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/apmc_api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/apmc_api_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/auth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/auth_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/background_sync_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/background_sync_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/buyer_interaction_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/buyer_interaction_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/cache_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/cache_manager.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/cart_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/cart_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/chat_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/chat_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/connection_pool.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/connection_pool.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/conversation_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/conversation_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/enhanced_chat_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/enhanced_chat_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/enhanced_marketplace_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/enhanced_marketplace_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/fcm_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/fcm_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/image_optimization_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/image_optimization_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/in_app_messaging_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/in_app_messaging_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/inventory_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/inventory_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/locale_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/locale_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/localization_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/localization_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/marketplace_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/marketplace_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/multi_auth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/multi_auth_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/notification_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/notification_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/oauth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/oauth_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/offline_database_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/offline_database_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/order_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/order_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/order_tracking_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/order_tracking_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/payment_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/payment_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/performance_monitor.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/performance_monitor.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/performance_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/performance_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/product_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/product_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/push_notification_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/push_notification_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/security_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/security_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/sync_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/sync_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/theme_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/theme_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/trending_video_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/trending_video_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/user_state_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/user_state_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/weather_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/weather_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/services/wishlist_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/wishlist_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/auth_test_widget.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/firebase_setup_checker.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/quick_firebase_test.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_api.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_backend.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_firebase.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_firebase_connection.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_firebase_products.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_firestore_rules.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_functional_product_detail.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_marketplace_integration.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_product.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/test/test_product_creation.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/theme/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/theme/app_theme.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/app_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/app_constants.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/code_splitting_helper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/code_splitting_helper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/media_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/media_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/performance_optimizer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/performance_optimizer.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/responsive_helper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/responsive_helper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/state_notifier.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/state_notifier.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/utils/toast_helper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/utils/toast_helper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodels/marketplace_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodels/marketplace_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/viewmodels/signup_viewmodel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/viewmodels/signup_viewmodel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/analytics_summary.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/analytics_summary.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/base_layout_wrapper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/base_layout_wrapper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/connection_status_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/connection_status_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/crop_status_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/crop_status_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/custom_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/custom_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/enhanced_market_ticker.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/enhanced_market_ticker.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/live_market_rates_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/live_market_rates_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/market_price_ticker.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/market_price_ticker.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/news_carousel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/news_carousel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/oauth_buttons.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/oauth_buttons.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/offline_status_banner.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/offline_status_banner.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/product_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/product_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/product_detail_components.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/product_detail_components.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/quick_action_grid.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/quick_action_grid.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/quick_action_grid_fixed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/quick_action_grid_fixed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/responsive_cards.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/responsive_cards.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/search_filter_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/search_filter_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/universal_app_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/universal_app_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/universal_drawer.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/universal_drawer.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/universal_header.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/universal_header.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/weather_forecast_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/weather_forecast_card.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/weather_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/weather_widget.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/GeneratedPluginRegistrant.swift" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Flutter/ephemeral/Flutter-Generated.xcconfig" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/ephemeral/Flutter-Generated.xcconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/macos/Flutter/ephemeral/flutter_export_environment.sh" beforeDir="false" afterPath="$PROJECT_DIR$/macos/Flutter/ephemeral/flutter_export_environment.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec_main.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec_master.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec_me.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/run_farmkart_best.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_farmkart.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/services/auth_service_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/services/auth_service_test.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/services/marketplace_service_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/services/payment_service_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/services/performance_service_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/services/security_service_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/services/security_service_test.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/flutter/generated_plugin_registrant.cc" beforeDir="false" afterPath="$PROJECT_DIR$/windows/flutter/generated_plugin_registrant.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/windows/flutter/generated_plugins.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/windows/flutter/generated_plugins.cmake" afterDir="false" />
     </list>
@@ -30,129 +703,27 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="DartProblemsView" group-by-severity="false" />
-  <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="main.dart" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/lib/main.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
-  </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="marketplace-enhancement" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Atharva-007&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Atharva-007/farmkarts.git&quot;,
-    &quot;accountId&quot;: &quot;60f43866-d527-4006-8171-51a0a92bbd90&quot;
-  }
-}</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/lib/sell_page.dart" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/lib/features/apmc/apmc_market_page.dart" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 6
-}</component>
-  <component name="ProjectId" id="33jYwFtF5XS7GJXbhjBEkAklPDR" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
-  </component>
-  <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1" />
-    <panes>
-      <pane id="ProjectPane">
-        <option name="show-excluded-files" value="false" />
-      </pane>
-    </panes>
-  </component>
-  <component name="ProjectViewState">
-    <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Flutter.main.dart.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "ResourceManagerPrefKey.ResourceType": "NAVIGATION",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
     "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "io.flutter.project.isFirstOpen": "true",
-    "io.flutter.reload.alreadyRun": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/athar/StudioProjects/farmkarts_new",
-    "settings.editor.selected.configurable": "settings.sync",
-    "show.migrate.to.gradle.popup": "false"
+    "io.flutter.reload.alreadyRun": "true"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\athar\StudioProjects\farmkarts_new\android" />
-    </key>
-  </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="bceab694-d316-4791-9006-a2beedfb55a5" name="Changes" comment="" />
-      <created>1759832185493</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1759832185493</updated>
-    </task>
     <servers />
   </component>
-  <component name="ToolWindowManager">
-    <editor active="true" />
-    <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-    </layout>
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="origin/main" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
-            </State>
-          </value>
-        </entry>
-      </map>
-    </option>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="firestore.indexes.json" />
   </component>
 </project>

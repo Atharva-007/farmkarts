@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/product_model.dart';
 import '../models/conversation_model.dart';
 import '../theme/app_theme.dart';
-import '../utils/app_constants.dart';
 import '../services/chat_service.dart';
 import 'chat_conversation_page.dart';
 
@@ -155,7 +154,8 @@ class _BuyerDetailsDialogState extends State<BuyerDetailsDialog>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
+                Icon(Icons.chat_bubble_outline,
+                    size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 const Text(
                   'No conversations yet',
@@ -185,7 +185,8 @@ class _BuyerDetailsDialogState extends State<BuyerDetailsDialog>
   Widget _buildConversationCard(Conversation conversation) {
     final currentUser = FirebaseAuth.instance.currentUser;
     final isFromBuyer = conversation.buyerId != currentUser?.uid;
-    final otherPersonName = isFromBuyer ? conversation.buyerName : conversation.sellerName;
+    final otherPersonName =
+        isFromBuyer ? conversation.buyerName : conversation.sellerName;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -213,9 +214,12 @@ class _BuyerDetailsDialogState extends State<BuyerDetailsDialog>
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                    backgroundColor:
+                        AppTheme.primaryGreen.withValues(alpha: 0.1),
                     child: Text(
-                      otherPersonName.isNotEmpty ? otherPersonName[0].toUpperCase() : 'B',
+                      otherPersonName.isNotEmpty
+                          ? otherPersonName[0].toUpperCase()
+                          : 'B',
                       style: TextStyle(
                         color: AppTheme.primaryGreen,
                         fontWeight: FontWeight.bold,
@@ -260,7 +264,8 @@ class _BuyerDetailsDialogState extends State<BuyerDetailsDialog>
                       if (conversation.unreadCount > 0) ...[
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryGreen,
                             borderRadius: BorderRadius.circular(12),
@@ -360,7 +365,8 @@ class _BuyerDetailsDialogState extends State<BuyerDetailsDialog>
               children: [
                 Text('Buyer ID: $buyerId'),
                 const SizedBox(height: 8),
-                const Text('Additional buyer details will be available in future updates.'),
+                const Text(
+                    'Additional buyer details will be available in future updates.'),
               ],
             ),
             actions: [

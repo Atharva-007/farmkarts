@@ -98,7 +98,7 @@ void main() {
         final encrypted = securityService.encryptData(originalData, encryptionKey);
         
         // Tamper with the encrypted data
-        final tampered = encrypted.substring(0, encrypted.length - 5) + 'XXXXX';
+        final tampered = '${encrypted.substring(0, encrypted.length - 5)}XXXXX';
         final decrypted = securityService.decryptData(tampered, encryptionKey);
         
         expect(decrypted.isEmpty, true);

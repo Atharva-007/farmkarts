@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import '../models/product_model.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_constants.dart';
@@ -112,7 +111,7 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
         width: 150,
         height: 150,
         decoration: BoxDecoration(
-          color: AppTheme.success.withOpacity(0.1),
+          color: AppTheme.success.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: Center(
@@ -140,17 +139,17 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
         Text(
           'Order Confirmed!',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppTheme.success,
-          ),
+                fontWeight: FontWeight.bold,
+                color: AppTheme.success,
+              ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           'Thank you for your purchase. Your order has been confirmed and payment received successfully.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppTheme.textGrey,
-          ),
+                color: AppTheme.textGrey,
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -172,8 +171,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                 Text(
                   'Order Details',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -189,7 +188,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             width: 60,
                             height: 60,
                             color: Colors.grey[300],
@@ -210,16 +210,17 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                     children: [
                       Text(
                         widget.product.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Seller: ${widget.product.sellerName}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textGrey,
-                        ),
+                              color: AppTheme.textGrey,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -229,10 +230,11 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                       const SizedBox(height: 4),
                       Text(
                         '₹${(widget.product.price * widget.quantity).toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppTheme.primaryGreen,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppTheme.primaryGreen,
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ],
                   ),
@@ -268,22 +270,22 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                 Text(
                   'Payment Details',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             _buildDetailRow('Payment ID', widget.paymentId),
             const SizedBox(height: 8),
-            _buildDetailRow('Payment Status', 'Completed', 
-              valueColor: AppTheme.success),
+            _buildDetailRow('Payment Status', 'Completed',
+                valueColor: AppTheme.success),
             const SizedBox(height: 8),
             _buildDetailRow('Payment Method', 'Razorpay'),
             const SizedBox(height: 8),
-            _buildDetailRow('Amount Paid', 
-              '₹${(widget.product.price * widget.quantity).toStringAsFixed(2)}',
-              valueColor: AppTheme.primaryGreen),
+            _buildDetailRow('Amount Paid',
+                '₹${(widget.product.price * widget.quantity).toStringAsFixed(2)}',
+                valueColor: AppTheme.primaryGreen),
           ],
         ),
       ),
@@ -305,8 +307,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
                 Text(
                   'What\'s Next?',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -383,16 +385,16 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isCompleted ? AppTheme.success : AppTheme.textGrey,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: isCompleted ? AppTheme.success : AppTheme.textGrey,
+                    ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
-                ),
+                      color: AppTheme.textGrey,
+                    ),
               ),
               if (!isLast) const SizedBox(height: 16),
             ],
@@ -409,16 +411,16 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textGrey,
-          ),
+                color: AppTheme.textGrey,
+              ),
         ),
         Flexible(
           child: Text(
             value,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: valueColor,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: valueColor,
+                ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -447,7 +449,8 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Tracking information will be available soon'),
+                    content:
+                        Text('Tracking information will be available soon'),
                   ),
                 );
               }
@@ -505,9 +508,9 @@ class _OrderSuccessPageState extends State<OrderSuccessPage>
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppTheme.info.withOpacity(0.1),
+            color: AppTheme.info.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.info.withOpacity(0.3)),
+            border: Border.all(color: AppTheme.info.withValues(alpha: 0.3)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

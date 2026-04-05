@@ -23,7 +23,7 @@ class LocaleManager extends ChangeNotifier {
   /// Set and persist new locale
   Future<void> setLocale(Locale locale) async {
     if (_locale == locale) return;
-    
+
     try {
       _locale = locale;
       final prefs = await SharedPreferences.getInstance();

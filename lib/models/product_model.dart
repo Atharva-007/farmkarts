@@ -44,37 +44,44 @@ class Product {
     if (map.isEmpty) {
       throw ArgumentError('Product map cannot be empty');
     }
-    
+
     DateTime timestamp = DateTime.now();
     DateTime? createdAt;
-    
+
     // Handle Firestore Timestamp or milliseconds for timestamp
     if (map['timestamp'] != null) {
       if (map['timestamp'] is int) {
         timestamp = DateTime.fromMillisecondsSinceEpoch(map['timestamp']);
-      } else if (map['timestamp'].runtimeType.toString().contains('Timestamp')) {
+      } else if (map['timestamp']
+          .runtimeType
+          .toString()
+          .contains('Timestamp')) {
         // Firestore Timestamp
         timestamp = (map['timestamp'] as dynamic).toDate();
       }
     }
-    
+
     // Handle createdAt separately
     if (map['createdAt'] != null) {
       if (map['createdAt'] is int) {
         createdAt = DateTime.fromMillisecondsSinceEpoch(map['createdAt']);
-      } else if (map['createdAt'].runtimeType.toString().contains('Timestamp')) {
+      } else if (map['createdAt']
+          .runtimeType
+          .toString()
+          .contains('Timestamp')) {
         createdAt = (map['createdAt'] as dynamic).toDate();
       }
     }
-    
+
     // Handle imageUrls safely
     List<String> imageUrls = [];
     if (map['imageUrls'] != null && map['imageUrls'] is List) {
       imageUrls = List<String>.from(map['imageUrls']);
-    } else if (map['imageUrl'] != null && map['imageUrl'].toString().isNotEmpty) {
+    } else if (map['imageUrl'] != null &&
+        map['imageUrl'].toString().isNotEmpty) {
       imageUrls = [map['imageUrl'].toString()];
     }
-    
+
     return Product(
       id: id,
       name: map['name']?.toString() ?? '',
@@ -90,8 +97,8 @@ class Product {
       createdAt: createdAt,
       isOrganic: map['isOrganic'] ?? false,
       isAvailable: map['isAvailable'] ?? true,
-      quantity: (map['quantity'] ?? 0) is int 
-          ? map['quantity'] 
+      quantity: (map['quantity'] ?? 0) is int
+          ? map['quantity']
           : int.tryParse(map['quantity'].toString()) ?? 0,
       tags: map['tags'] != null ? List<String>.from(map['tags']) : [],
       rating: map['rating']?.toDouble(),
@@ -125,6 +132,48 @@ class Product {
       'rating': rating,
       'reviewCount': reviewCount,
     };
+  }
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? category,
+    double? price,
+    String? unit,
+    List<String>? imageUrls,
+    String? sellerId,
+    String? sellerName,
+    String? location,
+    DateTime? timestamp,
+    DateTime? createdAt,
+    bool? isOrganic,
+    bool? isAvailable,
+    int? quantity,
+    List<String>? tags,
+    double? rating,
+    int? reviewCount,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      price: price ?? this.price,
+      unit: unit ?? this.unit,
+      imageUrls: imageUrls ?? this.imageUrls,
+      sellerId: sellerId ?? this.sellerId,
+      sellerName: sellerName ?? this.sellerName,
+      location: location ?? this.location,
+      timestamp: timestamp ?? this.timestamp,
+      createdAt: createdAt ?? this.createdAt,
+      isOrganic: isOrganic ?? this.isOrganic,
+      isAvailable: isAvailable ?? this.isAvailable,
+      quantity: quantity ?? this.quantity,
+      tags: tags ?? this.tags,
+      rating: rating ?? this.rating,
+      reviewCount: reviewCount ?? this.reviewCount,
+    );
   }
 }
 

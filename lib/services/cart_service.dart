@@ -24,7 +24,7 @@ class CartService {
 
       return true;
     } catch (e) {
-      print('Error adding to cart: $e');
+      // print('Error adding to cart: $e');
       return false;
     }
   }
@@ -48,7 +48,7 @@ class CartService {
 
       return true;
     } catch (e) {
-      print('Error updating cart quantity: $e');
+      // print('Error updating cart quantity: $e');
       return false;
     }
   }
@@ -68,7 +68,7 @@ class CartService {
 
       return true;
     } catch (e) {
-      print('Error removing from cart: $e');
+      // print('Error removing from cart: $e');
       return false;
     }
   }
@@ -88,7 +88,7 @@ class CartService {
 
       return doc.exists;
     } catch (e) {
-      print('Error checking cart: $e');
+      // print('Error checking cart: $e');
       return false;
     }
   }
@@ -111,7 +111,7 @@ class CartService {
       }
       return 0;
     } catch (e) {
-      print('Error getting cart quantity: $e');
+      // print('Error getting cart quantity: $e');
       return 0;
     }
   }
@@ -134,7 +134,7 @@ class CartService {
       }
       return total;
     } catch (e) {
-      print('Error getting cart count: $e');
+      // print('Error getting cart count: $e');
       return 0;
     }
   }
@@ -159,7 +159,7 @@ class CartService {
 
       return true;
     } catch (e) {
-      print('Error clearing cart: $e');
+      // print('Error clearing cart: $e');
       return false;
     }
   }

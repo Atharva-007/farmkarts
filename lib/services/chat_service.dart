@@ -61,7 +61,8 @@ class ChatService {
     String? notes,
   }) async {
     try {
-      final conversation = await _conversationService.getConversation(conversationId);
+      final conversation =
+          await _conversationService.getConversation(conversationId);
       if (conversation == null) throw Exception('Conversation not found');
 
       final bidMessage = '🏷️ BID OFFER\n'
@@ -88,14 +89,15 @@ class ChatService {
     MessageType type = MessageType.text,
   }) async {
     try {
-      final conversation = await _conversationService.getConversation(conversationId);
+      final conversation =
+          await _conversationService.getConversation(conversationId);
       if (conversation == null) throw Exception('Conversation not found');
 
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      final receiverId = user.uid == conversation.buyerId 
-          ? conversation.sellerId 
+      final receiverId = user.uid == conversation.buyerId
+          ? conversation.sellerId
           : conversation.buyerId;
 
       await _conversationService.sendMessage(
@@ -115,8 +117,29 @@ class ChatService {
   }
 
   /// Get user conversations
+  Stream<List<Conversation>> getConversations() {
+    return _conversationService.getUserConversations();
+  }
+
+  /// Get user conversations (backward compatibility)
   Stream<List<Conversation>> getUserConversations() {
     return _conversationService.getUserConversations();
+  }
+
+  /// Get total unread message count for current user
+  Stream<int> getUnreadCount() {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value(0);
+
+    return _conversationService.getUserConversations().map((conversations) {
+      return conversations.fold(0, (sum, conv) => sum + conv.unreadCount);
+    });
+  }
+
+  /// Delete a conversation
+  Future<void> deleteConversation(String conversationId) async {
+    // Note: In production, you might want to soft-delete or archive
+    await _firestore.collection('conversations').doc(conversationId).delete();
   }
 
   /// Mark messages as read

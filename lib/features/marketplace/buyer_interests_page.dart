@@ -11,17 +11,18 @@ class BuyerInterestsPage extends StatefulWidget {
   final String productId;
 
   const BuyerInterestsPage({
-    Key? key,
+    super.key,
     required this.productId,
-  }) : super(key: key);
+  });
 
   @override
   State<BuyerInterestsPage> createState() => _BuyerInterestsPageState();
 }
 
 class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
-  final EnhancedMarketplaceService _marketplaceService = EnhancedMarketplaceService();
-  
+  final EnhancedMarketplaceService _marketplaceService =
+      EnhancedMarketplaceService();
+
   List<BuyerInterest> _interests = [];
   bool _isLoading = true;
   String? _error;
@@ -33,40 +34,46 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
   }
 
   Future<void> _loadInterests() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final interests = await _marketplaceService.getProductInterests(widget.productId);
-      setState(() {
-        _interests = interests;
-        _isLoading = false;
-      });
+      final interests =
+          await _marketplaceService.getProductInterests(widget.productId);
+      if (mounted) {
+        setState(() {
+          _interests = interests;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Interested Buyers',
           style: TextStyle(
-            color: AppTheme.textDark,
+            color: AppTheme.getAppBarTextColor(context),
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.getAppBarColor(context),
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppTheme.textDark),
+        iconTheme: IconThemeData(color: AppTheme.getAppBarTextColor(context)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -80,7 +87,9 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+          child: CircularProgressIndicator(
+              color: AppTheme.getPrimaryAccent(context)));
     }
 
     if (_error != null) {
@@ -93,6 +102,7 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
 
     return RefreshIndicator(
       onRefresh: _loadInterests,
+      color: AppTheme.getPrimaryAccent(context),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _interests.length,
@@ -105,11 +115,17 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
 
   Widget _buildInterestCard(BuyerInterest interest) {
     final statusColor = _getStatusColor(interest.status);
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: isDark ? 0 : 2,
+      color: AppTheme.getCardColor(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -119,11 +135,14 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppTheme.primary.withOpacity(0.1),
+                  backgroundColor:
+                      AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
                   child: Text(
-                    interest.buyerName.isNotEmpty ? interest.buyerName[0].toUpperCase() : 'B',
-                    style: const TextStyle(
-                      color: AppTheme.primary,
+                    interest.buyerName.isNotEmpty
+                        ? interest.buyerName[0].toUpperCase()
+                        : 'B',
+                    style: TextStyle(
+                      color: AppTheme.getPrimaryAccent(context),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -135,15 +154,16 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
                     children: [
                       Text(
                         interest.buyerName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
                       Text(
                         interest.buyerEmail,
-                        style: const TextStyle(
-                          color: AppTheme.textGrey,
+                        style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context),
                           fontSize: 14,
                         ),
                       ),
@@ -151,61 +171,68 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     interest.status.toUpperCase(),
                     style: TextStyle(
                       color: statusColor,
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Interest details
             if (interest.message.isNotEmpty) ...[
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.backgroundLight,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.getSurfaceColor(context),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: AppTheme.getBorderColor(context)
+                          .withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Message:',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textGrey,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       interest.message,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(
+                          fontSize: 14, color: AppTheme.getTextColor(context)),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
-            
+
             // Quantity and preferences
             Row(
               children: [
                 Expanded(
                   child: _buildInfoChip(
-                    icon: Icons.shopping_cart,
+                    icon: Icons.shopping_cart_outlined,
                     label: 'Quantity',
                     value: '${interest.interestedQuantity} units',
                     color: Colors.blue,
@@ -222,49 +249,63 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
                 ),
               ],
             ),
-            
-            const SizedBox(height: 12),
-            
+
+            const SizedBox(height: 16),
+
             // Timestamp
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: AppTheme.textGrey),
-                const SizedBox(width: 4),
+                Icon(Icons.access_time_rounded,
+                    size: 14,
+                    color: AppTheme.getSecondaryTextColor(context)
+                        .withValues(alpha: 0.6)),
+                const SizedBox(width: 6),
                 Text(
                   'Interested ${_formatDateTime(interest.createdAt)}',
-                  style: const TextStyle(
-                    color: AppTheme.textGrey,
+                  style: TextStyle(
+                    color: AppTheme.getSecondaryTextColor(context)
+                        .withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
-            
-            const SizedBox(height: 16),
-            
+
+            const SizedBox(height: 20),
+
             // Action buttons
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => _contactBuyer(interest),
-                    icon: Icon(_getContactIcon(interest.contactPreference), size: 16),
-                    label: Text('Contact ${interest.contactPreference == 'email' ? 'via Email' : 'via Phone'}'),
+                    icon: Icon(_getContactIcon(interest.contactPreference),
+                        size: 18),
+                    label: Text(
+                        'Contact ${interest.contactPreference == 'email' ? 'Email' : 'Phone'}'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primary,
+                      foregroundColor: AppTheme.getPrimaryAccent(context),
                       padding: const EdgeInsets.symmetric(vertical: 12),
+                      side:
+                          BorderSide(color: AppTheme.getPrimaryAccent(context)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: () => _viewBuyerDetails(interest),
-                  icon: const Icon(Icons.person, size: 16),
-                  label: const Text('View Details'),
+                  icon: const Icon(Icons.person_search_rounded, size: 18),
+                  label: const Text('Details'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primary,
+                    backgroundColor: AppTheme.getPrimaryAccent(context),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
                 ),
               ],
@@ -282,10 +323,11 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -298,16 +340,18 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
                 Text(
                   label,
                   style: TextStyle(
-                    color: color,
+                    color: color.withValues(alpha: 0.8),
                     fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.getTextColor(context),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -327,10 +371,10 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
+            Icon(
+              Icons.error_outline_rounded,
               size: 64,
-              color: AppTheme.error,
+              color: AppTheme.getErrorColor(context).withValues(alpha: 0.7),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -344,14 +388,19 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
             Text(
               _error ?? 'Unknown error occurred',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppTheme.textGrey,
+              style: TextStyle(
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _loadInterests,
-              child: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.getPrimaryAccent(context),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -366,25 +415,28 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.people_outline,
-              size: 64,
-              color: AppTheme.textGrey,
+            Icon(
+              Icons.people_outline_rounded,
+              size: 80,
+              color: AppTheme.getSecondaryTextColor(context)
+                  .withValues(alpha: 0.2),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            const SizedBox(height: 24),
+            Text(
               'No interested buyers yet',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: AppTheme.getTextColor(context),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'When buyers show interest in your product, they will appear here',
+            const SizedBox(height: 12),
+            Text(
+              'When buyers show interest in your product, they will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: AppTheme.textGrey,
+                color: AppTheme.getSecondaryTextColor(context),
+                fontSize: 15,
               ),
             ),
           ],
@@ -411,26 +463,26 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
   IconData _getContactIcon(String contactPreference) {
     switch (contactPreference.toLowerCase()) {
       case 'email':
-        return Icons.email;
+        return Icons.email_outlined;
       case 'phone':
-        return Icons.phone;
+        return Icons.phone_outlined;
       case 'chat':
-        return Icons.chat;
+        return Icons.chat_bubble_outline_rounded;
       default:
-        return Icons.contact_mail;
+        return Icons.contact_mail_outlined;
     }
   }
 
   String _formatDateTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inDays > 0) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours} hours ago';
+      return '${difference.inHours}h ago';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes} minutes ago';
+      return '${difference.inMinutes}m ago';
     } else {
       return 'Just now';
     }
@@ -444,10 +496,11 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
           path: interest.buyerEmail,
           queryParameters: {
             'subject': 'Regarding your interest in my product',
-            'body': 'Hi ${interest.buyerName},\n\nI received your inquiry about my product. I would like to discuss further.\n\nBest regards',
+            'body':
+                'Hi ${interest.buyerName},\n\nI received your inquiry about my product. I would like to discuss further.\n\nBest regards',
           },
         );
-        
+
         if (await canLaunchUrl(emailUri)) {
           await launchUrl(emailUri);
         } else {
@@ -476,9 +529,9 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
   Widget _buildBuyerDetailsBottomSheet(BuyerInterest interest) {
     return Container(
       margin: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: const BorderRadius.all(Radius.circular(24)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -488,45 +541,51 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
           children: [
             Row(
               children: [
-                const Text(
+                Text(
                   'Buyer Details',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextColor(context),
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close_rounded),
                 ),
               ],
             ),
             const SizedBox(height: 24),
             _buildDetailRow('Name', interest.buyerName),
             _buildDetailRow('Email', interest.buyerEmail),
-            _buildDetailRow('Interested Quantity', '${interest.interestedQuantity} units'),
-            _buildDetailRow('Contact Preference', interest.contactPreference),
+            _buildDetailRow('Quantity', '${interest.interestedQuantity} units'),
+            _buildDetailRow('Preference', interest.contactPreference),
             _buildDetailRow('Status', interest.status),
-            _buildDetailRow('Interested On', _formatDateTime(interest.createdAt)),
+            _buildDetailRow('Date', _formatDateTime(interest.createdAt)),
             if (interest.message.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              const Text(
+              const SizedBox(height: 16),
+              Text(
                 'Message:',
                 style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textGrey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppTheme.getSecondaryTextColor(context),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.backgroundLight,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.getSurfaceColor(context),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                      color: AppTheme.getBorderColor(context)
+                          .withValues(alpha: 0.3)),
                 ),
-                child: Text(interest.message),
+                child: Text(interest.message,
+                    style: TextStyle(color: AppTheme.getTextColor(context))),
               ),
             ],
             const SizedBox(height: 24),
@@ -538,11 +597,15 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
                   _contactBuyer(interest);
                 },
                 icon: Icon(_getContactIcon(interest.contactPreference)),
-                label: const Text('Contact Buyer'),
+                label: const Text('Contact Buyer',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
+                  backgroundColor: AppTheme.getPrimaryAccent(context),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
               ),
             ),
@@ -554,24 +617,28 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 120,
+            width: 100,
             child: Text(
               '$label:',
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppTheme.textGrey,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14),
+              style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.getTextColor(context),
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -583,7 +650,8 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppTheme.error,
+        backgroundColor: AppTheme.getErrorColor(context),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
@@ -592,8 +660,14 @@ class _BuyerInterestsPageState extends State<BuyerInterestsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
+        backgroundColor: AppTheme.getCardColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title,
+            style: TextStyle(
+                color: AppTheme.getTextColor(context),
+                fontWeight: FontWeight.bold)),
+        content: Text(message,
+            style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

@@ -1,28 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
-import '../utils/user_role.dart';
+import '../utils/safe_google_sign_in.dart';
 
 /// Production-ready multi-provider authentication service
 /// Supports: Email/Password, Phone, Google Sign-In
 /// Optimized for 10,000+ concurrent users
 class MultiAuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final SafeGoogleSignIn _googleSignIn = SafeGoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   MultiAuthService() {
-    _initializeGoogleSignIn();
-  }
-
-  Future<void> _initializeGoogleSignIn() async {
-    try {
-      await _googleSignIn.initialize();
-    } catch (e) {
-      debugPrint('Google Sign-In initialization error: $e');
-    }
+    // Initialization
   }
 
   User? get currentUser => _auth.currentUser;
@@ -34,16 +25,15 @@ class MultiAuthService extends ChangeNotifier {
   // ==================== EMAIL/PASSWORD AUTHENTICATION ====================
 
   /// Sign in with email or mobile (checks both)
-  Future<UserCredential?> signInWithEmailOrMobile(String identifier, String password) async {
+  Future<UserCredential?> signInWithEmailOrMobile(
+      String identifier, String password) async {
     try {
-      // Check if identifier is email or mobile
       if (_isEmail(identifier)) {
         return await _auth.signInWithEmailAndPassword(
           email: identifier,
           password: password,
         );
       } else {
-        // Mobile number - convert to email format
         final email = _mobileToEmail(identifier);
         return await _auth.signInWithEmailAndPassword(
           email: email,
@@ -89,7 +79,7 @@ class MultiAuthService extends ChangeNotifier {
     }
   }
 
-  /// Register with mobile number (creates email from mobile)
+  /// Register with mobile number
   Future<UserCredential?> registerWithMobile({
     required String mobile,
     required String password,
@@ -98,7 +88,7 @@ class MultiAuthService extends ChangeNotifier {
   }) async {
     try {
       final email = _mobileToEmail(mobile);
-      
+
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -167,7 +157,7 @@ class MultiAuthService extends ChangeNotifier {
   }) async {
     try {
       if (_verificationId == null) {
-        throw Exception('Verification ID is null. Please request OTP first.');
+        throw Exception('Verification ID is null');
       }
 
       final credential = PhoneAuthProvider.credential(
@@ -177,7 +167,6 @@ class MultiAuthService extends ChangeNotifier {
 
       final userCredential = await _auth.signInWithCredential(credential);
 
-      // Create or update user profile
       if (userCredential.user != null) {
         final userDoc = await _firestore
             .collection('users')
@@ -210,26 +199,21 @@ class MultiAuthService extends ChangeNotifier {
     required UserRole role,
   }) async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-      
+      final googleUser = await _googleSignIn.signIn();
+
       if (googleUser == null) {
-        return null; // User cancelled
+        return null;
       }
 
-      // In version 7.0.0+, authentication property is synchronous
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-
-      // In version 7.0.0+, we need to request the access token explicitly
-      final String? accessToken = await _googleSignIn.authorizationClient.getAccessToken();
+      final tokens = await SafeGoogleSignIn.getAuthTokens(googleUser);
 
       final credential = GoogleAuthProvider.credential(
-        accessToken: accessToken,
-        idToken: googleAuth.idToken,
+        accessToken: tokens['accessToken'],
+        idToken: tokens['idToken'],
       );
 
       final userCredential = await _auth.signInWithCredential(credential);
 
-      // Create or update user profile
       if (userCredential.user != null) {
         final userDoc = await _firestore
             .collection('users')
@@ -256,7 +240,6 @@ class MultiAuthService extends ChangeNotifier {
 
   // ==================== PASSWORD RESET ====================
 
-  /// Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -266,20 +249,8 @@ class MultiAuthService extends ChangeNotifier {
     }
   }
 
-  /// Reset password for mobile users
-  Future<void> resetPasswordForMobile(String mobile) async {
-    try {
-      final email = _mobileToEmail(mobile);
-      await _auth.sendPasswordResetEmail(email: email);
-    } catch (e) {
-      debugPrint('Password reset error: $e');
-      rethrow;
-    }
-  }
-
   // ==================== SIGN OUT ====================
 
-  /// Sign out from all providers
   Future<void> signOut() async {
     try {
       await Future.wait([
@@ -295,7 +266,6 @@ class MultiAuthService extends ChangeNotifier {
 
   // ==================== USER PROFILE MANAGEMENT ====================
 
-  /// Create user profile in Firestore
   Future<void> _createUserProfile({
     required String uid,
     required String email,
@@ -307,13 +277,11 @@ class MultiAuthService extends ChangeNotifier {
     final userModel = UserModel(
       uid: uid,
       email: email,
-      name: name,
+      fullName: name,
       role: role,
-      mobile: mobile ?? '',
-      profilePicture: photoUrl ?? '',
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-      isActive: true,
+      mobileNo: mobile ?? '',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
     await _firestore
@@ -322,7 +290,6 @@ class MultiAuthService extends ChangeNotifier {
         .set(userModel.toMap(), SetOptions(merge: true));
   }
 
-  /// Get user profile
   Future<UserModel?> getUserProfile(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
@@ -336,10 +303,10 @@ class MultiAuthService extends ChangeNotifier {
     }
   }
 
-  /// Update user profile
-  Future<void> updateUserProfile(String uid, Map<String, dynamic> updates) async {
+  Future<void> updateUserProfile(
+      String uid, Map<String, dynamic> updates) async {
     try {
-      updates['updatedAt'] = Timestamp.now();
+      updates['updatedAt'] = DateTime.now().millisecondsSinceEpoch;
       await _firestore.collection('users').doc(uid).update(updates);
       notifyListeners();
     } catch (e) {
@@ -350,95 +317,27 @@ class MultiAuthService extends ChangeNotifier {
 
   // ==================== HELPER METHODS ====================
 
-  /// Check if string is email
   bool _isEmail(String identifier) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(identifier);
   }
 
-  /// Convert mobile number to email format
   String _mobileToEmail(String mobile) {
     final cleanMobile = mobile.replaceAll(RegExp(r'[^\d]'), '');
     return '$cleanMobile@farmkarts.app';
   }
 
-  /// Get error message from FirebaseAuthException
-  String getErrorMessage(dynamic error) {
-    if (error is FirebaseAuthException) {
-      switch (error.code) {
-        case 'user-not-found':
-          return 'No user found with this email/mobile';
-        case 'wrong-password':
-          return 'Incorrect password';
-        case 'email-already-in-use':
-          return 'This email/mobile is already registered';
-        case 'weak-password':
-          return 'Password should be at least 6 characters';
-        case 'invalid-email':
-          return 'Invalid email format';
-        case 'user-disabled':
-          return 'This account has been disabled';
-        case 'too-many-requests':
-          return 'Too many attempts. Please try again later';
-        case 'operation-not-allowed':
-          return 'This sign-in method is not enabled';
-        case 'invalid-verification-code':
-          return 'Invalid OTP code';
-        case 'invalid-verification-id':
-          return 'Invalid verification. Please request new OTP';
-        default:
-          return error.message ?? 'Authentication failed';
-      }
-    }
-    return error.toString();
-  }
-
-  /// Check if user exists
   Future<bool> userExists(String identifier) async {
     try {
-      if (_isEmail(identifier)) {
-        final methods = await _auth.fetchSignInMethodsForEmail(identifier);
-        return methods.isNotEmpty;
-      } else {
-        final email = _mobileToEmail(identifier);
-        final methods = await _auth.fetchSignInMethodsForEmail(email);
-        return methods.isNotEmpty;
-      }
+      String email =
+          _isEmail(identifier) ? identifier : _mobileToEmail(identifier);
+      final query = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+      return query.docs.isNotEmpty;
     } catch (e) {
       return false;
-    }
-  }
-
-  /// Link phone number to existing account
-  Future<void> linkPhoneNumber({
-    required String phoneNumber,
-    required String otp,
-  }) async {
-    try {
-      if (_verificationId == null) {
-        throw Exception('Verification ID is null');
-      }
-
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: otp,
-      );
-
-      await currentUser?.linkWithCredential(credential);
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Link phone error: $e');
-      rethrow;
-    }
-  }
-
-  /// Unlink phone number
-  Future<void> unlinkPhoneNumber() async {
-    try {
-      await currentUser?.unlink('phone');
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Unlink phone error: $e');
-      rethrow;
     }
   }
 }

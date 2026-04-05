@@ -19,27 +19,29 @@ class RoleBasedCommunityService {
             .toList());
   }
 
-  Future<void> sendGroupMessage(String groupId, CommunityGroupChatMessage message) async {
+  Future<void> sendGroupMessage(
+      String groupId, CommunityGroupChatMessage message) async {
     final messageData = message.toMap();
-    
+
     await _firestore
         .collection('crop_groups')
         .doc(groupId)
         .collection('messages')
         .add(messageData);
-    
+
     // Update last message in the group
     await _firestore.collection('crop_groups').doc(groupId).update({
       'lastMessage': message.content,
       'lastMessageTime': FieldValue.serverTimestamp(),
-      'memberCount': FieldValue.increment(0), // Placeholder to trigger update if needed
+      'memberCount':
+          FieldValue.increment(0), // Placeholder to trigger update if needed
     });
   }
 
   // Get community feed based on user role
   Stream<QuerySnapshot> getCommunityFeed(UserRole role) {
     String communityType;
-    
+
     switch (role) {
       case UserRole.farmer:
       case UserRole.customer:
@@ -78,7 +80,7 @@ class RoleBasedCommunityService {
     String? category,
   }) async {
     String communityType;
-    
+
     if (userRole == UserRole.farmer || userRole == UserRole.customer) {
       communityType = 'farmer_community';
     } else if (userRole == UserRole.vendor || userRole == UserRole.wholesaler) {
@@ -137,7 +139,7 @@ class RoleBasedCommunityService {
   // Get trending topics for the community
   Future<List<String>> getTrendingTopics(UserRole role) async {
     String communityType;
-    
+
     if (role == UserRole.farmer || role == UserRole.customer) {
       communityType = 'farmer_community';
     } else if (role == UserRole.vendor || role == UserRole.wholesaler) {
@@ -149,12 +151,13 @@ class RoleBasedCommunityService {
     final snapshot = await _firestore
         .collection('community_posts')
         .where('communityType', isEqualTo: communityType)
-        .where('timestamp', isGreaterThan: DateTime.now().subtract(const Duration(days: 7)))
+        .where('timestamp',
+            isGreaterThan: DateTime.now().subtract(const Duration(days: 7)))
         .limit(100)
         .get();
 
     final Map<String, int> categoryCount = {};
-    
+
     for (var doc in snapshot.docs) {
       final category = doc.data()['category'] as String? ?? 'general';
       categoryCount[category] = (categoryCount[category] ?? 0) + 1;

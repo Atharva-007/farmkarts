@@ -23,17 +23,19 @@ class ProductDetailPage extends StatefulWidget {
 
 class _ProductDetailPageState extends State<ProductDetailPage>
     with SingleTickerProviderStateMixin {
-  
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  
-  final EnhancedMarketplaceService _enhancedService = EnhancedMarketplaceService();
+
+  final EnhancedMarketplaceService _enhancedService =
+      EnhancedMarketplaceService();
   final ChatService _chatService = ChatService();
-  final TextEditingController _quantityController = TextEditingController(text: '1');
+  final TextEditingController _quantityController =
+      TextEditingController(text: '1');
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _bidAmountController = TextEditingController();
-  final TextEditingController _bidQuantityController = TextEditingController(text: '1');
-  
+  final TextEditingController _bidQuantityController =
+      TextEditingController(text: '1');
+
   bool _isContactingSeller = false;
   bool _isSendingBid = false;
   int _selectedQuantity = 1;
@@ -55,11 +57,11 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _pageController = PageController();
     _animationController.forward();
     _calculateTotalPrice();
-    
+
     _quantityController.addListener(_onQuantityChanged);
     _bidAmountController.text = widget.product.price.toString();
   }
@@ -107,8 +109,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       final initialMessage = _messageController.text.trim().isNotEmpty
           ? _messageController.text.trim()
           : 'Hi! I am interested in your product: ${widget.product.name}. '
-            'Quantity: $_selectedQuantity ${widget.product.unit}. '
-            'Total: ₹${_totalPrice.toStringAsFixed(2)}';
+              'Quantity: $_selectedQuantity ${widget.product.unit}. '
+              'Total: ₹${_totalPrice.toStringAsFixed(2)}';
 
       // Try the enhanced chat service first, fallback to marketplace service
       try {
@@ -117,7 +119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           buyerName: user.displayName ?? user.email ?? 'Buyer',
           initialMessage: initialMessage,
         );
-        
+
         if (mounted) {
           _showSuccessMessage('Message sent successfully!');
           _showConversationCreatedDialog(conversationId);
@@ -201,8 +203,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       } catch (e) {
         // Fallback to simple message
         final message = 'BID OFFER: ₹$bidAmount per ${widget.product.unit} '
-                       'for $bidQuantity ${widget.product.unit}. '
-                       'Total: ₹${(bidAmount * bidQuantity).toStringAsFixed(2)}';
+            'for $bidQuantity ${widget.product.unit}. '
+            'Total: ₹${(bidAmount * bidQuantity).toStringAsFixed(2)}';
 
         final conversationId = await _enhancedService.contactSeller(
           product: widget.product,
@@ -279,7 +281,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: SingleChildScrollView(
@@ -302,9 +304,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       fontSize: 14,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Bid Amount
                   const Text(
                     'Your Bid Amount',
@@ -316,7 +318,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _bidAmountController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       prefixText: '₹ ',
                       suffixText: '/${widget.product.unit}',
@@ -326,9 +329,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       hintText: 'Enter your bid amount',
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Quantity
                   const Text(
                     'Quantity',
@@ -349,26 +352,28 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       hintText: 'Enter quantity',
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Total calculation
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: AppTheme.primaryGreen.withOpacity(0.3),
+                        color: AppTheme.primaryGreen.withValues(alpha: 0.3),
                       ),
                     ),
                     child: ValueListenableBuilder(
                       valueListenable: _bidAmountController,
                       builder: (context, value, child) {
-                        final bidAmount = double.tryParse(_bidAmountController.text) ?? 0;
-                        final bidQuantity = int.tryParse(_bidQuantityController.text) ?? 1;
+                        final bidAmount =
+                            double.tryParse(_bidAmountController.text) ?? 0;
+                        final bidQuantity =
+                            int.tryParse(_bidQuantityController.text) ?? 1;
                         final totalBid = bidAmount * bidQuantity;
-                        
+
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -396,7 +401,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
               ),
             ),
           ),
-          
+
           // Footer
           Container(
             padding: const EdgeInsets.all(20),
@@ -676,7 +681,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             );
           },
         ),
-        
+
         // Image indicators
         if (widget.product.imageUrls.length > 1)
           Positioned(
@@ -694,7 +699,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     shape: BoxShape.circle,
                     color: _currentImageIndex == entry.key
                         ? Colors.white
-                        : Colors.white.withOpacity(0.4),
+                        : Colors.white.withValues(alpha: 0.4),
                   ),
                 );
               }).toList(),
@@ -743,9 +748,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ),
                   if (widget.product.isOrganic)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppTheme.success.withOpacity(0.1),
+                        color: AppTheme.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppTheme.success),
                       ),
@@ -766,17 +772,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Price
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.1),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppTheme.primaryGreen.withOpacity(0.3),
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -788,7 +794,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${widget.product.price.toStringAsFixed(2)}',
+                      widget.product.price.toStringAsFixed(2),
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -806,17 +812,18 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Product Details
-              _buildInfoRow('Available Quantity', '${widget.product.quantity} ${widget.product.unit}'),
+              _buildInfoRow('Available Quantity',
+                  '${widget.product.quantity} ${widget.product.unit}'),
               _buildInfoRow('Location', widget.product.location),
               if (widget.product.tags.isNotEmpty)
                 _buildInfoRow('Tags', widget.product.tags.join(', ')),
-              
+
               const SizedBox(height: 16),
-              
+
               // Description
               const Text(
                 'Description',
@@ -917,7 +924,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.location_on, size: 16, color: Colors.grey[500]),
+                            Icon(Icons.location_on,
+                                size: 16, color: Colors.grey[500]),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -930,7 +938,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.star, size: 16, color: Colors.orange),
+                            const Icon(Icons.star,
+                                size: 16, color: Colors.orange),
                             const SizedBox(width: 4),
                             const Text('4.5'),
                             const SizedBox(width: 8),
@@ -971,7 +980,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Quantity selector
               Row(
                 children: [
@@ -995,16 +1004,17 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Total price display
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.1),
+                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1027,9 +1037,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Message to seller
               TextField(
                 controller: _messageController,
@@ -1109,7 +1119,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, -2),
@@ -1128,7 +1138,8 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.message),
-              label: Text(_isContactingSeller ? 'Sending...' : 'Contact Seller'),
+              label:
+                  Text(_isContactingSeller ? 'Sending...' : 'Contact Seller'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.primaryGreen,
                 side: BorderSide(color: AppTheme.primaryGreen),

@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 /// In-App Messaging Service
 /// Handles Firebase In-App Messaging for user engagement and marketing
 class InAppMessagingService {
-  static final InAppMessagingService _instance = InAppMessagingService._internal();
+  static final InAppMessagingService _instance =
+      InAppMessagingService._internal();
   factory InAppMessagingService() => _instance;
   InAppMessagingService._internal();
 
@@ -124,7 +125,8 @@ class InAppMessagingService {
       triggerEvent('returning_customer');
     }
 
-    debugPrint('InAppMessaging: Engagement tracked - $daysActive days, $productsViewed views, $purchases purchases');
+    debugPrint(
+        'InAppMessaging: Engagement tracked - $daysActive days, $productsViewed views, $purchases purchases');
   }
 
   /// Track cart abandonment
@@ -140,7 +142,8 @@ class InAppMessagingService {
       triggerCartAbandoned();
     }
 
-    debugPrint('InAppMessaging: Cart abandonment tracked - ₹$cartValue, $itemCount items');
+    debugPrint(
+        'InAppMessaging: Cart abandonment tracked - ₹$cartValue, $itemCount items');
   }
 
   // ==================== LIFECYCLE CAMPAIGNS ====================
@@ -218,28 +221,28 @@ class InAppMessageEvents {
   // Lifecycle
   static const String appFirstLaunch = 'app_first_launch';
   static const String welcomeShown = 'welcome_shown';
-  
+
   // Engagement
   static const String productDiscovery = 'product_discovery';
   static const String highBrowseNoPurchase = 'high_browse_no_purchase';
   static const String firstWeekNoPurchase = 'first_week_no_purchase';
   static const String returningCustomer = 'returning_customer';
-  
+
   // Cart
   static const String cartAbandoned = 'cart_abandoned';
   static const String highValueCartAbandoned = 'high_value_cart_abandoned';
   static const String largeCartAbandoned = 'large_cart_abandoned';
-  
+
   // Retention
   static const String longTimeNoSee = 'long_time_no_see';
   static const String weMissYou = 'we_miss_you';
   static const String reengagementCampaign = 'reengagement_campaign';
-  
+
   // Features
   static const String newFeatureAvailable = 'new_feature_available';
   static const String tutorialNeeded = 'tutorial_needed';
   static const String feedbackRequest = 'feedback_request';
-  
+
   // Promotions
   static const String promotionAvailable = 'promotion_available';
   static const String priceDropAvailable = 'price_drop_available';

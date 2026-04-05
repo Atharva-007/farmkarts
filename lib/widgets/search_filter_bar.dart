@@ -23,7 +23,7 @@ class SearchFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = ResponsiveHelper.isMobile(context);
-    
+
     return Column(
       children: [
         // Search Bar
@@ -34,7 +34,7 @@ class SearchFilterBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -59,16 +59,17 @@ class SearchFilterBar extends StatelessWidget {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: onFilterPressed,
-                  icon: const Icon(Icons.filter_list, color: AppTheme.primaryGreen),
+                  icon: const Icon(Icons.filter_list,
+                      color: AppTheme.primaryGreen),
                   splashRadius: 20,
                 ),
               ],
             ],
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Category Filters
         SizedBox(
           height: 40,
@@ -79,7 +80,7 @@ class SearchFilterBar extends StatelessWidget {
             itemBuilder: (context, index) {
               final category = categories[index];
               final isSelected = category == selectedCategory;
-              
+
               return Container(
                 margin: const EdgeInsets.only(right: 8),
                 child: FilterChip(
@@ -87,7 +88,8 @@ class SearchFilterBar extends StatelessWidget {
                     category,
                     style: TextStyle(
                       color: isSelected ? Colors.white : AppTheme.textGrey,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       fontSize: isMobile ? 12 : 14,
                     ),
                   ),
@@ -97,12 +99,12 @@ class SearchFilterBar extends StatelessWidget {
                   selectedColor: AppTheme.primaryGreen,
                   checkmarkColor: Colors.white,
                   elevation: isSelected ? 4 : 2,
-                  shadowColor: AppTheme.primaryGreen.withOpacity(0.3),
+                  shadowColor: AppTheme.primaryGreen.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected 
-                          ? AppTheme.primaryGreen 
+                      color: isSelected
+                          ? AppTheme.primaryGreen
                           : AppTheme.borderGrey,
                     ),
                   ),

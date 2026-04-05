@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Payment method types
 enum PaymentMethod {
   cashOnDelivery,
@@ -8,6 +6,7 @@ enum PaymentMethod {
   creditCard,
   debitCard,
   wallet,
+  razorpay,
 }
 
 /// Payment status

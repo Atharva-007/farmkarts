@@ -85,7 +85,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : AppTheme.textDark),
+              icon: Icon(Icons.arrow_back,
+                  color: isDark ? Colors.white : AppTheme.textDark),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -107,9 +108,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryGreen.withOpacity(0.1),
+                          color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -133,18 +135,22 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.visibility_outlined, size: 16, color: AppTheme.textGrey),
+                          Icon(Icons.visibility_outlined,
+                              size: 16, color: AppTheme.textGrey),
                           const SizedBox(width: 4),
                           Text(
                             '${widget.video.viewCount} views',
-                            style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                            style: TextStyle(
+                                color: AppTheme.textGrey, fontSize: 13),
                           ),
                           const SizedBox(width: 16),
-                          Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.textGrey),
+                          Icon(Icons.calendar_today_outlined,
+                              size: 16, color: AppTheme.textGrey),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(widget.video.publishedDate),
-                            style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                            style: TextStyle(
+                                color: AppTheme.textGrey, fontSize: 13),
                           ),
                         ],
                       ),

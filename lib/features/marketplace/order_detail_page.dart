@@ -26,11 +26,12 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Future<void> _loadOrders() async {
     try {
       setState(() => _isLoading = true);
-      
+
       // Get all orders for the seller and filter by product
       final allOrders = await _orderService.searchOrders('', forSeller: true);
-      _orders = allOrders.where((order) => order.productId == widget.productId).toList();
-      
+      _orders = allOrders
+          .where((order) => order.productId == widget.productId)
+          .toList();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading orders: $e')),
@@ -55,7 +56,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
+                      Icon(Icons.shopping_cart_outlined,
+                          size: 80, color: Colors.grey),
                       SizedBox(height: 16),
                       Text('No orders found for this product'),
                     ],
@@ -85,32 +87,31 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               children: [
                 Text(
                   'Order #${order.id.substring(0, 8)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 _buildStatusChip(order.status),
               ],
             ),
             const SizedBox(height: 12),
-            
             _buildInfoRow('Buyer', order.buyerName),
             _buildInfoRow('Phone', order.buyerPhone),
             _buildInfoRow('Address', order.buyerAddress),
             _buildInfoRow('Quantity', '${order.quantity} ${order.unit}'),
             _buildInfoRow('Total Amount', '₹${order.totalAmount}'),
             _buildInfoRow('Order Date', _formatDate(order.orderDate)),
-            
             if (order.notes != null && order.notes!.isNotEmpty)
               _buildInfoRow('Notes', order.notes!),
-            
             const SizedBox(height: 16),
-            
             if (order.status == OrderModelFile.OrderStatus.pending)
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => _updateOrderStatus(order, OrderModelFile.OrderStatus.confirmed),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      onPressed: () => _updateOrderStatus(
+                          order, OrderModelFile.OrderStatus.confirmed),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green),
                       child: const Text('Accept'),
                     ),
                   ),
@@ -118,7 +119,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => _showCancelDialog(order),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       child: const Text('Reject'),
                     ),
                   ),
@@ -126,13 +128,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               )
             else if (order.status == OrderModelFile.OrderStatus.confirmed)
               ElevatedButton(
-                onPressed: () => _updateOrderStatus(order, OrderModelFile.OrderStatus.shipped),
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryGreen),
+                onPressed: () => _updateOrderStatus(
+                    order, OrderModelFile.OrderStatus.shipped),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGreen),
                 child: const Text('Mark as Shipped'),
               )
             else if (order.status == OrderModelFile.OrderStatus.shipped)
               ElevatedButton(
-                onPressed: () => _updateOrderStatus(order, OrderModelFile.OrderStatus.delivered),
+                onPressed: () => _updateOrderStatus(
+                    order, OrderModelFile.OrderStatus.delivered),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: const Text('Mark as Delivered'),
               ),
@@ -192,17 +197,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  Future<void> _updateOrderStatus(OrderModelFile.OrderModel order, OrderModelFile.OrderStatus newStatus) async {
+  Future<void> _updateOrderStatus(OrderModelFile.OrderModel order,
+      OrderModelFile.OrderStatus newStatus) async {
     try {
       await _orderService.updateOrderStatus(
         orderId: order.id,
         newStatus: newStatus,
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Order status updated to ${newStatus.displayName}')),
+        SnackBar(
+            content: Text('Order status updated to ${newStatus.displayName}')),
       );
-      
+
       _loadOrders(); // Refresh the orders
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +220,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   void _showCancelDialog(OrderModelFile.OrderModel order) {
     final reasonController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -251,14 +258,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  Future<void> _cancelOrder(OrderModelFile.OrderModel order, String reason) async {
+  Future<void> _cancelOrder(
+      OrderModelFile.OrderModel order, String reason) async {
     try {
-      await _orderService.cancelOrder(order.id, reason.isNotEmpty ? reason : 'Cancelled by seller');
-      
+      await _orderService.cancelOrder(
+          order.id, reason.isNotEmpty ? reason : 'Cancelled by seller');
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order cancelled successfully')),
       );
-      
+
       _loadOrders(); // Refresh the orders
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -20,7 +20,7 @@ const Map<String, Map<String, String>> translations = {
     'create_account': 'Create Account',
     'already_have_account': 'Already have an account?',
     'dont_have_account': "Don't have an account?",
-    
+
     // Navigation
     'dashboard': 'Dashboard',
     'marketplace': 'Marketplace',
@@ -38,7 +38,7 @@ const Map<String, Map<String, String>> translations = {
     'license_management': 'License Management',
     'inventory': 'Inventory',
     'my_products': 'My Products',
-    
+
     // Settings
     'language': 'Language',
     'theme': 'Theme',
@@ -55,7 +55,7 @@ const Map<String, Map<String, String>> translations = {
     'privacy': 'Privacy',
     'terms': 'Terms & Conditions',
     'about': 'About',
-    
+
     // Additional translations
     'appearance': 'Appearance',
     'other': 'Other',
@@ -64,8 +64,9 @@ const Map<String, Map<String, String>> translations = {
     'help_support': 'Help & Support',
     'need_assistance': 'Need assistance? Contact us:',
     'close': 'Close',
-    'app_description': 'Your trusted agriculture marketplace connecting farmers directly with buyers. Fresh produce, fair prices, sustainable farming.',
-    
+    'app_description':
+        'Your trusted agriculture marketplace connecting farmers directly with buyers. Fresh produce, fair prices, sustainable farming.',
+
     // Product related
     'products': 'Products',
     'add_to_cart': 'Add to Cart',
@@ -87,7 +88,7 @@ const Map<String, Map<String, String>> translations = {
     'location': 'Location',
     'unit': 'Unit',
     'listed_date': 'Listed Date',
-    
+
     // Cart & Checkout
     'your_cart': 'Your Cart',
     'cart_empty': 'Your cart is empty',
@@ -100,7 +101,7 @@ const Map<String, Map<String, String>> translations = {
     'place_order': 'Place Order',
     'payment_method': 'Payment Method',
     'delivery_address': 'Delivery Address',
-    
+
     // Wishlist
     'your_wishlist': 'Your Wishlist',
     'wishlist_empty': 'Your wishlist is empty',
@@ -109,7 +110,7 @@ const Map<String, Map<String, String>> translations = {
     'create_folder': 'Create Folder',
     'folder_name': 'Folder Name',
     'move_to_folder': 'Move to Folder',
-    
+
     // Common actions
     'save': 'Save',
     'cancel': 'Cancel',
@@ -138,7 +139,7 @@ const Map<String, Map<String, String>> translations = {
     'view_all': 'View All',
     'see_more': 'See More',
     'see_less': 'See Less',
-    
+
     // Messages
     'no_data_found': 'No data found',
     'something_went_wrong': 'Something went wrong',
@@ -150,7 +151,7 @@ const Map<String, Map<String, String>> translations = {
     'permission_denied': 'Permission denied',
     'operation_successful': 'Operation completed successfully',
     'operation_failed': 'Operation failed',
-    
+
     // Profile
     'my_profile': 'My Profile',
     'edit_profile': 'Edit Profile',
@@ -164,7 +165,7 @@ const Map<String, Map<String, String>> translations = {
     'account_settings': 'Account Settings',
     'change_password': 'Change Password',
     'delete_account': 'Delete Account',
-    
+
     // Dashboard
     'good_morning': 'Good Morning',
     'good_afternoon': 'Good Afternoon',
@@ -174,7 +175,7 @@ const Map<String, Map<String, String>> translations = {
     'statistics': 'Statistics',
     'market_trends': 'Market Trends',
     'live_prices': 'Live Prices',
-    
+
     // Community
     'create_post': 'Create Post',
     'share_experience': 'Share your farming experience',
@@ -184,7 +185,7 @@ const Map<String, Map<String, String>> translations = {
     'share': 'Share',
     'comments': 'Comments',
     'likes': 'Likes',
-    
+
     // Weather
     'current_weather': 'Current Weather',
     'forecast': 'Forecast',
@@ -192,7 +193,7 @@ const Map<String, Map<String, String>> translations = {
     'humidity': 'Humidity',
     'wind_speed': 'Wind Speed',
     'rainfall': 'Rainfall',
-    
+
     // APMC
     'market_prices': 'Market Prices',
     'today_prices': 'Today\'s Prices',
@@ -202,7 +203,6 @@ const Map<String, Map<String, String>> translations = {
     'max_price': 'Max Price',
     'modal_price': 'Modal Price',
   },
-  
   'hi': {
     // App basics
     'app_name': 'फार्मकार्ट्स',
@@ -223,7 +223,7 @@ const Map<String, Map<String, String>> translations = {
     'create_account': 'खाता बनाएं',
     'already_have_account': 'पहले से खाता है?',
     'dont_have_account': 'खाता नहीं है?',
-    
+
     // Navigation
     'dashboard': 'डैशबोर्ड',
     'marketplace': 'बाज़ार',
@@ -241,7 +241,7 @@ const Map<String, Map<String, String>> translations = {
     'license_management': 'लाइसेंस प्रबंधन',
     'inventory': 'सूची',
     'my_products': 'मेरे उत्पाद',
-    
+
     // Settings
     'language': 'भाषा',
     'theme': 'थीम',
@@ -258,7 +258,7 @@ const Map<String, Map<String, String>> translations = {
     'privacy': 'गोपनीयता',
     'terms': 'नियम और शर्तें',
     'about': 'के बारे में',
-    
+
     // Additional translations
     'appearance': 'रूप-रंग',
     'other': 'अन्य',
@@ -267,8 +267,9 @@ const Map<String, Map<String, String>> translations = {
     'help_support': 'सहायता और समर्थन',
     'need_assistance': 'सहायता चाहिए? हमसे संपर्क करें:',
     'close': 'बंद करें',
-    'app_description': 'किसानों को सीधे खरीदारों से जोड़ने वाला आपका विश्वसनीय कृषि बाज़ार। ताज़ा उपज, उचित कीमतें, टिकाऊ खेती।',
-    
+    'app_description':
+        'किसानों को सीधे खरीदारों से जोड़ने वाला आपका विश्वसनीय कृषि बाज़ार। ताज़ा उपज, उचित कीमतें, टिकाऊ खेती।',
+
     // Product related
     'products': 'उत्पाद',
     'add_to_cart': 'कार्ट में जोड़ें',
@@ -290,7 +291,7 @@ const Map<String, Map<String, String>> translations = {
     'location': 'स्थान',
     'unit': 'इकाई',
     'listed_date': 'सूचीबद्ध तिथि',
-    
+
     // Cart & Checkout
     'your_cart': 'आपकी कार्ट',
     'cart_empty': 'आपकी कार्ट खाली है',
@@ -303,7 +304,7 @@ const Map<String, Map<String, String>> translations = {
     'place_order': 'आदेश दें',
     'payment_method': 'भुगतान विधि',
     'delivery_address': 'डिलीवरी पता',
-    
+
     // Wishlist
     'your_wishlist': 'आपकी इच्छा सूची',
     'wishlist_empty': 'आपकी इच्छा सूची खाली है',
@@ -312,7 +313,7 @@ const Map<String, Map<String, String>> translations = {
     'create_folder': 'फ़ोल्डर बनाएं',
     'folder_name': 'फ़ोल्डर का नाम',
     'move_to_folder': 'फ़ोल्डर में ले जाएं',
-    
+
     // Common actions
     'save': 'सहेजें',
     'cancel': 'रद्द करें',
@@ -341,7 +342,7 @@ const Map<String, Map<String, String>> translations = {
     'view_all': 'सभी देखें',
     'see_more': 'और देखें',
     'see_less': 'कम देखें',
-    
+
     // Messages
     'no_data_found': 'कोई डेटा नहीं मिला',
     'something_went_wrong': 'कुछ गलत हो गया',
@@ -353,7 +354,7 @@ const Map<String, Map<String, String>> translations = {
     'permission_denied': 'अनुमति अस्वीकृत',
     'operation_successful': 'ऑपरेशन सफलतापूर्वक पूर्ण हुआ',
     'operation_failed': 'ऑपरेशन विफल',
-    
+
     // Profile
     'my_profile': 'मेरी प्रोफ़ाइल',
     'edit_profile': 'प्रोफ़ाइल संपादित करें',
@@ -367,7 +368,7 @@ const Map<String, Map<String, String>> translations = {
     'account_settings': 'खाता सेटिंग्स',
     'change_password': 'पासवर्ड बदलें',
     'delete_account': 'खाता हटाएं',
-    
+
     // Dashboard
     'good_morning': 'सुप्रभात',
     'good_afternoon': 'शुभ दोपहर',
@@ -377,7 +378,7 @@ const Map<String, Map<String, String>> translations = {
     'statistics': 'आँकड़े',
     'market_trends': 'बाजार के रुझान',
     'live_prices': 'लाइव कीमतें',
-    
+
     // Community
     'create_post': 'पोस्ट बनाएं',
     'share_experience': 'अपना खेती का अनुभव साझा करें',
@@ -387,7 +388,7 @@ const Map<String, Map<String, String>> translations = {
     'share': 'साझा करें',
     'comments': 'टिप्पणियाँ',
     'likes': 'पसंद',
-    
+
     // Weather
     'current_weather': 'वर्तमान मौसम',
     'forecast': 'पूर्वानुमान',
@@ -395,7 +396,7 @@ const Map<String, Map<String, String>> translations = {
     'humidity': 'आर्द्रता',
     'wind_speed': 'हवा की गति',
     'rainfall': 'वर्षा',
-    
+
     // APMC
     'market_prices': 'बाजार मूल्य',
     'today_prices': 'आज की कीमतें',
@@ -405,7 +406,6 @@ const Map<String, Map<String, String>> translations = {
     'max_price': 'अधिकतम मूल्य',
     'modal_price': 'मॉडल मूल्य',
   },
-  
   'mr': {
     // App basics
     'app_name': 'फार्मकार्ट्स',
@@ -426,7 +426,7 @@ const Map<String, Map<String, String>> translations = {
     'create_account': 'खाते तयार करा',
     'already_have_account': 'आधीच खाते आहे?',
     'dont_have_account': 'खाते नाही?',
-    
+
     // Navigation
     'dashboard': 'डॅशबोर्ड',
     'marketplace': 'बाजारपेठ',
@@ -444,7 +444,7 @@ const Map<String, Map<String, String>> translations = {
     'license_management': 'परवाना व्यवस्थापन',
     'inventory': 'यादी',
     'my_products': 'माझी उत्पादने',
-    
+
     // Settings
     'language': 'भाषा',
     'theme': 'थीम',
@@ -461,7 +461,7 @@ const Map<String, Map<String, String>> translations = {
     'privacy': 'गोपनीयता',
     'terms': 'अटी व शर्ती',
     'about': 'बद्दल',
-    
+
     // Additional translations
     'appearance': 'दिसणे',
     'other': 'इतर',
@@ -470,8 +470,9 @@ const Map<String, Map<String, String>> translations = {
     'help_support': 'मदत आणि समर्थन',
     'need_assistance': 'मदत हवी आहे? आमच्याशी संपर्क साधा:',
     'close': 'बंद करा',
-    'app_description': 'शेतकर्यांना थेट खरेदीदारांशी जोडणारी तुमची विश्वासू कृषी बाजारपेठ। ताजी उत्पादने, योग्य किंमती, शाश्वत शेती।',
-    
+    'app_description':
+        'शेतकर्यांना थेट खरेदीदारांशी जोडणारी तुमची विश्वासू कृषी बाजारपेठ। ताजी उत्पादने, योग्य किंमती, शाश्वत शेती।',
+
     // Product related
     'products': 'उत्पादने',
     'add_to_cart': 'कार्टमध्ये जोडा',
@@ -493,7 +494,7 @@ const Map<String, Map<String, String>> translations = {
     'location': 'स्थान',
     'unit': 'युनिट',
     'listed_date': 'सूचीबद्ध तारीख',
-    
+
     // Cart & Checkout
     'your_cart': 'तुमची कार्ट',
     'cart_empty': 'तुमची कार्ट रिकामी आहे',
@@ -506,7 +507,7 @@ const Map<String, Map<String, String>> translations = {
     'place_order': 'ऑर्डर द्या',
     'payment_method': 'पेमेंट पद्धत',
     'delivery_address': 'डिलिव्हरी पत्ता',
-    
+
     // Wishlist
     'your_wishlist': 'तुमची इच्छा सूची',
     'wishlist_empty': 'तुमची इच्छा सूची रिकामी आहे',
@@ -515,7 +516,7 @@ const Map<String, Map<String, String>> translations = {
     'create_folder': 'फोल्डर तयार करा',
     'folder_name': 'फोल्डरचे नाव',
     'move_to_folder': 'फोल्डरमध्ये हलवा',
-    
+
     // Common actions
     'save': 'जतन करा',
     'cancel': 'रद्द करा',
@@ -544,7 +545,7 @@ const Map<String, Map<String, String>> translations = {
     'view_all': 'सर्व पहा',
     'see_more': 'अधिक पहा',
     'see_less': 'कमी पहा',
-    
+
     // Messages
     'no_data_found': 'कोणताही डेटा सापडला नाही',
     'something_went_wrong': 'काहीतरी चूक झाली',
@@ -556,7 +557,7 @@ const Map<String, Map<String, String>> translations = {
     'permission_denied': 'परवानगी नाकारली',
     'operation_successful': 'ऑपरेशन यशस्वीरित्या पूर्ण झाले',
     'operation_failed': 'ऑपरेशन अयशस्वी',
-    
+
     // Profile
     'my_profile': 'माझे प्रोफाइल',
     'edit_profile': 'प्रोफाइल संपादित करा',
@@ -570,7 +571,7 @@ const Map<String, Map<String, String>> translations = {
     'account_settings': 'खाते सेटिंग्ज',
     'change_password': 'पासवर्ड बदला',
     'delete_account': 'खाते हटवा',
-    
+
     // Dashboard
     'good_morning': 'शुभ सकाळ',
     'good_afternoon': 'शुभ दुपार',
@@ -580,7 +581,7 @@ const Map<String, Map<String, String>> translations = {
     'statistics': 'आकडेवारी',
     'market_trends': 'बाजार ट्रेंड',
     'live_prices': 'लाइव्ह किंमती',
-    
+
     // Community
     'create_post': 'पोस्ट तयार करा',
     'share_experience': 'तुमचा शेती अनुभव शेअर करा',
@@ -590,7 +591,7 @@ const Map<String, Map<String, String>> translations = {
     'share': 'शेअर करा',
     'comments': 'टिप्पण्या',
     'likes': 'आवडले',
-    
+
     // Weather
     'current_weather': 'सध्याचे हवामान',
     'forecast': 'अंदाज',
@@ -598,7 +599,7 @@ const Map<String, Map<String, String>> translations = {
     'humidity': 'आर्द्रता',
     'wind_speed': 'वाऱ्याचा वेग',
     'rainfall': 'पाऊस',
-    
+
     // APMC
     'market_prices': 'बाजार किंमती',
     'today_prices': 'आजच्या किंमती',

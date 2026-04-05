@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'login_page.dart';
 import 'main_app_layout.dart';
 import '../services/user_state_service.dart';
-import '../widgets/connection_status_widget.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -22,8 +21,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        debugPrint('AuthWrapper: Auth State Change - ConnectionState: ${snapshot.connectionState}');
-        
+        debugPrint(
+            'AuthWrapper: Auth State Change - ConnectionState: ${snapshot.connectionState}');
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(
@@ -34,14 +34,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
         if (snapshot.hasData && snapshot.data != null) {
           final uid = snapshot.data!.uid;
-          
+
           return Consumer<UserStateService>(
             builder: (context, userState, child) {
               // Only initialize once per session/user
-              if (!userState.isLoading && userState.currentUser == null && userState.error == null) {
+              if (!userState.isLoading &&
+                  userState.currentUser == null &&
+                  userState.error == null) {
                 _initializeUserState(context, uid);
               }
-              
+
               if (userState.isLoading) {
                 return const Scaffold(
                   body: Center(
@@ -82,8 +84,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // Schedule user profile loading after build completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final userStateService = Provider.of<UserStateService>(context, listen: false);
-      
+      final userStateService =
+          Provider.of<UserStateService>(context, listen: false);
+
       // Load user data without blocking UI
       userStateService.setCurrentUser(uid);
     });
@@ -205,14 +208,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
                       const Text('If you\'re seeing this error:'),
                       const SizedBox(height: 8),
                       const Text('• Make sure you have an internet connection'),
-                      const Text('• Check if Firestore is set up in Firebase Console'),
+                      const Text(
+                          '• Check if Firestore is set up in Firebase Console'),
                       const Text('• Contact support if the problem persists'),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Please contact support for assistance'),
+                              content:
+                                  Text('Please contact support for assistance'),
                             ),
                           );
                         },

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 /// High-performance cache manager for handling 10k+ concurrent users
@@ -8,9 +7,9 @@ class CacheManager {
   CacheManager._internal();
 
   // LRU Cache with configurable size
-  final Map<String, _CacheEntry> _cache = LinkedHashMap();
+  final Map<String, _CacheEntry> _cache = {};
   final Map<String, List<Function>> _subscribers = {};
-  
+
   // Cache configuration
   static const int _maxCacheSize = 5000;
   static const Duration _defaultTTL = Duration(minutes: 15);
@@ -21,16 +20,16 @@ class CacheManager {
   T? get<T>(String key) {
     final entry = _cache[key];
     if (entry == null) return null;
-    
+
     if (entry.isExpired) {
       _cache.remove(key);
       return null;
     }
-    
+
     // Move to end (LRU)
     _cache.remove(key);
     _cache[key] = entry;
-    
+
     return entry.data as T?;
   }
 
@@ -38,17 +37,18 @@ class CacheManager {
   void set(String key, dynamic data, {Duration? ttl}) {
     // Remove oldest entries if cache is full
     if (_cache.length >= _maxCacheSize) {
-      final keysToRemove = _cache.keys.take((_maxCacheSize * 0.1).round()).toList();
+      final keysToRemove =
+          _cache.keys.take((_maxCacheSize * 0.1).round()).toList();
       for (var k in keysToRemove) {
         _cache.remove(k);
       }
     }
-    
+
     _cache[key] = _CacheEntry(
       data: data,
       expiresAt: DateTime.now().add(ttl ?? _defaultTTL),
     );
-    
+
     // Notify subscribers
     _notifySubscribers(key, data);
   }
@@ -75,7 +75,7 @@ class CacheManager {
     for (var entry in _cache.values) {
       if (entry.isExpired) expired++;
     }
-    
+
     return {
       'size': _cache.length,
       'maxSize': _maxCacheSize,
@@ -129,7 +129,8 @@ class _CacheEntry {
 /// Cache keys for different data types
 class CacheKeys {
   static String product(String id) => 'product_$id';
-  static String productList(String category, String filter) => 'products_${category}_$filter';
+  static String productList(String category, String filter) =>
+      'products_${category}_$filter';
   static String userProfile(String uid) => 'user_$uid';
   static String apmcPrices(String market) => 'apmc_$market';
   static String conversation(String id) => 'conversation_$id';

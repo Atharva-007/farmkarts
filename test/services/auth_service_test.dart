@@ -1,21 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:farmkarts_new/services/auth_service.dart';
-import 'package:farmkarts_new/models/user_model.dart';
 
 void main() {
   group('AuthService Tests', () {
-    late AuthService authService;
-    late MockFirebaseAuth mockAuth;
-    late FakeFirebaseFirestore mockFirestore;
-
-    setUp(() {
-      mockAuth = MockFirebaseAuth();
-      mockFirestore = FakeFirebaseFirestore();
-      // Note: For full testing, you'd need to inject these mocks
-      // Currently AuthService uses static instances
-    });
+    // Note: For full testing, you'd need to inject mocks
+    // Currently AuthService uses static instances
 
     group('Sign Up', () {
       test('should create farmer account successfully', () async {

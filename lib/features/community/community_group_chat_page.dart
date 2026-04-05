@@ -6,7 +6,6 @@ import '../../models/community_group_chat_model.dart';
 import '../../services/user_state_service.dart';
 import '../../models/user_model.dart';
 import 'role_based_community_service.dart';
-import '../../widgets/universal_header.dart';
 
 class CommunityGroupChatPage extends StatefulWidget {
   final String groupId;
@@ -25,7 +24,8 @@ class CommunityGroupChatPage extends StatefulWidget {
 }
 
 class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
-  final RoleBasedCommunityService _communityService = RoleBasedCommunityService();
+  final RoleBasedCommunityService _communityService =
+      RoleBasedCommunityService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isSending = false;
@@ -87,14 +87,15 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.backgroundLight,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.backgroundLight,
       body: Column(
         children: [
           // Header section that looks like UniversalHeader but is fixed
           _buildTopHeader(context),
-          
+
           Expanded(
             child: StreamBuilder<List<CommunityGroupChatMessage>>(
               stream: _communityService.getGroupMessages(widget.groupId),
@@ -115,13 +116,15 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   reverse: true, // Show latest at bottom
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final message = messages[index];
-                    final isMe = message.senderId == FirebaseAuth.instance.currentUser?.uid;
-                    
+                    final isMe = message.senderId ==
+                        FirebaseAuth.instance.currentUser?.uid;
+
                     // Show date header if needed
                     bool showDate = false;
                     if (index == messages.length - 1) {
@@ -153,7 +156,7 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
   Widget _buildTopHeader(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final topPadding = MediaQuery.of(context).padding.top;
-    
+
     return Container(
       padding: EdgeInsets.fromLTRB(16, topPadding + 12, 16, 20),
       decoration: const BoxDecoration(
@@ -180,7 +183,7 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -205,7 +208,7 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
                 Text(
                   'Community Discussion',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),
@@ -250,19 +253,20 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
       margin: const EdgeInsets.symmetric(vertical: 16),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.05),
+        color: Colors.black.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         _formatDate(timestamp),
-        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+        style: const TextStyle(
+            fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
       ),
     );
   }
 
   Widget _buildMessageBubble(CommunityGroupChatMessage message, bool isMe) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -271,17 +275,23 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
           maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
         child: Row(
-          mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment:
+              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (!isMe) ...[
               CircleAvatar(
                 radius: 16,
-                backgroundColor: AppTheme.primaryGreen.withOpacity(0.1),
+                backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.1),
                 child: Text(
-                  message.senderName.isNotEmpty ? message.senderName.substring(0, 1).toUpperCase() : '?',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryGreen),
+                  message.senderName.isNotEmpty
+                      ? message.senderName.substring(0, 1).toUpperCase()
+                      : '?',
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryGreen),
                 ),
               ),
               const SizedBox(width: 8),
@@ -290,8 +300,8 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isMe 
-                      ? AppTheme.primaryGreen 
+                  color: isMe
+                      ? AppTheme.primaryGreen
                       : (isDark ? AppTheme.darkCard : Colors.white),
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(16),
@@ -301,7 +311,7 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
@@ -319,14 +329,17 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : AppTheme.primaryGreen,
+                            color:
+                                isDark ? Colors.white70 : AppTheme.primaryGreen,
                           ),
                         ),
                       ),
                     Text(
                       message.content,
                       style: TextStyle(
-                        color: isMe ? Colors.white : (isDark ? Colors.white : AppTheme.textDark),
+                        color: isMe
+                            ? Colors.white
+                            : (isDark ? Colors.white : AppTheme.textDark),
                         fontSize: 15,
                         height: 1.4,
                       ),
@@ -351,14 +364,15 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
 
   Widget _buildMessageInput() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
         color: isDark ? AppTheme.darkSurface : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -369,17 +383,20 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
           Expanded(
             child: TextField(
               controller: _messageController,
-              style: TextStyle(color: isDark ? Colors.white : AppTheme.textDark),
+              style:
+                  TextStyle(color: isDark ? Colors.white : AppTheme.textDark),
               decoration: InputDecoration(
                 hintText: 'Share with the community...',
-                hintStyle: TextStyle(color: isDark ? Colors.white54 : Colors.grey),
+                hintStyle:
+                    TextStyle(color: isDark ? Colors.white54 : Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
                 fillColor: isDark ? AppTheme.darkBackground : Colors.grey[100],
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
               maxLines: null,
               textInputAction: TextInputAction.send,
@@ -396,7 +413,11 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: _isSending
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.send, color: Colors.white, size: 20),
               ),
             ),
@@ -412,9 +433,13 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
-    if (date.day == now.day && date.month == now.month && date.year == now.year) {
+    if (date.day == now.day &&
+        date.month == now.month &&
+        date.year == now.year) {
       return 'TODAY';
-    } else if (date.day == now.day - 1 && date.month == now.month && date.year == now.year) {
+    } else if (date.day == now.day - 1 &&
+        date.month == now.month &&
+        date.year == now.year) {
       return 'YESTERDAY';
     }
     return '${date.day}/${date.month}/${date.year}';
@@ -422,18 +447,24 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
 
   String _getRoleLabel(UserRole role) {
     switch (role) {
-      case UserRole.farmer: return 'Farmer';
-      case UserRole.vendor: return 'Vendor';
-      case UserRole.wholesaler: return 'Wholesaler';
-      case UserRole.admin: return 'Expert';
-      default: return 'Member';
+      case UserRole.farmer:
+        return 'Farmer';
+      case UserRole.vendor:
+        return 'Vendor';
+      case UserRole.wholesaler:
+        return 'Wholesaler';
+      case UserRole.admin:
+        return 'Expert';
+      default:
+        return 'Member';
     }
   }
 
   void _showGroupInfo() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -441,7 +472,9 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
           children: [
             Text(widget.groupIcon, style: const TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text(widget.groupName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(widget.groupName,
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text(
               'Community discussion group for farmers and experts to share knowledge and experiences.',
@@ -450,14 +483,16 @@ class _CommunityGroupChatPageState extends State<CommunityGroupChatPage> {
             ),
             const SizedBox(height: 24),
             ListTile(
-              leading: const Icon(Icons.people_outline, color: AppTheme.primaryGreen),
+              leading: const Icon(Icons.people_outline,
+                  color: AppTheme.primaryGreen),
               title: const Text('Community Guidelines'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.notifications_none, color: AppTheme.primaryGreen),
+              leading: const Icon(Icons.notifications_none,
+                  color: AppTheme.primaryGreen),
               title: const Text('Mute Notifications'),
-              trailing: Switch(value: false, onChanged: (v){}),
+              trailing: Switch(value: false, onChanged: (v) {}),
               onTap: () {},
             ),
             const SizedBox(height: 16),

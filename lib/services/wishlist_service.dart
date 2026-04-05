@@ -23,7 +23,7 @@ class WishlistService {
 
       return true;
     } catch (e) {
-      print('Error adding to wishlist: $e');
+      // print('Error adding to wishlist: $e');
       return false;
     }
   }
@@ -43,7 +43,7 @@ class WishlistService {
 
       return true;
     } catch (e) {
-      print('Error removing from wishlist: $e');
+      // print('Error removing from wishlist: $e');
       return false;
     }
   }
@@ -63,7 +63,7 @@ class WishlistService {
 
       return doc.exists;
     } catch (e) {
-      print('Error checking wishlist: $e');
+      // print('Error checking wishlist: $e');
       return false;
     }
   }
@@ -71,7 +71,7 @@ class WishlistService {
   /// Toggle wishlist (add if not exists, remove if exists)
   static Future<bool> toggleWishlist(String productId) async {
     final isInList = await isInWishlist(productId);
-    
+
     if (isInList) {
       return await removeFromWishlist(productId);
     } else {
@@ -93,7 +93,7 @@ class WishlistService {
 
       return snapshot.docs.length;
     } catch (e) {
-      print('Error getting wishlist count: $e');
+      // print('Error getting wishlist count: $e');
       return 0;
     }
   }

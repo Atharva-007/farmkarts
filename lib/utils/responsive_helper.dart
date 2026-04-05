@@ -9,11 +9,11 @@ class ResponsiveHelper {
   // Check device type
   static bool isMobile(BuildContext context) =>
       MediaQuery.of(context).size.width < mobileBreakpoint;
-  
+
   static bool isTablet(BuildContext context) =>
       MediaQuery.of(context).size.width >= mobileBreakpoint &&
       MediaQuery.of(context).size.width < tabletBreakpoint;
-  
+
   static bool isDesktop(BuildContext context) =>
       MediaQuery.of(context).size.width >= tabletBreakpoint;
 
@@ -48,7 +48,8 @@ class ResponsiveHelper {
     return 16;
   }
 
-  static int getGridCrossAxisCount(BuildContext context, {
+  static int getGridCrossAxisCount(
+    BuildContext context, {
     int mobile = 2,
     int tablet = 3,
     int desktop = 4,

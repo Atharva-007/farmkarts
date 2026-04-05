@@ -56,9 +56,8 @@ class ConversationService {
       final conversationData = conversation.toMap();
       conversationData['participants'] = [buyerId, sellerId];
 
-      final docRef = await _firestore
-          .collection('conversations')
-          .add(conversationData);
+      final docRef =
+          await _firestore.collection('conversations').add(conversationData);
 
       // Add initial system message
       await sendMessage(
@@ -72,6 +71,19 @@ class ConversationService {
     } catch (e) {
       throw Exception('Failed to create conversation: $e');
     }
+  }
+
+  /// Get messages for a conversation
+  Stream<List<Message>> getMessages(String conversationId) {
+    return _firestore
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Message.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   // Send a message
@@ -92,17 +104,20 @@ class ConversationService {
       String? fileUrl;
 
       // Upload image if provided
-      if (type == MessageType.image && (imageFile != null || imageBytes != null)) {
+      if (type == MessageType.image &&
+          (imageFile != null || imageBytes != null)) {
         imageUrl = await _uploadMessageImage(
           conversationId: conversationId,
           imageFile: imageFile,
           imageBytes: imageBytes,
-          fileName: fileName ?? 'image_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          fileName:
+              fileName ?? 'image_${DateTime.now().millisecondsSinceEpoch}.jpg',
         );
       }
 
       // Upload file if provided
-      if (type == MessageType.file && (imageFile != null || imageBytes != null)) {
+      if (type == MessageType.file &&
+          (imageFile != null || imageBytes != null)) {
         fileUrl = await _uploadMessageFile(
           conversationId: conversationId,
           file: imageFile,
@@ -133,10 +148,7 @@ class ConversationService {
           .add(message.toMap());
 
       // Update conversation last message
-      await _firestore
-          .collection('conversations')
-          .doc(conversationId)
-          .update({
+      await _firestore.collection('conversations').doc(conversationId).update({
         'lastMessage': _getDisplayContent(message),
         'lastMessageTime': message.timestamp.millisecondsSinceEpoch,
         'lastMessageSenderId': user.uid,
@@ -207,7 +219,7 @@ class ConversationService {
 
       // Batch update
       final batch = _firestore.batch();
-      
+
       for (final doc in unreadMessages.docs) {
         batch.update(doc.reference, {'isRead': true});
       }
@@ -217,7 +229,7 @@ class ConversationService {
       // Reset unread count
       await _updateUnreadCount(conversationId, user.uid, reset: true);
     } catch (e) {
-      print('Error marking messages as read: $e');
+      // print('Error marking messages as read: $e');
     }
   }
 
@@ -252,14 +264,14 @@ class ConversationService {
           .get();
 
       final batch = _firestore.batch();
-      
+
       for (final doc in messages.docs) {
         batch.delete(doc.reference);
       }
 
       // Delete conversation
       batch.delete(_firestore.collection('conversations').doc(conversationId));
-      
+
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to delete conversation: $e');
@@ -343,7 +355,8 @@ class ConversationService {
           .doc(conversationId);
 
       if (reset) {
-        await userConversationRef.set({'unreadCount': 0}, SetOptions(merge: true));
+        await userConversationRef
+            .set({'unreadCount': 0}, SetOptions(merge: true));
       } else if (increment) {
         await userConversationRef.set(
           {'unreadCount': FieldValue.increment(1)},
@@ -351,7 +364,7 @@ class ConversationService {
         );
       }
     } catch (e) {
-      print('Error updating unread count: $e');
+      // print('Error updating unread count: $e');
     }
   }
 
@@ -377,8 +390,10 @@ class ConversationService {
       final conversation = await getConversation(conversationId);
       if (conversation == null) throw Exception('Conversation not found');
 
-      final receiverId = user.uid == conversation.buyerId ? conversation.sellerId : conversation.buyerId;
-      
+      final receiverId = user.uid == conversation.buyerId
+          ? conversation.sellerId
+          : conversation.buyerId;
+
       final bidContent = '🏷️ **BID OFFER**\n\n'
           '💰 **Price**: ₹${bidAmount.toStringAsFixed(2)} per $unit\n'
           '📦 **Quantity**: $quantity $unit\n'
@@ -436,7 +451,7 @@ class ConversationService {
       // Merge and deduplicate results
       final allDocs = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
       allDocs.addAll(buyerConversations.docs);
-      
+
       // Add seller conversations that are not already included
       for (final doc in sellerConversations.docs) {
         if (!allDocs.any((existing) => existing.id == doc.id)) {
@@ -447,9 +462,15 @@ class ConversationService {
       return allDocs
           .map((doc) => Conversation.fromMap(doc.id, doc.data()))
           .where((conversation) =>
-              conversation.productName.toLowerCase().contains(query.toLowerCase()) ||
-              conversation.buyerName.toLowerCase().contains(query.toLowerCase()) ||
-              conversation.sellerName.toLowerCase().contains(query.toLowerCase()))
+              conversation.productName
+                  .toLowerCase()
+                  .contains(query.toLowerCase()) ||
+              conversation.buyerName
+                  .toLowerCase()
+                  .contains(query.toLowerCase()) ||
+              conversation.sellerName
+                  .toLowerCase()
+                  .contains(query.toLowerCase()))
           .toList();
     } catch (e) {
       throw Exception('Failed to search conversations: $e');
@@ -488,7 +509,8 @@ class ConversationService {
 
       // Get current user info
       final buyerId = user.uid;
-      final buyerName = user.displayName ?? user.email?.split('@')[0] ?? 'Buyer';
+      final buyerName =
+          user.displayName ?? user.email?.split('@')[0] ?? 'Buyer';
 
       // Get product info if not provided
       String finalProductName = productName ?? 'Product';
@@ -497,31 +519,30 @@ class ConversationService {
       // Try to get product details from Firestore if available
       if (productName == null || sellerName == null) {
         try {
-          final productDoc = await _firestore
-              .collection('products')
-              .doc(productId)
-              .get();
+          final productDoc =
+              await _firestore.collection('products').doc(productId).get();
 
           if (productDoc.exists) {
             final productData = productDoc.data()!;
-            finalProductName = productData['name'] ?? productData['title'] ?? 'Product';
-            
+            finalProductName =
+                productData['name'] ?? productData['title'] ?? 'Product';
+
             // Try to get seller name from user document
             if (sellerName == null) {
-              final sellerDoc = await _firestore
-                  .collection('users')
-                  .doc(sellerId)
-                  .get();
-              
+              final sellerDoc =
+                  await _firestore.collection('users').doc(sellerId).get();
+
               if (sellerDoc.exists) {
                 final sellerData = sellerDoc.data()!;
-                finalSellerName = sellerData['displayName'] ?? sellerData['fullName'] ?? 'Seller';
+                finalSellerName = sellerData['displayName'] ??
+                    sellerData['fullName'] ??
+                    'Seller';
               }
             }
           }
         } catch (e) {
           // Continue with provided or default values if Firestore lookup fails
-          print('Could not fetch product/seller details: $e');
+          // print('Could not fetch product/seller details: $e');
         }
       }
 

@@ -4,10 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/product_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/universal_header.dart';
-import '../widgets/universal_drawer.dart';
-import '../utils/responsive_helper.dart';
 import '../utils/app_logger.dart';
 import '../services/cart_service.dart';
+import 'checkout_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -16,21 +15,37 @@ class CartPage extends StatefulWidget {
   State<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
+class _CartPageState extends State<CartPage>
+    with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   bool _isLoading = true;
   List<CartItem> _cartItems = [];
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation =
+        CurvedAnimation(parent: _animationController, curve: Curves.easeIn);
     _loadCart();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCart() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
@@ -45,28 +60,24 @@ class _CartPageState extends State<CartPage> {
           .get();
 
       List<CartItem> items = [];
-      
+
       if (cartSnapshot.docs.isEmpty) {
         setState(() {
           _cartItems = items;
           _isLoading = false;
         });
+        _animationController.forward();
         return;
       }
 
-      // Batch fetch all products (fixes N+1 query anti-pattern)
       final productIds = cartSnapshot.docs.map((d) => d.id).toList();
-      
-      // Firebase whereIn supports up to 10 IDs per query
       final batches = <Future<QuerySnapshot>>[];
       for (int i = 0; i < productIds.length; i += 10) {
         final batch = productIds.skip(i).take(10).toList();
-        batches.add(
-          _firestore
-              .collection('products')
-              .where(FieldPath.documentId, whereIn: batch)
-              .get()
-        );
+        batches.add(_firestore
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: batch)
+            .get());
       }
 
       final results = await Future.wait(batches);
@@ -80,7 +91,6 @@ class _CartPageState extends State<CartPage> {
         }
       }
 
-      // Build cart items with fetched products
       for (var doc in cartSnapshot.docs) {
         final product = products[doc.id];
         if (product != null) {
@@ -93,6 +103,7 @@ class _CartPageState extends State<CartPage> {
         _cartItems = items;
         _isLoading = false;
       });
+      _animationController.forward();
     } catch (e) {
       AppLogger.error('Error loading cart', error: e, tag: 'CartPage');
       setState(() => _isLoading = false);
@@ -105,7 +116,8 @@ class _CartPageState extends State<CartPage> {
       return;
     }
 
-    final success = await CartService.updateQuantity(item.product.id, newQuantity);
+    final success =
+        await CartService.updateQuantity(item.product.id, newQuantity);
     if (success) {
       setState(() {
         item.quantity = newQuantity;
@@ -127,17 +139,26 @@ class _CartPageState extends State<CartPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear Cart'),
-        content: const Text('Are you sure you want to remove all items?'),
+        backgroundColor: AppTheme.getSurfaceColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Clear Cart',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text(
+            'Are you sure you want to remove all items from your basket?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('CANCEL',
+                style:
+                    TextStyle(color: AppTheme.getSecondaryTextColor(context))),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Clear All'),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                elevation: 0),
+            child: const Text('CLEAR ALL'),
           ),
         ],
       ),
@@ -155,7 +176,8 @@ class _CartPageState extends State<CartPage> {
   }
 
   double get _subtotal {
-    return _cartItems.fold(0, (sum, item) => sum + (item.product.price * item.quantity));
+    return _cartItems.fold(
+        0, (sum, item) => sum + (item.product.price * item.quantity));
   }
 
   void _showMessage(String message) {
@@ -164,7 +186,8 @@ class _CartPageState extends State<CartPage> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
+        backgroundColor: AppTheme.getPrimaryAccent(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -172,36 +195,45 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          UniversalHeader(
-            title: 'Shopping Cart',
-            subtitle: '${_cartItems.length} items',
-            icon: Icons.shopping_cart,
-            showBackButton: true,
-            actions: [
-              if (_cartItems.isNotEmpty)
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.white),
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            UniversalHeader(
+              title: 'My Cart',
+              subtitle: '${_cartItems.length} essential items',
+              icon: Icons.shopping_basket_rounded,
+              showBackButton: true,
+              showProfile: true,
+              actions: [
+                if (_cartItems.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.delete_sweep_rounded,
+                        color: Colors.white),
                     onPressed: _clearCart,
                     tooltip: 'Clear Cart',
                   ),
+              ],
+            ),
+            if (_isLoading)
+              const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()))
+            else if (_cartItems.isEmpty)
+              SliverFillRemaining(child: _buildEmptyCart())
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildCartItem(_cartItems[index]),
+                    childCount: _cartItems.length,
+                  ),
                 ),
-            ],
-          ),
-        ],
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _cartItems.isEmpty
-                ? _buildEmptyCart()
-                : _buildCartContent(),
+              ),
+          ],
+        ),
       ),
       bottomNavigationBar: _cartItems.isNotEmpty ? _buildCheckoutBar() : null,
     );
@@ -212,182 +244,123 @@ class _CartPageState extends State<CartPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 120,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Your cart is empty',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.05),
+              shape: BoxShape.circle,
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Add products to get started',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
-            ),
+            child: Icon(Icons.shopping_cart_outlined,
+                size: 100,
+                color:
+                    AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2)),
           ),
           const SizedBox(height: 32),
+          const Text('Your cart is empty',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          Text('Stock up your farm with fresh produce',
+              style: TextStyle(
+                  fontSize: 15,
+                  color: AppTheme.getSecondaryTextColor(context))),
+          const SizedBox(height: 32),
           ElevatedButton.icon(
-            onPressed: () => Navigator.pushNamed(context, '/marketplace'),
-            icon: const Icon(Icons.store),
-            label: const Text('Browse Marketplace'),
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.storefront_rounded),
+            label: const Text('BROWSE MARKETPLACE',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
+              backgroundColor: AppTheme.getPrimaryAccent(context),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  borderRadius: BorderRadius.circular(16)),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCartContent() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _cartItems.length,
-      itemBuilder: (context, index) {
-        final item = _cartItems[index];
-        return _buildCartItem(item);
-      },
     );
   }
 
   Widget _buildCartItem(CartItem item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.getPremiumShadow(context),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            // Product Image
             Container(
-              width: 80,
-              height: 80,
+              width: 90,
+              height: 90,
               decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.getLayerColor(context),
+                borderRadius: BorderRadius.circular(16),
                 image: item.product.imageUrls.isNotEmpty
                     ? DecorationImage(
                         image: NetworkImage(item.product.imageUrls.first),
-                        fit: BoxFit.cover,
-                      )
+                        fit: BoxFit.cover)
                     : null,
               ),
               child: item.product.imageUrls.isEmpty
-                  ? Icon(Icons.image, color: Colors.grey[400])
+                  ? Icon(Icons.image_rounded,
+                      color: AppTheme.getPrimaryAccent(context)
+                          .withValues(alpha: 0.2),
+                      size: 32)
                   : null,
             ),
-            const SizedBox(width: 12),
-            // Product Details
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     item.product.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textDark,
-                    ),
-                    maxLines: 2,
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.getTextColor(context)),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '₹${item.product.price.toStringAsFixed(0)}/${item.product.unit}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryGreen,
-                    ),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.getPrimaryAccent(context)),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
-                      // Quantity Controls
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey[300]!),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.remove, size: 18),
-                              onPressed: () => _updateQuantity(item, item.quantity - 1),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Text(
-                                '${item.quantity}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.add, size: 18),
-                              onPressed: () => _updateQuantity(item, item.quantity + 1),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
-                              ),
-                            ),
-                          ],
-                        ),
+                      _buildQtyBtn(Icons.remove_rounded,
+                          () => _updateQuantity(item, item.quantity - 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('${item.quantity}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w900)),
                       ),
+                      _buildQtyBtn(Icons.add_rounded,
+                          () => _updateQuantity(item, item.quantity + 1)),
                       const Spacer(),
-                      // Total Price
-                      Text(
-                        '₹${(item.product.price * item.quantity).toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textDark,
-                        ),
-                      ),
+                      Text('₹${(item.product.price * item.quantity).toInt()}',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.getTextColor(context))),
                     ],
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            // Remove Button
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () => _removeItem(item),
-              tooltip: 'Remove',
             ),
           ],
         ),
@@ -395,18 +368,33 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
+  Widget _buildQtyBtn(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: AppTheme.getLayerColor(context),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 18, color: AppTheme.getPrimaryAccent(context)),
+      ),
+    );
+  }
+
   Widget _buildCheckoutBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.getCardColor(context),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -10))
         ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
         child: Column(
@@ -415,56 +403,52 @@ class _CartPageState extends State<CartPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Subtotal',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                Text(
-                  '₹${_subtotal.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryGreen,
-                  ),
-                ),
+                const Text('Subtotal',
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600)),
+                Text('₹${_subtotal.toInt()}',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.getPrimaryAccent(context))),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
+              height: 56,
               child: ElevatedButton(
-                onPressed: _proceedToCheckout,
+                onPressed: () {
+                  if (_cartItems.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CheckoutPage(
+                          product: _cartItems.first.product,
+                          quantity: _cartItems.first.quantity,
+                        ),
+                      ),
+                    );
+                  }
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
+                  backgroundColor: AppTheme.getPrimaryAccent(context),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-                child: const Text(
-                  'Proceed to Checkout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: const Text('PROCEED TO CHECKOUT',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1)),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _proceedToCheckout() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CheckoutPage(cartItems: _cartItems),
       ),
     );
   }
@@ -476,394 +460,3 @@ class CartItem {
 
   CartItem({required this.product, required this.quantity});
 }
-
-// Checkout Page
-class CheckoutPage extends StatefulWidget {
-  final List<CartItem> cartItems;
-
-  const CheckoutPage({super.key, required this.cartItems});
-
-  @override
-  State<CheckoutPage> createState() => _CheckoutPageState();
-}
-
-class _CheckoutPageState extends State<CheckoutPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _pincodeController = TextEditingController();
-  
-  String _paymentMethod = 'COD';
-  bool _isProcessing = false;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _pincodeController.dispose();
-    super.dispose();
-  }
-
-  double get _subtotal {
-    return widget.cartItems.fold(0, (sum, item) => sum + (item.product.price * item.quantity));
-  }
-
-  double get _deliveryCharges => _subtotal > 500 ? 0 : 40;
-  double get _total => _subtotal + _deliveryCharges;
-
-  Future<void> _placeOrder() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isProcessing = true);
-
-    try {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) throw 'User not logged in';
-
-      // Create order in Firestore
-      await FirebaseFirestore.instance.collection('orders').add({
-        'userId': userId,
-        'items': widget.cartItems.map((item) => {
-          'productId': item.product.id,
-          'productName': item.product.name,
-          'quantity': item.quantity,
-          'price': item.product.price,
-        }).toList(),
-        'deliveryAddress': {
-          'name': _nameController.text,
-          'phone': _phoneController.text,
-          'address': _addressController.text,
-          'city': _cityController.text,
-          'pincode': _pincodeController.text,
-        },
-        'paymentMethod': _paymentMethod,
-        'subtotal': _subtotal,
-        'deliveryCharges': _deliveryCharges,
-        'total': _total,
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      // Clear cart
-      await CartService.clearCart();
-
-      if (mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Order placed successfully! 🎉'),
-            backgroundColor: AppTheme.primaryGreen,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isProcessing = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          UniversalHeader(
-            title: 'Checkout',
-            subtitle: 'Complete your order',
-            icon: Icons.payment,
-            showBackButton: true,
-          ),
-        ],
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildOrderSummary(),
-                const SizedBox(height: 24),
-                _buildDeliveryForm(),
-                const SizedBox(height: 24),
-                _buildPaymentMethod(),
-                const SizedBox(height: 24),
-                _buildBillDetails(),
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
-        ),
-      ),
-      bottomNavigationBar: _buildPlaceOrderBar(),
-    );
-  }
-
-  Widget _buildOrderSummary() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Order Summary',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(height: 24),
-            ...widget.cartItems.map((item) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${item.product.name} x${item.quantity}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                  Text(
-                    '₹${(item.product.price * item.quantity).toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            )),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeliveryForm() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Delivery Address',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                border: OutlineInputBorder(),
-              ),
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.phone,
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: 'Address',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _cityController,
-                    decoration: const InputDecoration(
-                      labelText: 'City',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _pincodeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Pincode',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethod() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Payment Method',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            RadioListTile(
-              title: const Text('Cash on Delivery'),
-              value: 'COD',
-              groupValue: _paymentMethod,
-              onChanged: (v) => setState(() => _paymentMethod = v!),
-            ),
-            RadioListTile(
-              title: const Text('UPI'),
-              subtitle: const Text('Coming Soon'),
-              value: 'UPI',
-              groupValue: _paymentMethod,
-              onChanged: null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBillDetails() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Bill Details',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Divider(height: 24),
-            _buildBillRow('Item Total', _subtotal),
-            const SizedBox(height: 8),
-            _buildBillRow('Delivery Charges', _deliveryCharges),
-            if (_deliveryCharges == 0)
-              const Padding(
-                padding: EdgeInsets.only(left: 16, top: 4),
-                child: Text(
-                  'Free delivery on orders above ₹500',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppTheme.primaryGreen,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            const Divider(height: 24),
-            _buildBillRow('Total', _total, isTotal: true),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBillRow(String label, double amount, {bool isTotal = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isTotal ? 16 : 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-        Text(
-          '₹${amount.toStringAsFixed(0)}',
-          style: TextStyle(
-            fontSize: isTotal ? 18 : 14,
-            fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-            color: isTotal ? AppTheme.primaryGreen : null,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlaceOrderBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isProcessing ? null : _placeOrder,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: _isProcessing
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                    ),
-                  )
-                : Text(
-                    'Place Order - ₹${_total.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-

@@ -13,7 +13,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
   final _authService = AuthService();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -22,7 +23,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _showLogo = false;
-  String _selectedLanguage = 'en';
+  final String _selectedLanguage = 'en';
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   // Helper methods for responsive design
   bool get _isMobile => MediaQuery.of(context).size.width < 768;
   bool get _isDesktop => MediaQuery.of(context).size.width >= 1200;
-  
+
   double _getFontSize(double baseSize) {
     if (_isDesktop) return baseSize * 1.1;
     return baseSize;
@@ -66,11 +67,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   }
 
   bool _isMobileNumber(String input) {
-    return RegExp(r'^[6-9]\d{9}$').hasMatch(input.replaceAll(RegExp(r'[^\d]'), ''));
+    return RegExp(r'^[6-9]\d{9}$')
+        .hasMatch(input.replaceAll(RegExp(r'[^\d]'), ''));
   }
 
   String _getFriendlyErrorMessage(String error, AppLocalizations l10n) {
-    if (error.contains('wrong-password') || error.contains('invalid-credential')) {
+    if (error.contains('wrong-password') ||
+        error.contains('invalid-credential')) {
       return l10n.translate('invalid_credentials');
     } else if (error.contains('user-not-found')) {
       return l10n.translate('user_not_found');
@@ -92,7 +95,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     FocusScope.of(context).unfocus();
     final l10n = AppLocalizations.of(context)!;
 
-    if (_identifierController.text.isEmpty || _passwordController.text.isEmpty) {
+    if (_identifierController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
       setState(() => _errorMessage = l10n.translate('enter_email_mobile'));
       return;
     }
@@ -104,7 +108,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
     try {
       String email = _identifierController.text.trim();
-      
+
       // If mobile number, convert to email format (you may need to adjust based on your auth setup)
       if (_isMobileNumber(email)) {
         // For Firebase, you might need to convert mobile to email format
@@ -116,19 +120,21 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         email: email,
         password: _passwordController.text,
       );
-      
-      if (userCredential?.user != null) {
+
+      if (userCredential.user != null) {
         // Set user in state service
-        final userStateService = Provider.of<UserStateService>(context, listen: false);
-        await userStateService.setCurrentUser(userCredential!.user!.uid);
-        
+        final userStateService =
+            Provider.of<UserStateService>(context, listen: false);
+        await userStateService.setCurrentUser(userCredential.user!.uid);
+
         if (userStateService.currentUser != null) {
           if (mounted) {
             Navigator.pushReplacementNamed(context, '/home');
           }
         } else {
           if (mounted) {
-            setState(() => _errorMessage = 'User profile not found. Please contact support.');
+            setState(() => _errorMessage =
+                'User profile not found. Please contact support.');
           }
         }
       } else {
@@ -140,7 +146,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
     } catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        setState(() => _errorMessage = _getFriendlyErrorMessage(e.toString(), l10n));
+        setState(
+            () => _errorMessage = _getFriendlyErrorMessage(e.toString(), l10n));
       }
     } finally {
       if (mounted) {
@@ -153,7 +160,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: GestureDetector(
@@ -168,15 +175,15 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                      AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
                       Theme.of(context).scaffoldBackgroundColor,
-                      AppTheme.accentOrange.withOpacity(0.08),
+                      AppTheme.accentOrange.withValues(alpha: 0.08),
                     ],
                     stops: const [0.0, 0.5, 1.0],
                   ),
                 ),
               ),
-              
+
               // Decorative circles for depth
               Positioned(
                 top: -100,
@@ -188,14 +195,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppTheme.getPrimaryAccent(context).withOpacity(0.15),
-                        AppTheme.getPrimaryAccent(context).withOpacity(0.0),
+                        AppTheme.getPrimaryAccent(context)
+                            .withValues(alpha: 0.15),
+                        AppTheme.getPrimaryAccent(context)
+                            .withValues(alpha: 0.0),
                       ],
                     ),
                   ),
                 ),
               ),
-              
+
               Positioned(
                 bottom: -150,
                 left: -100,
@@ -206,42 +215,52 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppTheme.accentOrange.withOpacity(0.12),
-                        AppTheme.accentOrange.withOpacity(0.0),
+                        AppTheme.accentOrange.withValues(alpha: 0.12),
+                        AppTheme.accentOrange.withValues(alpha: 0.0),
                       ],
                     ),
                   ),
                 ),
               ),
-              
+
               // Language selector in top right corner
               Positioned(
                 top: 16,
                 right: 16,
                 child: Consumer<LocaleService>(
-                  builder: (context, localeService, _) => PopupMenuButton<String>(
+                  builder: (context, localeService, _) =>
+                      PopupMenuButton<String>(
                     tooltip: 'Change Language',
                     onSelected: (String languageCode) {
                       localeService.setLocale(Locale(languageCode));
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(20),
-                        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
-                        boxShadow: isDark ? [] : [
-                          BoxShadow(
-                            color: AppTheme.getPrimaryAccent(context).withOpacity(0.2),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        border: isDark
+                            ? Border.all(
+                                color: AppTheme.getBorderColor(context))
+                            : null,
+                        boxShadow: isDark
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: AppTheme.getPrimaryAccent(context)
+                                      .withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.language, size: 20, color: AppTheme.getPrimaryAccent(context)),
+                          Icon(Icons.language,
+                              size: 20,
+                              color: AppTheme.getPrimaryAccent(context)),
                           const SizedBox(width: 6),
                           Text(
                             localeService.locale.languageCode.toUpperCase(),
@@ -254,7 +273,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         ],
                       ),
                     ),
-                    itemBuilder: (BuildContext context) => LocaleService.supportedLocales.map((locale) {
+                    itemBuilder: (BuildContext context) =>
+                        LocaleService.supportedLocales.map((locale) {
                       final Map<String, String> languageNames = {
                         'en': 'English',
                         'hi': 'हिंदी',
@@ -264,18 +284,24 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                         value: locale.languageCode,
                         child: Row(
                           children: [
-                            if (locale.languageCode == localeService.locale.languageCode)
-                              Icon(Icons.check, color: AppTheme.getPrimaryAccent(context), size: 18)
+                            if (locale.languageCode ==
+                                localeService.locale.languageCode)
+                              Icon(Icons.check,
+                                  color: AppTheme.getPrimaryAccent(context),
+                                  size: 18)
                             else
                               const SizedBox(width: 18),
                             const SizedBox(width: 8),
                             Text(
-                              languageNames[locale.languageCode] ?? locale.languageCode.toUpperCase(),
+                              languageNames[locale.languageCode] ??
+                                  locale.languageCode.toUpperCase(),
                               style: TextStyle(
-                                fontWeight: locale.languageCode == localeService.locale.languageCode
+                                fontWeight: locale.languageCode ==
+                                        localeService.locale.languageCode
                                     ? FontWeight.bold
                                     : FontWeight.normal,
-                                color: locale.languageCode == localeService.locale.languageCode
+                                color: locale.languageCode ==
+                                        localeService.locale.languageCode
                                     ? AppTheme.getPrimaryAccent(context)
                                     : AppTheme.getTextColor(context),
                               ),
@@ -287,9 +313,9 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   ),
                 ),
               ),
-              
+
               // Main login form
-              
+
               Center(
                 child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(
@@ -304,10 +330,14 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       position: _slideAnimation,
                       child: Card(
                         elevation: isDark ? 4 : 12,
-                        shadowColor: AppTheme.getPrimaryAccent(context).withOpacity(0.3),
+                        shadowColor: AppTheme.getPrimaryAccent(context)
+                            .withValues(alpha: 0.3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
-                          side: isDark ? BorderSide(color: AppTheme.getBorderColor(context)) : BorderSide.none,
+                          side: isDark
+                              ? BorderSide(
+                                  color: AppTheme.getBorderColor(context))
+                              : BorderSide.none,
                         ),
                         child: Padding(
                           padding: EdgeInsets.all(_isDesktop ? 32 : 24),
@@ -324,15 +354,19 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   child: Column(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.all(_isDesktop ? 20 : 16),
+                                        padding: EdgeInsets.all(
+                                            _isDesktop ? 20 : 16),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                                          color:
+                                              AppTheme.getPrimaryAccent(context)
+                                                  .withValues(alpha: 0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: Icon(
                                           Icons.agriculture,
                                           size: _isDesktop ? 56 : 48,
-                                          color: AppTheme.getPrimaryAccent(context),
+                                          color: AppTheme.getPrimaryAccent(
+                                              context),
                                         ),
                                       ),
                                       const SizedBox(height: 12),
@@ -341,7 +375,8 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         style: TextStyle(
                                           fontSize: _getFontSize(28),
                                           fontWeight: FontWeight.bold,
-                                          color: AppTheme.getPrimaryAccent(context),
+                                          color: AppTheme.getPrimaryAccent(
+                                              context),
                                           letterSpacing: 1.2,
                                         ),
                                       ),
@@ -350,168 +385,192 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         'Smart Agriculture Platform',
                                         style: TextStyle(
                                           fontSize: _getFontSize(14),
-                                          color: AppTheme.getSecondaryTextColor(context),
+                                          color: AppTheme.getSecondaryTextColor(
+                                              context),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                            const SizedBox(height: 32),
+                              const SizedBox(height: 32),
 
-                            // Email/Mobile Field
-                            TextField(
-                              controller: _identifierController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                labelText: l10n?.translate('email_or_mobile') ?? 'Email or Mobile',
-                                prefixIcon: const Icon(Icons.person_outline),
-                                hintText: 'email@example.com or 9876543210',
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Password Field
-                            TextField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                labelText: l10n?.translate('password') ?? 'Password',
-                                prefixIcon: const Icon(Icons.lock_outlined),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
+                              // Email/Mobile Field
+                              TextField(
+                                controller: _identifierController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      l10n?.translate('email_or_mobile') ??
+                                          'Email or Mobile',
+                                  prefixIcon: const Icon(Icons.person_outline),
+                                  hintText: 'email@example.com or 9876543210',
                                 ),
-                                hintText: 'Enter your password',
                               ),
-                            ),
-                            const SizedBox(height: 8),
+                              const SizedBox(height: 16),
 
-                            // Forgot Password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  // Navigate to forgot password
-                                },
-                                child: Text(l10n?.translate('forgot_password') ?? 'Forgot Password?'),
+                              // Password Field
+                              TextField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  labelText:
+                                      l10n?.translate('password') ?? 'Password',
+                                  prefixIcon: const Icon(Icons.lock_outlined),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  hintText: 'Enter your password',
+                                ),
                               ),
-                            ),
-                          const SizedBox(height: 16),
+                              const SizedBox(height: 8),
 
-                          // Error Message
-                          if (_errorMessage != null)
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppTheme.error.withOpacity(0.3)),
+                              // Forgot Password
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    // Navigate to forgot password
+                                  },
+                                  child: Text(
+                                      l10n?.translate('forgot_password') ??
+                                          'Forgot Password?'),
+                                ),
                               ),
-                              child: Row(
+                              const SizedBox(height: 16),
+
+                              // Error Message
+                              if (_errorMessage != null)
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppTheme.error.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: AppTheme.error
+                                            .withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.error_outline,
+                                          color: AppTheme.error, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: const TextStyle(
+                                              color: AppTheme.error),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (_errorMessage != null)
+                                const SizedBox(height: 16),
+
+                              // Login Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: _isDesktop ? 56 : 48,
+                                child: ElevatedButton(
+                                  onPressed: _isLoading ? null : _signIn,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        AppTheme.getPrimaryAccent(context),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          l10n?.translate('login') ?? 'Login'),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Divider
+                              Row(
                                 children: [
-                                  Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-                                  const SizedBox(width: 8),
-                                  Expanded(
+                                  const Expanded(child: Divider()),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
                                     child: Text(
-                                      _errorMessage!,
-                                      style: const TextStyle(color: AppTheme.error),
+                                      'or',
+                                      style: TextStyle(
+                                          color: AppTheme.getSecondaryTextColor(
+                                              context)),
                                     ),
                                   ),
+                                  const Expanded(child: Divider()),
                                 ],
                               ),
-                            ),
-                          if (_errorMessage != null) const SizedBox(height: 16),
+                              const SizedBox(height: 24),
 
-                          // Login Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: _isDesktop ? 56 : 48,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _signIn,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.getPrimaryAccent(context),
-                                foregroundColor: Colors.white,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(l10n?.translate('login') ?? 'Login'),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Divider
-                          Row(
-                            children: [
-                              const Expanded(child: Divider()),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'or',
-                                  style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                              // Sign Up Button
+                              SizedBox(
+                                width: double.infinity,
+                                height: _isDesktop ? 56 : 48,
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/signup');
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        color:
+                                            AppTheme.getPrimaryAccent(context)),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                        color:
+                                            AppTheme.getPrimaryAccent(context)),
+                                  ),
                                 ),
                               ),
-                              const Expanded(child: Divider()),
+                              const SizedBox(height: 16),
+
+                              // Additional Info
+                              Text(
+                                'By continuing, you agree to our Terms of Service\nand Privacy Policy',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: _getFontSize(12),
+                                  color:
+                                      AppTheme.getSecondaryTextColor(context),
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 24),
-
-                          // Sign Up Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: _isDesktop ? 56 : 48,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/signup');
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppTheme.getPrimaryAccent(context)),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Create Account',
-                                style: TextStyle(color: AppTheme.getPrimaryAccent(context)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Additional Info
-                          Text(
-                            'By continuing, you agree to our Terms of Service\nand Privacy Policy',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: _getFontSize(12),
-                              color: AppTheme.getSecondaryTextColor(context),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ), // Closing Center
               ),
-              ), // Closing Center
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

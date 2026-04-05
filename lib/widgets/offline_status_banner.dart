@@ -23,7 +23,7 @@ class _OfflineStatusBannerState extends State<OfflineStatusBanner> {
 
   Future<void> _initSync() async {
     await _syncService.initialize();
-    
+
     _syncService.syncStatus.listen((status) {
       if (mounted) {
         setState(() {
@@ -32,7 +32,7 @@ class _OfflineStatusBannerState extends State<OfflineStatusBanner> {
         });
       }
     });
-    
+
     setState(() {
       _isOnline = _syncService.isOnline;
       _isSyncing = _syncService.isSyncing;
@@ -48,31 +48,24 @@ class _OfflineStatusBannerState extends State<OfflineStatusBanner> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: _isSyncing 
-          ? Colors.blue.shade100 
-          : Colors.orange.shade100,
+      color: _isSyncing ? Colors.blue.shade100 : Colors.orange.shade100,
       child: Row(
         children: [
           Icon(
-            _isSyncing 
-                ? Icons.sync 
-                : Icons.cloud_off,
+            _isSyncing ? Icons.sync : Icons.cloud_off,
             size: 16,
-            color: _isSyncing 
-                ? Colors.blue.shade800 
-                : Colors.orange.shade800,
+            color: _isSyncing ? Colors.blue.shade800 : Colors.orange.shade800,
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _isSyncing 
-                  ? 'Syncing data...' 
+              _isSyncing
+                  ? 'Syncing data...'
                   : 'Offline mode - Changes will sync when online',
               style: TextStyle(
                 fontSize: 12,
-                color: _isSyncing 
-                    ? Colors.blue.shade800 
-                    : Colors.orange.shade800,
+                color:
+                    _isSyncing ? Colors.blue.shade800 : Colors.orange.shade800,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -228,7 +221,7 @@ class _SyncFloatingButtonState extends State<SyncFloatingButton> {
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
       onPressed: _isSyncing ? null : _handleSync,
-      icon: _isSyncing 
+      icon: _isSyncing
           ? const SizedBox(
               width: 20,
               height: 20,
@@ -246,7 +239,7 @@ class _SyncFloatingButtonState extends State<SyncFloatingButton> {
   Future<void> _handleSync() async {
     try {
       await _syncService.forceSyncNow();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

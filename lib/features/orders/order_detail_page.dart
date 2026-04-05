@@ -33,17 +33,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Future<void> _loadData() async {
     try {
       setState(() => _isLoading = true);
-      
+
       if (widget.orderId != null) {
         // Load specific order
         _specificOrder = await _orderService.getOrder(widget.orderId!);
       } else if (widget.productId != null) {
         // Load orders for a specific product (seller view)
-        final sellerOrders = await _orderService.getSellerOrders().first;
-        _orders = sellerOrders.where((order) => order.productId == widget.productId).toList();
+        final sellerOrders = await _orderService.getSellerOrdersStream().first;
+        _orders = sellerOrders
+            .where((order) => order.productId == widget.productId)
+            .toList();
       } else {
         // Load all seller orders
-        final sellerOrders = await _orderService.getSellerOrders().first;
+        final sellerOrders = await _orderService.getSellerOrdersStream().first;
         _orders = sellerOrders;
       }
     } catch (e) {
@@ -59,7 +61,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.orderId != null ? 'Order Details' : 'Product Orders'),
+        title:
+            Text(widget.orderId != null ? 'Order Details' : 'Product Orders'),
         backgroundColor: AppTheme.primaryGreen,
         foregroundColor: Colors.white,
       ),
@@ -124,8 +127,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Text(
                   'Order #${order.id.substring(0, 8)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 _buildStatusChip(order.status),
               ],
@@ -138,7 +141,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   height: 60,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: AppTheme.lightGreen.withOpacity(0.2),
+                    color: AppTheme.lightGreen.withValues(alpha: 0.2),
                   ),
                   child: order.productImageUrl.isNotEmpty
                       ? ClipRRect(
@@ -168,9 +171,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     children: [
                       Text(
                         order.productName,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -181,8 +185,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       Text(
                         'Quantity: ${order.quantity} ${order.unit}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                        ),
+                              color: AppTheme.textGrey,
+                            ),
                       ),
                     ],
                   ),
@@ -193,15 +197,15 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     Text(
                       '₹${order.totalAmount.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppTheme.primaryGreen,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            color: AppTheme.primaryGreen,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
                       _formatDate(order.orderDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textGrey,
-                      ),
+                            color: AppTheme.textGrey,
+                          ),
                     ),
                   ],
                 ),
@@ -221,8 +225,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     Text(
                       'Notes:',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -268,26 +272,26 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget _buildStatusChip(order_model.OrderStatus status) {
     Color backgroundColor;
     Color textColor;
-    
+
     switch (status) {
       case order_model.OrderStatus.pending:
-        backgroundColor = AppTheme.warning.withOpacity(0.2);
+        backgroundColor = AppTheme.warning.withValues(alpha: 0.2);
         textColor = AppTheme.warning;
         break;
       case order_model.OrderStatus.confirmed:
-        backgroundColor = AppTheme.skyBlue.withOpacity(0.2);
+        backgroundColor = AppTheme.skyBlue.withValues(alpha: 0.2);
         textColor = AppTheme.skyBlue;
         break;
       case order_model.OrderStatus.delivered:
-        backgroundColor = AppTheme.success.withOpacity(0.2);
+        backgroundColor = AppTheme.success.withValues(alpha: 0.2);
         textColor = AppTheme.success;
         break;
       case order_model.OrderStatus.cancelled:
-        backgroundColor = AppTheme.error.withOpacity(0.2);
+        backgroundColor = AppTheme.error.withValues(alpha: 0.2);
         textColor = AppTheme.error;
         break;
       default:
-        backgroundColor = AppTheme.primaryGreen.withOpacity(0.2);
+        backgroundColor = AppTheme.primaryGreen.withValues(alpha: 0.2);
         textColor = AppTheme.primaryGreen;
     }
 
@@ -318,8 +322,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             Text(
               'Order Timeline',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             ...order.statusUpdates.map((update) => _buildTimelineItem(update)),
@@ -351,8 +355,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Text(
                   update.status.displayName,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -363,8 +367,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 Text(
                   _formatDate(update.timestamp),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppTheme.textGrey,
-                  ),
+                        color: AppTheme.textGrey,
+                      ),
                 ),
               ],
             ),
@@ -384,8 +388,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             Text(
               'Actions',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -463,7 +467,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               Navigator.pop(context);
               // Here you could implement actual calling functionality
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Call functionality would be implemented here')),
+                const SnackBar(
+                    content:
+                        Text('Call functionality would be implemented here')),
               );
             },
             child: const Text('Call'),
@@ -510,14 +516,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         title: const Text('Update Order Status'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: statuses.map((status) => ListTile(
-            title: Text(status.displayName),
-            subtitle: Text(status.description),
-            onTap: () {
-              Navigator.pop(context);
-              _updateOrderStatus(order, status);
-            },
-          )).toList(),
+          children: statuses
+              .map((status) => ListTile(
+                    title: Text(status.displayName),
+                    subtitle: Text(status.description),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _updateOrderStatus(order, status);
+                    },
+                  ))
+              .toList(),
         ),
         actions: [
           TextButton(
@@ -529,17 +537,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     );
   }
 
-  void _updateOrderStatus(order_model.OrderModel order, order_model.OrderStatus newStatus) async {
+  void _updateOrderStatus(
+      order_model.OrderModel order, order_model.OrderStatus newStatus) async {
     try {
       await _orderService.updateOrderStatus(
         orderId: order.id,
         newStatus: newStatus,
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order status updated successfully')),
       );
-      
+
       _loadData(); // Refresh the data
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -550,7 +559,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   void _addOrderNote(order_model.OrderModel order) {
     final noteController = TextEditingController(text: order.notes ?? '');
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

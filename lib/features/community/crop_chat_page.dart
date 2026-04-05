@@ -5,7 +5,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../theme/app_theme.dart';
 import '../../models/ai_chat_model.dart';
 import '../../services/ai_chat_service.dart';
-import '../../widgets/universal_header.dart';
 
 class CropChatPage extends StatefulWidget {
   final String? initialQuery;
@@ -20,11 +19,11 @@ class _CropChatPageState extends State<CropChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<AIChatMessage> _messages = [];
-  
+
   // Voice Services
   final stt.SpeechToText _speechToText = stt.SpeechToText();
   final FlutterTts _flutterTts = FlutterTts();
-  
+
   bool _isTyping = false;
   bool _isInitializing = true;
   bool _isListening = false;
@@ -46,7 +45,7 @@ class _CropChatPageState extends State<CropChatPage> {
     await _flutterTts.setSpeechRate(0.5); // Better quality
     await _flutterTts.setPitch(1.0);
     await _flutterTts.setVolume(1.0);
-    
+
     _flutterTts.setStartHandler(() => setState(() => _isSpeaking = true));
     _flutterTts.setCompletionHandler(() => setState(() => _isSpeaking = false));
     _flutterTts.setErrorHandler((msg) => setState(() => _isSpeaking = false));
@@ -65,7 +64,7 @@ class _CropChatPageState extends State<CropChatPage> {
 
   Future<void> _initializeSession() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isInitializing = true;
       _errorMessage = null;
@@ -82,30 +81,28 @@ class _CropChatPageState extends State<CropChatPage> {
 
     try {
       final session = await _aiChatService.getOrCreateChatSession(
-        'Crop Consultation',
-        'crops'
-      );
-      
+          'Crop Consultation', 'crops');
+
       _sessionId = session.id;
-      
+
       // Load existing messages
       final messagesStream = _aiChatService.getSessionMessages(_sessionId!);
       await for (final messages in messagesStream) {
         if (!mounted) break;
-        
+
         setState(() {
           _messages.clear();
           // Clean existing messages if they have asterisks
           _messages.addAll(messages.map((m) => AIChatMessage(
-            id: m.id,
-            sessionId: m.sessionId,
-            content: _aiChatService.cleanResponse(m.content),
-            type: m.type,
-            timestamp: m.timestamp,
-            userId: m.userId,
-            confidence: m.confidence,
-            sources: m.sources,
-          )));
+                id: m.id,
+                sessionId: m.sessionId,
+                content: _aiChatService.cleanResponse(m.content),
+                type: m.type,
+                timestamp: m.timestamp,
+                userId: m.userId,
+                confidence: m.confidence,
+                sources: m.sources,
+              )));
           _isInitializing = false;
         });
 
@@ -114,7 +111,8 @@ class _CropChatPageState extends State<CropChatPage> {
           final welcomeMsg = AIChatMessage(
             id: 'welcome',
             sessionId: _sessionId!,
-            content: 'Hello! I am your FarmKart Crop Expert. How can I help you with your crops today?',
+            content:
+                'Hello! I am your FarmKart Crop Expert. How can I help you with your crops today?',
             type: AIChatMessageType.ai,
             timestamp: DateTime.now(),
           );
@@ -126,15 +124,16 @@ class _CropChatPageState extends State<CropChatPage> {
         if (widget.initialQuery != null && _messages.length <= 1) {
           _sendMessage(widget.initialQuery!);
         }
-        
+
         _scrollToBottom();
-        break; 
+        break;
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _isInitializing = false;
-          _errorMessage = 'Failed to initialize session. Please check your connection.';
+          _errorMessage =
+              'Failed to initialize session. Please check your connection.';
         });
       }
     }
@@ -173,7 +172,7 @@ class _CropChatPageState extends State<CropChatPage> {
 
   Future<void> _startListening() async {
     if (_isSpeaking) await _stopSpeaking();
-    
+
     bool available = await _speechToText.initialize();
     if (available) {
       setState(() => _isListening = true);
@@ -223,11 +222,12 @@ class _CropChatPageState extends State<CropChatPage> {
     await _aiChatService.addMessageToSession(_sessionId!, userMessage);
 
     try {
-      final response = await _aiChatService.askExpert(rawContent, context: 'crops');
-      
+      final response =
+          await _aiChatService.askExpert(rawContent, context: 'crops');
+
       // Clean the response
       final cleanedAnswer = _aiChatService.cleanResponse(response.answer);
-      
+
       final aiMessage = AIChatMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         sessionId: _sessionId!,
@@ -244,9 +244,9 @@ class _CropChatPageState extends State<CropChatPage> {
           _isTyping = false;
         });
         _scrollToBottom();
-        
+
         await _aiChatService.addMessageToSession(_sessionId!, aiMessage);
-        
+
         if (_isVoiceEnabled) {
           _speak(cleanedAnswer);
         }
@@ -264,7 +264,7 @@ class _CropChatPageState extends State<CropChatPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: isDark ? AppTheme.darkBackground : Colors.white,
       body: Column(
@@ -286,7 +286,7 @@ class _CropChatPageState extends State<CropChatPage> {
   Widget _buildTopHeader(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final topPadding = MediaQuery.of(context).padding.top;
-    
+
     return Container(
       padding: EdgeInsets.fromLTRB(16, topPadding + 12, 16, 20),
       decoration: const BoxDecoration(
@@ -313,10 +313,11 @@ class _CropChatPageState extends State<CropChatPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.white, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -335,7 +336,7 @@ class _CropChatPageState extends State<CropChatPage> {
                 Text(
                   'AI Agriculture Assistant',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),
@@ -356,7 +357,7 @@ class _CropChatPageState extends State<CropChatPage> {
                   if (!value) _stopSpeaking();
                 },
                 activeColor: Colors.white,
-                activeTrackColor: Colors.white.withOpacity(0.5),
+                activeTrackColor: Colors.white.withValues(alpha: 0.5),
               ),
             ],
           ),
@@ -387,13 +388,15 @@ class _CropChatPageState extends State<CropChatPage> {
 
   Widget _buildChatGPTMessage(AIChatMessage message, bool isDark) {
     final isAI = message.type == AIChatMessageType.ai;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
       decoration: BoxDecoration(
-        color: isAI 
-            ? (isDark ? Colors.white.withOpacity(0.03) : Colors.grey.withOpacity(0.05))
+        color: isAI
+            ? (isDark
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.grey.withValues(alpha: 0.05))
             : Colors.transparent,
       ),
       child: Row(
@@ -439,14 +442,17 @@ class _CropChatPageState extends State<CropChatPage> {
                 if (isAI && (message.confidence != null)) ...[
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3)),
+                      border: Border.all(
+                          color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       'Confidence: ${(message.confidence! * 100).toStringAsFixed(0)}%',
-                      style: const TextStyle(fontSize: 10, color: AppTheme.primaryGreen),
+                      style: const TextStyle(
+                          fontSize: 10, color: AppTheme.primaryGreen),
                     ),
                   ),
                 ],
@@ -460,7 +466,8 @@ class _CropChatPageState extends State<CropChatPage> {
 
   Widget _buildInputArea(bool isDark) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+          16, 8, 16, MediaQuery.of(context).padding.bottom + 16),
       child: Column(
         children: [
           if (_isListening)
@@ -468,7 +475,8 @@ class _CropChatPageState extends State<CropChatPage> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: const Text(
                 'Listening...',
-                style: TextStyle(color: AppTheme.primaryGreen, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: AppTheme.primaryGreen, fontWeight: FontWeight.bold),
               ),
             ),
           Row(
@@ -479,11 +487,13 @@ class _CropChatPageState extends State<CropChatPage> {
                     color: isDark ? AppTheme.darkCard : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isDark ? Colors.white24 : Colors.grey.withOpacity(0.3),
+                      color: isDark
+                          ? Colors.white24
+                          : Colors.grey.withValues(alpha: 0.3),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -495,9 +505,12 @@ class _CropChatPageState extends State<CropChatPage> {
                       IconButton(
                         icon: Icon(
                           _isListening ? Icons.mic : Icons.mic_none,
-                          color: _isListening ? AppTheme.error : AppTheme.primaryGreen,
+                          color: _isListening
+                              ? AppTheme.error
+                              : AppTheme.primaryGreen,
                         ),
-                        onPressed: _isListening ? _stopListening : _startListening,
+                        onPressed:
+                            _isListening ? _stopListening : _startListening,
                       ),
                       Expanded(
                         child: TextField(
@@ -505,22 +518,24 @@ class _CropChatPageState extends State<CropChatPage> {
                           decoration: const InputDecoration(
                             hintText: 'Message Crop Expert...',
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
                           ),
                           maxLines: 5,
                           minLines: 1,
-                          style: TextStyle(color: isDark ? Colors.white : AppTheme.textDark),
+                          style: TextStyle(
+                              color: isDark ? Colors.white : AppTheme.textDark),
                         ),
                       ),
                       IconButton(
                         icon: Icon(
                           Icons.send_rounded,
-                          color: _messageController.text.trim().isEmpty 
-                              ? Colors.grey 
+                          color: _messageController.text.trim().isEmpty
+                              ? Colors.grey
                               : AppTheme.primaryGreen,
                         ),
-                        onPressed: _messageController.text.trim().isEmpty 
-                            ? null 
+                        onPressed: _messageController.text.trim().isEmpty
+                            ? null
                             : () => _sendMessage(),
                       ),
                       const SizedBox(width: 4),
@@ -533,7 +548,8 @@ class _CropChatPageState extends State<CropChatPage> {
           const SizedBox(height: 8),
           Text(
             'FarmKart AI can make mistakes. Check important info.',
-            style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.black38),
+            style: TextStyle(
+                fontSize: 10, color: isDark ? Colors.white38 : Colors.black38),
           ),
         ],
       ),
@@ -555,7 +571,8 @@ class _CropChatPageState extends State<CropChatPage> {
           const SizedBox(height: 16),
           Text(_errorMessage!, textAlign: TextAlign.center),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _initializeSession, child: const Text('Retry')),
+          ElevatedButton(
+              onPressed: _initializeSession, child: const Text('Retry')),
         ],
       ),
     );
@@ -565,7 +582,9 @@ class _CropChatPageState extends State<CropChatPage> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.grey.withOpacity(0.05),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.03)
+            : Colors.grey.withValues(alpha: 0.05),
       ),
       child: Row(
         children: [
@@ -576,10 +595,12 @@ class _CropChatPageState extends State<CropChatPage> {
               color: AppTheme.primaryGreen,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+            child:
+                const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 16),
-          const Text('...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          const Text('...',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
         ],
       ),
     );

@@ -33,7 +33,7 @@ class NotificationService {
     try {
       // Save to database
       final notificationId = _firestore.collection('notifications').doc().id;
-      
+
       final notification = AppNotification(
         id: notificationId,
         userId: userId,
@@ -51,7 +51,6 @@ class NotificationService {
 
       // Push notification will be implemented when FCM is available
       debugPrint('Notification saved: $title - $body');
-      
     } catch (e) {
       debugPrint('Failed to send notification: $e');
     }

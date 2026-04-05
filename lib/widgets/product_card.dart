@@ -107,18 +107,20 @@ class ProductCard extends StatelessWidget {
                       children: [
                         Text(
                           product.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
                           product.location,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textGrey,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.textGrey,
+                                  ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -132,16 +134,22 @@ class ProductCard extends StatelessWidget {
                           children: [
                             Text(
                               '₹${product.price.toStringAsFixed(0)}',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppTheme.primaryGreen,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: AppTheme.primaryGreen,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                             Text(
                               'per ${product.unit}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textGrey,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppTheme.textGrey,
+                                  ),
                             ),
                           ],
                         ),
@@ -168,7 +176,7 @@ class ProductCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppTheme.lightGreen.withOpacity(0.1),
+      color: AppTheme.lightGreen.withValues(alpha: 0.1),
       child: Icon(
         Icons.agriculture,
         size: 40,

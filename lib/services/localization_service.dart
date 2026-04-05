@@ -68,7 +68,8 @@ class LocalizationService extends ChangeNotifier {
       'enter_password': 'कृपया पासवर्ड दर्ज करें',
       'user_not_found': 'इस क्रेडेंशियल के साथ कोई खाता नहीं मिला',
       'invalid_email_mobile': 'कृपया एक वैध ईमेल या मोबाइल नंबर दर्ज करें',
-      'too_many_attempts': 'बहुत अधिक असफल प्रयास। कृपया बाद में पुनः प्रयास करें',
+      'too_many_attempts':
+          'बहुत अधिक असफल प्रयास। कृपया बाद में पुनः प्रयास करें',
       'network_error': 'नेटवर्क त्रुटि। कृपया अपना कनेक्शन जांचें',
       'account_disabled': 'आपका खाता अक्षम कर दिया गया है',
       'session_expired': 'सत्र समाप्त हो गया। कृपया फिर से लॉगिन करें',
@@ -122,8 +123,8 @@ class LocalizationService extends ChangeNotifier {
   }
 
   List<Map<String, String>> get supportedLanguages => [
-    {'code': 'en', 'name': 'English'},
-    {'code': 'hi', 'name': 'हिंदी'},
-    {'code': 'mr', 'name': 'मराठी'},
-  ];
+        {'code': 'en', 'name': 'English'},
+        {'code': 'hi', 'name': 'हिंदी'},
+        {'code': 'mr', 'name': 'मराठी'},
+      ];
 }

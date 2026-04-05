@@ -90,5 +90,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'farmkart-9f4f3.firebasestorage.app',
     measurementId: 'G-RFF4TNMLJ2',
   );
-
 }

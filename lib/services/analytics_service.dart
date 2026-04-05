@@ -170,12 +170,14 @@ class AnalyticsService {
     await _analytics.logBeginCheckout(
       currency: 'INR',
       value: totalValue,
-      items: items.map((item) => AnalyticsEventItem(
-        itemId: item['id'],
-        itemName: item['name'],
-        price: item['price'],
-        quantity: item['quantity'],
-      )).toList(),
+      items: items
+          .map((item) => AnalyticsEventItem(
+                itemId: item['id'],
+                itemName: item['name'],
+                price: item['price'],
+                quantity: item['quantity'],
+              ))
+          .toList(),
     );
     debugPrint('Analytics: Begin checkout - ₹$totalValue');
   }
@@ -191,14 +193,16 @@ class AnalyticsService {
       currency: 'INR',
       value: totalValue,
       transactionId: transactionId,
-      items: items.map((item) => AnalyticsEventItem(
-        itemId: item['id'],
-        itemName: item['name'],
-        price: item['price'],
-        quantity: item['quantity'],
-      )).toList(),
+      items: items
+          .map((item) => AnalyticsEventItem(
+                itemId: item['id'],
+                itemName: item['name'],
+                price: item['price'],
+                quantity: item['quantity'],
+              ))
+          .toList(),
     );
-    
+
     await _analytics.logEvent(
       name: 'payment_method_used',
       parameters: {
@@ -206,7 +210,7 @@ class AnalyticsService {
         'amount': totalValue,
       },
     );
-    
+
     debugPrint('Analytics: Purchase - ₹$totalValue via $paymentMethod');
   }
 
@@ -394,7 +398,8 @@ class AnalyticsService {
   }) async {
     await _analytics.logEvent(
       name: eventName,
-      parameters: parameters?.map((key, value) => MapEntry(key, value as Object)),
+      parameters:
+          parameters?.map((key, value) => MapEntry(key, value as Object)),
     );
     debugPrint('Analytics: Custom event - $eventName');
   }
@@ -475,7 +480,8 @@ class AnalyticsService {
         'load_time_ms': loadTime.inMilliseconds,
       },
     );
-    debugPrint('Analytics: Page load - $pageName: ${loadTime.inMilliseconds}ms');
+    debugPrint(
+        'Analytics: Page load - $pageName: ${loadTime.inMilliseconds}ms');
   }
 
   /// Track API call performance

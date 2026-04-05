@@ -15,7 +15,14 @@ class VideoLibraryPage extends StatefulWidget {
 class _VideoLibraryPageState extends State<VideoLibraryPage> {
   final TrendingVideoService _videoService = TrendingVideoService();
   String _selectedCategory = 'All';
-  final List<String> _categories = ['All', 'Education', 'Farming Guide', 'Technology', 'Resources', 'Market'];
+  final List<String> _categories = [
+    'All',
+    'Education',
+    'Farming Guide',
+    'Technology',
+    'Resources',
+    'Market'
+  ];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -24,7 +31,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.backgroundLight,
+      backgroundColor:
+          isDark ? AppTheme.darkBackground : AppTheme.backgroundLight,
       appBar: AppBar(
         backgroundColor: AppTheme.primaryGreen,
         elevation: 0,
@@ -45,22 +53,31 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
               stream: _videoService.getTrendingVideos(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator(color: AppTheme.primaryGreen));
+                  return const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.primaryGreen));
                 }
 
                 var videos = snapshot.data ?? [];
-                
+
                 // Filter by category
                 if (_selectedCategory != 'All') {
-                  videos = videos.where((v) => v.category == _selectedCategory).toList();
+                  videos = videos
+                      .where((v) => v.category == _selectedCategory)
+                      .toList();
                 }
 
                 // Filter by search query
                 if (_searchQuery.isNotEmpty) {
-                  videos = videos.where((v) => 
-                    v.title.toLowerCase().contains(_searchQuery.toLowerCase()) || 
-                    v.category.toLowerCase().contains(_searchQuery.toLowerCase())
-                  ).toList();
+                  videos = videos
+                      .where((v) =>
+                          v.title
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()) ||
+                          v.category
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()))
+                      .toList();
                 }
 
                 if (videos.isEmpty) {
@@ -76,7 +93,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
                     mainAxisSpacing: 16,
                   ),
                   itemCount: videos.length,
-                  itemBuilder: (context, index) => _buildVideoCard(context, videos[index], isDark),
+                  itemBuilder: (context, index) =>
+                      _buildVideoCard(context, videos[index], isDark),
                 );
               },
             ),
@@ -97,7 +115,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
             onChanged: (val) => setState(() => _searchQuery = val),
             decoration: InputDecoration(
               hintText: 'Search expert videos...',
-              prefixIcon: const Icon(Icons.search, color: AppTheme.primaryGreen),
+              prefixIcon:
+                  const Icon(Icons.search, color: AppTheme.primaryGreen),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -122,10 +141,11 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
                       if (selected) setState(() => _selectedCategory = cat);
                     },
                     selectedColor: Colors.white,
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                       color: isSelected ? AppTheme.primaryGreen : Colors.white,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 );
@@ -137,7 +157,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
     );
   }
 
-  Widget _buildVideoCard(BuildContext context, TrendingVideo video, bool isDark) {
+  Widget _buildVideoCard(
+      BuildContext context, TrendingVideo video, bool isDark) {
     return Card(
       elevation: 4,
       clipBehavior: Clip.antiAlias,
@@ -147,7 +168,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => VideoPlayerPage(video: video)),
+            MaterialPageRoute(
+                builder: (context) => VideoPlayerPage(video: video)),
           );
         },
         child: Column(
@@ -160,15 +182,18 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
                   child: CachedNetworkImage(
                     imageUrl: video.thumbnail,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(color: Colors.grey[200]),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                    placeholder: (context, url) =>
+                        Container(color: Colors.grey[200]),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   ),
                 ),
                 Positioned(
                   bottom: 4,
                   right: 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.black87,
                       borderRadius: BorderRadius.circular(4),
@@ -181,7 +206,8 @@ class _VideoLibraryPageState extends State<VideoLibraryPage> {
                 ),
                 const Positioned.fill(
                   child: Center(
-                    child: Icon(Icons.play_circle_fill, color: Colors.white70, size: 40),
+                    child: Icon(Icons.play_circle_fill,
+                        color: Colors.white70, size: 40),
                   ),
                 ),
               ],

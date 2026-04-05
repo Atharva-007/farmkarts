@@ -100,7 +100,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
   }
 
   Widget _buildLicenseCard(LicenseItem license) {
-    final daysUntilExpiry = license.expiryDate.difference(DateTime.now()).inDays;
+    final daysUntilExpiry =
+        license.expiryDate.difference(DateTime.now()).inDays;
     final isExpiringSoon = daysUntilExpiry < 30 && daysUntilExpiry > 0;
     final isExpired = daysUntilExpiry < 0;
 
@@ -124,7 +125,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -137,7 +138,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
+              color: statusColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),

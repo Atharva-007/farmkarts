@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import '../../theme/app_theme.dart';
 import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
@@ -20,7 +19,7 @@ class LicenseManagementPage extends StatefulWidget {
 class _LicenseManagementPageState extends State<LicenseManagementPage> {
   final _authService = AuthService();
   final _imagePicker = ImagePicker();
-  
+
   File? _licenseImage;
   Uint8List? _licenseImageBytes; // For web compatibility
   String? _licenseImageName;
@@ -32,7 +31,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
     return Consumer<UserStateService>(
       builder: (context, userState, child) {
         final user = userState.currentUser;
-        
+
         if (user == null || user is! AddatModel) {
           return Scaffold(
             appBar: AppBar(
@@ -90,7 +89,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              AppTheme.primaryGreen.withOpacity(0.1),
+              AppTheme.primaryGreen.withValues(alpha: 0.1),
               Colors.white,
             ],
             begin: Alignment.topLeft,
@@ -111,9 +110,9 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                 Text(
                   'Business License',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textDark,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textDark,
+                      ),
                 ),
               ],
             ),
@@ -121,8 +120,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
             Text(
               'Manage your business license for ${user.dukanName}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppTheme.textGrey,
-              ),
+                    color: AppTheme.textGrey,
+                  ),
             ),
           ],
         ),
@@ -140,11 +139,11 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
             Text(
               'Current Status',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
-            
+
             // License Status
             Row(
               children: [
@@ -152,16 +151,22 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: user.licenseImageUrl != null
-                        ? (user.isLicenseVerified ? AppTheme.success.withOpacity(0.1) : AppTheme.warning.withOpacity(0.1))
-                        : AppTheme.error.withOpacity(0.1),
+                        ? (user.isLicenseVerified
+                            ? AppTheme.success.withValues(alpha: 0.1)
+                            : AppTheme.warning.withValues(alpha: 0.1))
+                        : AppTheme.error.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     user.licenseImageUrl != null
-                        ? (user.isLicenseVerified ? Icons.verified : Icons.pending)
+                        ? (user.isLicenseVerified
+                            ? Icons.verified
+                            : Icons.pending)
                         : Icons.error_outline,
                     color: user.licenseImageUrl != null
-                        ? (user.isLicenseVerified ? AppTheme.success : AppTheme.warning)
+                        ? (user.isLicenseVerified
+                            ? AppTheme.success
+                            : AppTheme.warning)
                         : AppTheme.error,
                     size: 20,
                   ),
@@ -174,49 +179,52 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                       Text(
                         _getStatusTitle(user),
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textDark,
-                        ),
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textDark,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         _getStatusDescription(user),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                        ),
+                              color: AppTheme.textGrey,
+                            ),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             // Upload Date
             if (user.licenseUploadedAt != null) ...[
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 16, color: AppTheme.textGrey),
+                  Icon(Icons.calendar_today,
+                      size: 16, color: AppTheme.textGrey),
                   const SizedBox(width: 8),
                   Text(
                     'Uploaded: ${_formatDate(user.licenseUploadedAt!)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textGrey,
-                    ),
+                          color: AppTheme.textGrey,
+                        ),
                   ),
                 ],
               ),
             ],
-            
+
             // Verification Notes
-            if (user.verificationNotes != null && user.verificationNotes!.isNotEmpty) ...[
+            if (user.verificationNotes != null &&
+                user.verificationNotes!.isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.info.withOpacity(0.1),
+                  color: AppTheme.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.info.withOpacity(0.3)),
+                  border:
+                      Border.all(color: AppTheme.info.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,8 +246,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                     Text(
                       user.verificationNotes!,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textDark,
-                      ),
+                            color: AppTheme.textDark,
+                          ),
                     ),
                   ],
                 ),
@@ -259,13 +267,15 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              user.licenseImageUrl != null ? 'Update License' : 'Upload License',
+              user.licenseImageUrl != null
+                  ? 'Update License'
+                  : 'Upload License',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
-            
+
             // Current License Image
             if (user.licenseImageUrl != null) ...[
               Container(
@@ -286,7 +296,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                         child: CircularProgressIndicator(
                           color: AppTheme.primaryGreen,
                           value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
                               : null,
                         ),
                       );
@@ -297,7 +308,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.error_outline, color: Colors.grey.shade400, size: 48),
+                            Icon(Icons.error_outline,
+                                color: Colors.grey.shade400, size: 48),
                             const SizedBox(height: 8),
                             Text(
                               'Failed to load image',
@@ -312,21 +324,25 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
               ),
               const SizedBox(height: 16),
             ],
-            
+
             // Upload New License
             GestureDetector(
               onTap: _isUploading ? null : _pickLicenseImage,
               child: Container(
                 width: double.infinity,
-                height: (_licenseImage != null || _licenseImageBytes != null) ? 200 : 120,
+                height: (_licenseImage != null || _licenseImageBytes != null)
+                    ? 200
+                    : 120,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: _isUploading ? AppTheme.primaryGreen : Colors.grey.shade300,
+                    color: _isUploading
+                        ? AppTheme.primaryGreen
+                        : Colors.grey.shade300,
                     width: _isUploading ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  color: _isUploading 
-                      ? AppTheme.primaryGreen.withOpacity(0.05)
+                  color: _isUploading
+                      ? AppTheme.primaryGreen.withValues(alpha: 0.05)
                       : Colors.grey.shade50,
                 ),
                 child: _isUploading
@@ -336,7 +352,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                         : _buildUploadPlaceholder(user),
               ),
             ),
-            
+
             if (_licenseImage != null || _licenseImageBytes != null) ...[
               const SizedBox(height: 16),
               Row(
@@ -345,7 +361,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                     child: ElevatedButton.icon(
                       onPressed: _isUploading ? null : _uploadLicense,
                       icon: const Icon(Icons.cloud_upload),
-                      label: Text(_isUploading ? 'Uploading...' : 'Upload License'),
+                      label: Text(
+                          _isUploading ? 'Uploading...' : 'Upload License'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryGreen,
                         foregroundColor: Colors.white,
@@ -356,12 +373,12 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                   const SizedBox(width: 12),
                   ElevatedButton(
                     onPressed: _isUploading ? null : _clearSelection,
-                    child: const Icon(Icons.clear),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey.shade300,
                       foregroundColor: Colors.grey.shade700,
                       padding: const EdgeInsets.all(12),
                     ),
+                    child: const Icon(Icons.clear),
                   ),
                 ],
               ),
@@ -403,7 +420,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
   Widget _buildNewImageWidget() {
     return Stack(
       children: [
-        Container(
+        SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: ClipRRect(
@@ -412,13 +429,15 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                 ? Image.memory(
                     _licenseImageBytes!,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildErrorPlaceholder(),
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildErrorPlaceholder(),
                   )
                 : !kIsWeb && _licenseImage != null
                     ? Image.file(
                         _licenseImage!,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildErrorPlaceholder(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildErrorPlaceholder(),
                       )
                     : _buildErrorPlaceholder(),
           ),
@@ -440,7 +459,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.8),
+                  Colors.black.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -504,7 +523,9 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
         ),
         const SizedBox(height: 8),
         Text(
-          user.licenseImageUrl != null ? 'Upload New License' : 'Upload License Image',
+          user.licenseImageUrl != null
+              ? 'Upload New License'
+              : 'Upload License Image',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: AppTheme.primaryGreen,
@@ -523,7 +544,7 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           decoration: BoxDecoration(
-            color: AppTheme.info.withOpacity(0.1),
+            color: AppTheme.info.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -603,8 +624,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                 Text(
                   'Verification Process',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -619,7 +640,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
             _buildInfoStep(
               icon: Icons.rate_review,
               title: 'Admin Review',
-              description: 'Our team will review your license within 1-2 business days',
+              description:
+                  'Our team will review your license within 1-2 business days',
               isCompleted: false,
             ),
             const SizedBox(height: 12),
@@ -646,9 +668,9 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isCompleted 
-                ? AppTheme.success.withOpacity(0.1)
-                : AppTheme.textGrey.withOpacity(0.1),
+            color: isCompleted
+                ? AppTheme.success.withValues(alpha: 0.1)
+                : AppTheme.textGrey.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -665,15 +687,15 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: isCompleted ? AppTheme.success : AppTheme.textDark,
-                ),
+                      fontWeight: FontWeight.w600,
+                      color: isCompleted ? AppTheme.success : AppTheme.textDark,
+                    ),
               ),
               Text(
                 description,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
-                ),
+                      color: AppTheme.textGrey,
+                    ),
               ),
             ],
           ),
@@ -727,17 +749,19 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
       final pickedFile = await _imagePicker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 70, // Reduced quality for smaller files
-        maxWidth: 1280,   // Reduced resolution
-        maxHeight: 1280,  // Reduced resolution
+        maxWidth: 1280, // Reduced resolution
+        maxHeight: 1280, // Reduced resolution
       );
 
       if (pickedFile != null) {
         if (kIsWeb) {
           final imageBytes = await pickedFile.readAsBytes();
-          
-          if (imageBytes.length > 2 * 1024 * 1024) { // 2MB limit
+
+          if (imageBytes.length > 2 * 1024 * 1024) {
+            // 2MB limit
             setState(() {
-              _errorMessage = 'Image too large. Please select an image smaller than 2MB.';
+              _errorMessage =
+                  'Image too large. Please select an image smaller than 2MB.';
             });
             return;
           }
@@ -750,10 +774,12 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
         } else {
           final file = File(pickedFile.path);
           final fileSize = await file.length();
-          
-          if (fileSize > 2 * 1024 * 1024) { // 2MB limit
+
+          if (fileSize > 2 * 1024 * 1024) {
+            // 2MB limit
             setState(() {
-              _errorMessage = 'Image too large. Please select an image smaller than 2MB.';
+              _errorMessage =
+                  'Image too large. Please select an image smaller than 2MB.';
             });
             return;
           }
@@ -788,7 +814,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
     });
 
     try {
-      final userStateService = Provider.of<UserStateService>(context, listen: false);
+      final userStateService =
+          Provider.of<UserStateService>(context, listen: false);
       final currentUser = userStateService.currentUser as AddatModel;
 
       // Upload the license image
@@ -824,7 +851,8 @@ class _LicenseManagementPageState extends State<LicenseManagementPage> {
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 12),
                 const Expanded(
-                  child: Text('License uploaded successfully! It will be reviewed within 1-2 business days.'),
+                  child: Text(
+                      'License uploaded successfully! It will be reviewed within 1-2 business days.'),
                 ),
               ],
             ),

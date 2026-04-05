@@ -5,7 +5,7 @@ import '../services/oauth_service.dart';
 class OAuthButtons extends StatelessWidget {
   final VoidCallback? onSuccess;
   final Function(String)? onError;
-  
+
   const OAuthButtons({
     super.key,
     this.onSuccess,
@@ -16,7 +16,7 @@ class OAuthButtons extends StatelessWidget {
     try {
       final oauthService = OAuthService();
       final result = await oauthService.signInWithGoogle();
-      
+
       if (result != null && context.mounted) {
         onSuccess?.call();
       }
@@ -27,26 +27,11 @@ class OAuthButtons extends StatelessWidget {
     }
   }
 
-  Future<void> _handleFacebookSignIn(BuildContext context) async {
-    try {
-      final oauthService = OAuthService();
-      final result = await oauthService.signInWithFacebook();
-      
-      if (result != null && context.mounted) {
-        onSuccess?.call();
-      }
-    } catch (e) {
-      if (context.mounted) {
-        onError?.call('Facebook Sign-In failed: ${e.toString()}');
-      }
-    }
-  }
-
   Future<void> _handleAppleSignIn(BuildContext context) async {
     try {
       final oauthService = OAuthService();
       final result = await oauthService.signInWithApple();
-      
+
       if (result != null && context.mounted) {
         onSuccess?.call();
       }
@@ -79,9 +64,9 @@ class OAuthButtons extends StatelessWidget {
             const Expanded(child: Divider(thickness: 1)),
           ],
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         // Google Sign-In Button
         _OAuthButton(
           onPressed: () => _handleGoogleSignIn(context),
@@ -91,20 +76,9 @@ class OAuthButtons extends StatelessWidget {
           textColor: Colors.black87,
           borderColor: Colors.grey[300]!,
         ),
-        
+
         const SizedBox(height: 12),
-        
-        // Facebook Sign-In Button
-        _OAuthButton(
-          onPressed: () => _handleFacebookSignIn(context),
-          icon: Icons.facebook,
-          label: 'Continue with Facebook',
-          backgroundColor: const Color(0xFF1877F2),
-          textColor: Colors.white,
-        ),
-        
-        const SizedBox(height: 12),
-        
+
         // Apple Sign-In Button (iOS/macOS only)
         if (Theme.of(context).platform == TargetPlatform.iOS ||
             Theme.of(context).platform == TargetPlatform.macOS)
@@ -127,7 +101,7 @@ class _OAuthButton extends StatelessWidget {
   final Color backgroundColor;
   final Color textColor;
   final Color? borderColor;
-  
+
   const _OAuthButton({
     required this.onPressed,
     required this.icon,

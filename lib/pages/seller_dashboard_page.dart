@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../models/product_model.dart';
 import '../models/conversation_model.dart';
 import '../services/enhanced_marketplace_service.dart';
@@ -17,10 +16,10 @@ class SellerDashboardPage extends StatefulWidget {
 
 class _SellerDashboardPageState extends State<SellerDashboardPage>
     with SingleTickerProviderStateMixin {
-  
   late TabController _tabController;
-  final EnhancedMarketplaceService _enhancedService = EnhancedMarketplaceService();
-  
+  final EnhancedMarketplaceService _enhancedService =
+      EnhancedMarketplaceService();
+
   List<Map<String, dynamic>> _productsWithInteractions = [];
   bool _isLoading = true;
   String? _error;
@@ -45,8 +44,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
         _error = null;
       });
 
-      final products = await _enhancedService.getSellerProductsWithInteractions();
-      
+      final products =
+          await _enhancedService.getSellerProductsWithInteractions();
+
       if (mounted) {
         setState(() {
           _productsWithInteractions = products;
@@ -217,7 +217,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
+                Icon(Icons.chat_bubble_outline,
+                    size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   'No Conversations Yet',
@@ -285,7 +286,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                                 width: 60,
                                 height: 60,
                                 color: Colors.grey[300],
-                                child: const Icon(Icons.image, color: Colors.grey),
+                                child:
+                                    const Icon(Icons.image, color: Colors.grey),
                               );
                             },
                           )
@@ -296,9 +298,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                             child: const Icon(Icons.image, color: Colors.grey),
                           ),
                   ),
-                  
+
                   const SizedBox(width: 16),
-                  
+
                   // Product Details
                   Expanded(
                     child: Column(
@@ -333,11 +335,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                       ],
                     ),
                   ),
-                  
+
                   // Status Badge
                   if (unreadCount > 0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppTheme.error,
                         borderRadius: BorderRadius.circular(12),
@@ -353,9 +356,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                     ),
                 ],
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Interaction Stats
               Row(
                 children: [
@@ -373,12 +376,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                     ),
                 ],
               ),
-              
+
               if (conversations.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 const Divider(height: 1),
                 const SizedBox(height: 12),
-                
+
                 // Recent Buyers Preview
                 Text(
                   'Recent Buyer Interactions:',
@@ -389,12 +392,12 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Show first 3 buyers
-                ...conversations.take(3).map((conversation) => 
-                  _buildBuyerPreview(conversation)
-                ),
-                
+                ...conversations
+                    .take(3)
+                    .map((conversation) => _buildBuyerPreview(conversation)),
+
                 if (conversations.length > 3)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -423,9 +426,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -452,9 +455,9 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
         children: [
           CircleAvatar(
             radius: 12,
-            backgroundColor: AppTheme.primaryGreen.withOpacity(0.2),
+            backgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.2),
             child: Text(
-              conversation.buyerName.isNotEmpty 
+              conversation.buyerName.isNotEmpty
                   ? conversation.buyerName[0].toUpperCase()
                   : 'B',
               style: TextStyle(
@@ -493,7 +496,7 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
         leading: CircleAvatar(
           backgroundColor: AppTheme.primaryGreen,
           child: Text(
-            conversation.buyerName.isNotEmpty 
+            conversation.buyerName.isNotEmpty
                 ? conversation.buyerName[0].toUpperCase()
                 : 'B',
             style: const TextStyle(
@@ -560,7 +563,8 @@ class _SellerDashboardPageState extends State<SellerDashboardPage>
     );
   }
 
-  void _showProductInteractions(Product product, List<Conversation> conversations) {
+  void _showProductInteractions(
+      Product product, List<Conversation> conversations) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

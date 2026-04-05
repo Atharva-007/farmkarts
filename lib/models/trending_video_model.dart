@@ -27,8 +27,8 @@ class TrendingVideo {
       thumbnail: map['thumbnail'] ?? '',
       duration: map['duration'] ?? '',
       category: map['category'] ?? 'General',
-      publishedDate: (map['publishedDate'] != null) 
-          ? (map['publishedDate'] as dynamic).toDate() 
+      publishedDate: (map['publishedDate'] != null)
+          ? (map['publishedDate'] as dynamic).toDate()
           : DateTime.now(),
       viewCount: map['viewCount'] ?? 0,
     );

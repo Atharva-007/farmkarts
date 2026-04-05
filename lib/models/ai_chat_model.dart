@@ -24,14 +24,15 @@ class AIResponse {
   });
 
   factory AIResponse.fromMap(Map<String, dynamic> map) {
-    print('AIResponse.fromMap called with: $map'); // Debug log
+    // print('AIResponse.fromMap called with: $map'); // Debug log
     return AIResponse(
       answer: map['answer'] ?? '',
       confidence: (map['confidence'] ?? 0.0).toDouble(),
       sources: List<String>.from(map['sources'] ?? []),
       model: map['model'] ?? 'unknown',
       retrievalCount: map['retrievalCount'] ?? map['retrieval_count'] ?? 0,
-      processingTime: (map['processingTime'] ?? map['processing_time'] ?? 0.0).toDouble(),
+      processingTime:
+          (map['processingTime'] ?? map['processing_time'] ?? 0.0).toDouble(),
       timestamp: map['timestamp'] ?? DateTime.now().toIso8601String(),
       userId: map['userId'] ?? map['user_id'],
       requestTimestamp: map['requestTimestamp'] ?? map['request_timestamp'],
@@ -58,25 +59,26 @@ DateTime _parseDateTime(dynamic value) {
   if (value is DateTime) return value;
   if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
   if (value is String) return DateTime.parse(value);
-  
+
   // Handle Firestore Timestamp specifically
   try {
     // In some environments, it's a Map with _seconds or seconds
     if (value is Map) {
       final seconds = value['seconds'] ?? value['_seconds'] ?? 0;
       final nanoseconds = value['nanoseconds'] ?? value['_nanoseconds'] ?? 0;
-      return DateTime.fromMillisecondsSinceEpoch(seconds * 1000 + (nanoseconds / 1000000).round());
+      return DateTime.fromMillisecondsSinceEpoch(
+          seconds * 1000 + (nanoseconds / 1000000).round());
     }
-    
+
     // Try calling .toDate() if it exists (Firestore Timestamp method)
     if (value.runtimeType.toString().contains('Timestamp')) {
       return value.toDate();
     }
-    
+
     // Fallback: try accessing millisecondsSinceEpoch property
     return DateTime.fromMillisecondsSinceEpoch(value.millisecondsSinceEpoch);
   } catch (e) {
-    print('Warning: Failed to parse timestamp $value: $e');
+    // print('Warning: Failed to parse timestamp $value: $e');
     return DateTime.now();
   }
 }
@@ -117,7 +119,9 @@ class AIChatSession {
       lastMessage: map['lastMessage'] ?? '',
       messageCount: map['messageCount'] ?? 0,
       isActive: map['isActive'] ?? true,
-      metadata: map['metadata'] != null ? Map<String, dynamic>.from(map['metadata']) : null,
+      metadata: map['metadata'] != null
+          ? Map<String, dynamic>.from(map['metadata'])
+          : null,
     );
   }
 
@@ -183,8 +187,8 @@ class AIChatMessage {
   });
 
   factory AIChatMessage.fromMap(String id, Map<String, dynamic> map) {
-    print('Creating AIChatMessage from map: $map'); // Debug log
-    
+    // print('Creating AIChatMessage from map: $map'); // Debug log
+
     return AIChatMessage(
       id: id,
       sessionId: map['sessionId'] ?? '',
@@ -196,8 +200,11 @@ class AIChatMessage {
       timestamp: _parseDateTime(map['timestamp']),
       userId: map['userId'],
       confidence: map['confidence']?.toDouble(),
-      sources: map['sources'] != null ? List<String>.from(map['sources']) : null,
-      metadata: map['metadata'] != null ? Map<String, dynamic>.from(map['metadata']) : null,
+      sources:
+          map['sources'] != null ? List<String>.from(map['sources']) : null,
+      metadata: map['metadata'] != null
+          ? Map<String, dynamic>.from(map['metadata'])
+          : null,
     );
   }
 

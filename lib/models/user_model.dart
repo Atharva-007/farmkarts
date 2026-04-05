@@ -1,11 +1,4 @@
-enum UserRole { 
-  farmer, 
-  addat, 
-  customer, 
-  vendor, 
-  wholesaler, 
-  admin 
-}
+enum UserRole { farmer, addat, customer, vendor, wholesaler, admin }
 
 class UserModel {
   final String uid;
@@ -58,21 +51,15 @@ class FarmerModel extends UserModel {
   final double acresLand;
 
   FarmerModel({
-    required String uid,
-    required String email,
-    required String fullName,
-    required String mobileNo,
+    required super.uid,
+    required super.email,
+    required super.fullName,
+    required super.mobileNo,
     required this.acresLand,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
   }) : super(
-          uid: uid,
-          email: email,
           role: UserRole.farmer,
-          fullName: fullName,
-          mobileNo: mobileNo,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
         );
 
   @override
@@ -123,25 +110,19 @@ class AddatModel extends UserModel {
   final String? verificationNotes; // Admin can add notes
 
   AddatModel({
-    required String uid,
-    required String email,
-    required String fullName,
-    required String mobileNo,
+    required super.uid,
+    required super.email,
+    required super.fullName,
+    required super.mobileNo,
     required this.dukanName,
     this.licenseImageUrl, // Optional now
     this.isLicenseVerified = false,
     this.licenseUploadedAt,
     this.verificationNotes,
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    required super.createdAt,
+    required super.updatedAt,
   }) : super(
-          uid: uid,
-          email: email,
           role: UserRole.addat,
-          fullName: fullName,
-          mobileNo: mobileNo,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
         );
 
   @override
@@ -164,7 +145,7 @@ class AddatModel extends UserModel {
       dukanName: map['dukanName'] ?? '',
       licenseImageUrl: map['licenseImageUrl'], // Can be null
       isLicenseVerified: map['isLicenseVerified'] ?? false,
-      licenseUploadedAt: map['licenseUploadedAt'] != null 
+      licenseUploadedAt: map['licenseUploadedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['licenseUploadedAt'])
           : null,
       verificationNotes: map['verificationNotes'],

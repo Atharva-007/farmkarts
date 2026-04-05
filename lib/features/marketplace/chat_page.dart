@@ -70,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (context, index) {
                     final message = messages[index];
                     final isMe = message.senderId == currentUserId;
-                    
+
                     return _buildMessageBubble(message, isMe);
                   },
                 );
@@ -135,7 +135,8 @@ class _ChatPageState extends State<ChatPage> {
               decoration: const InputDecoration(
                 hintText: 'Type a message...',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
               maxLines: null,
               textInputAction: TextInputAction.send,
@@ -162,6 +163,7 @@ class _ChatPageState extends State<ChatPage> {
     try {
       await _conversationService.sendMessage(
         conversationId: widget.conversationId,
+        receiverId: widget.otherUserId,
         content: content,
       );
 

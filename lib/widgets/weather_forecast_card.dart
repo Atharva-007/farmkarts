@@ -20,10 +20,10 @@ class WeatherForecastCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.borderGrey.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.borderGrey.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -37,9 +37,9 @@ class WeatherForecastCard extends StatelessWidget {
             Text(
               _formatDate(forecast.date),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textGrey,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textGrey,
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -101,7 +101,7 @@ class WeatherForecastCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final tomorrow = now.add(const Duration(days: 1));
-    
+
     if (date.day == now.day) {
       return 'Today';
     } else if (date.day == tomorrow.day) {
@@ -158,8 +158,8 @@ class WeatherAlertsCard extends StatelessWidget {
                 Text(
                   'Weather Alerts',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -183,13 +183,14 @@ class WeatherAlertsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAlert(String title, String description, Color color, IconData icon) {
+  Widget _buildAlert(
+      String title, String description, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,8 +243,8 @@ class FarmingAdviceCard extends StatelessWidget {
                 Text(
                   'Farming Advice',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -274,11 +275,12 @@ class FarmingAdviceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAdvice(String title, String description, IconData icon, Color color) {
+  Widget _buildAdvice(
+      String title, String description, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/app_constants.dart';
 import '../../models/user_model.dart';
 import '../../services/user_state_service.dart';
 import '../../widgets/universal_drawer.dart';
 import '../../widgets/universal_header.dart';
+import '../../pages/inventory_page.dart';
+import '../../pages/help_support_page.dart';
+import '../../pages/orders_page.dart';
 import 'license_management_page.dart';
 
 class ProfileDashboard extends StatefulWidget {
@@ -35,7 +37,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
       parent: _animationController,
       curve: Curves.easeIn,
     ));
-    
+
     _animationController.forward();
   }
 
@@ -50,9 +52,9 @@ class _ProfileDashboardState extends State<ProfileDashboard>
     return Consumer<UserStateService>(
       builder: (context, userState, child) {
         final user = userState.currentUser;
-        
+
         return Scaffold(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: AppTheme.getBackgroundColor(context),
           drawer: const UniversalDrawer(currentPage: 'profile'),
           body: FadeTransition(
             opacity: _fadeAnimation,
@@ -62,11 +64,26 @@ class _ProfileDashboardState extends State<ProfileDashboard>
               },
               color: AppTheme.getPrimaryAccent(context),
               child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  _buildAppBar(user),
+                  UniversalHeader(
+                    title: user?.fullName ?? 'My Profile',
+                    subtitle: user?.email ?? 'Account Settings',
+                    icon: Icons.person_rounded,
+                    showBackButton: false,
+                    showProfile: false, // We're already on the profile page
+                    actions: [
+                      IconButton(
+                        icon:
+                            const Icon(Icons.edit_rounded, color: Colors.white),
+                        onPressed: _editProfile,
+                        tooltip: 'Edit Profile',
+                      ),
+                    ],
+                  ),
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: AppConstants.defaultPadding,
+                      padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
                           if (userState.isLoading) ...[
@@ -89,6 +106,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                           ] else ...[
                             _buildLoginPrompt(),
                           ],
+                          const SizedBox(height: 100),
                         ],
                       ),
                     ),
@@ -102,47 +120,37 @@ class _ProfileDashboardState extends State<ProfileDashboard>
     );
   }
 
-  Widget _buildAppBar(UserModel? user) {
-    final userName = user?.fullName ?? 'User';
-    return UniversalHeader(
-      title: userName,
-      subtitle: 'Profile',
-      icon: Icons.person,
-      alignRight: true,
-      actions: [],
-    );
-  }
-
   Widget _buildProfileHeader(UserModel user) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
-        boxShadow: isDark ? [] : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+        boxShadow: AppTheme.getPremiumShadow(context),
       ),
       child: Row(
         children: [
           // Avatar
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: AppTheme.getIconBackgroundColor(context),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(
-              user.role == UserRole.farmer ? Icons.agriculture : Icons.store,
-              size: 22,
+              user.role == UserRole.farmer
+                  ? Icons.agriculture_rounded
+                  : Icons.storefront_rounded,
+              size: 32,
               color: AppTheme.getPrimaryAccent(context),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           // User Info
           Expanded(
             child: Column(
@@ -152,18 +160,18 @@ class _ProfileDashboardState extends State<ProfileDashboard>
                 Text(
                   user.fullName,
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: AppTheme.getTextColor(context),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   user.email,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 13,
                     color: AppTheme.getSecondaryTextColor(context),
                   ),
                   maxLines: 1,
@@ -175,17 +183,18 @@ class _ProfileDashboardState extends State<ProfileDashboard>
           const SizedBox(width: 8),
           // Role Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              _getRoleDisplayName(user.role),
+              _getRoleDisplayName(user.role).toUpperCase(),
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w900,
                 color: AppTheme.getPrimaryAccent(context),
+                letterSpacing: 0.5,
               ),
             ),
           ),
@@ -196,182 +205,179 @@ class _ProfileDashboardState extends State<ProfileDashboard>
 
   Widget _buildRoleSpecificInfo(UserModel user) {
     if (user is FarmerModel) {
-      return Card(
-        child: Padding(
-          padding: AppConstants.defaultPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.landscape, color: AppTheme.getPrimaryAccent(context)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Farm Information',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.getCardColor(context),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+          boxShadow: AppTheme.getPremiumShadow(context),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.landscape_rounded,
+                    color: AppTheme.getPrimaryAccent(context)),
+                const SizedBox(width: 12),
+                Text(
+                  'Farm Information',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextColor(context),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(
-                      icon: Icons.area_chart,
-                      label: 'Land Area',
-                      value: '${user.acresLand} acres',
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoItem(
+                    icon: Icons.area_chart_rounded,
+                    label: 'Land Area',
+                    value: '${user.acresLand} Acres',
                   ),
-                  Expanded(
-                    child: _buildInfoItem(
-                      icon: Icons.calendar_today,
-                      label: 'Member Since',
-                      value: _formatDate(user.createdAt),
-                    ),
+                ),
+                Expanded(
+                  child: _buildInfoItem(
+                    icon: Icons.calendar_today_rounded,
+                    label: 'Member Since',
+                    value: _formatDate(user.createdAt),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       );
     } else if (user is AddatModel) {
-      return Card(
-        child: Padding(
-          padding: AppConstants.defaultPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.store, color: AppTheme.getPrimaryAccent(context)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Business Information',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildInfoItem(
-                icon: Icons.business,
-                label: 'Shop Name',
-                value: user.dukanName,
-              ),
-              const SizedBox(height: 16),
-              
-              // Enhanced License Status Section
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _getLicenseStatusColor(user).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _getLicenseStatusColor(user).withOpacity(0.3),
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.getCardColor(context),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+          boxShadow: AppTheme.getPremiumShadow(context),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.storefront_rounded,
+                    color: AppTheme.getPrimaryAccent(context)),
+                const SizedBox(width: 12),
+                Text(
+                  'Business Information',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextColor(context),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _getLicenseStatusIcon(user),
-                          color: _getLicenseStatusColor(user),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'License Verification',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: _getLicenseStatusColor(user),
-                              fontSize: 16,
-                            ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildInfoItem(
+              icon: Icons.business_rounded,
+              label: 'Shop Name',
+              value: user.dukanName,
+            ),
+            const SizedBox(height: 20),
+
+            // Enhanced License Status Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _getLicenseStatusColor(user).withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _getLicenseStatusColor(user).withValues(alpha: 0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _getLicenseStatusIcon(user),
+                        color: _getLicenseStatusColor(user),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'License Status',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _getLicenseStatusColor(user),
+                            fontSize: 15,
                           ),
                         ),
-                        if (user.licenseImageUrl != null && user.isLicenseVerified)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppTheme.success,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'VERIFIED',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _getLicenseStatusMessage(user),
-                      style: TextStyle(
-                        color: AppTheme.getSecondaryTextColor(context),
-                        fontSize: 14,
-                        height: 1.4,
                       ),
-                    ),
-                    if (user.licenseUploadedAt != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Uploaded: ${_formatDate(user.licenseUploadedAt!)}',
-                        style: TextStyle(
-                          color: AppTheme.getSecondaryTextColor(context),
-                          fontSize: 12,
-                        ),
-                      ),
+                      if (user.licenseImageUrl != null &&
+                          user.isLicenseVerified)
+                        const Icon(Icons.verified_rounded,
+                            color: Colors.green, size: 20),
                     ],
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _openLicenseManagement(),
-                        icon: Icon(
-                          user.licenseImageUrl != null ? Icons.edit : Icons.upload_file,
-                          size: 18,
-                        ),
-                        label: Text(
-                          user.licenseImageUrl != null ? 'Manage License' : 'Upload License',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _getLicenseStatusColor(user),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _getLicenseStatusMessage(user),
+                    style: TextStyle(
+                      color: AppTheme.getSecondaryTextColor(context),
+                      fontSize: 13,
+                      height: 1.4,
                     ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(
-                      icon: Icons.calendar_today,
-                      label: 'Member Since',
-                      value: _formatDate(user.createdAt),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _openLicenseManagement(),
+                      icon: Icon(
+                        user.licenseImageUrl != null
+                            ? Icons.edit_document
+                            : Icons.upload_file_rounded,
+                        size: 18,
+                      ),
+                      label: Text(
+                        user.licenseImageUrl != null
+                            ? 'MANAGE LICENSE'
+                            : 'UPLOAD LICENSE',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            letterSpacing: 1),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _getLicenseStatusColor(user),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 20),
+            _buildInfoItem(
+              icon: Icons.calendar_today_rounded,
+              label: 'Member Since',
+              value: _formatDate(user.createdAt),
+            ),
+          ],
         ),
       );
     }
@@ -389,12 +395,17 @@ class _ProfileDashboardState extends State<ProfileDashboard>
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: AppTheme.getSecondaryTextColor(context)),
-            const SizedBox(width: 4),
+            Icon(icon,
+                size: 14,
+                color: AppTheme.getSecondaryTextColor(context)
+                    .withValues(alpha: 0.7)),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: TextStyle(
+                fontSize: 11,
                 color: AppTheme.getSecondaryTextColor(context),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -402,8 +413,9 @@ class _ProfileDashboardState extends State<ProfileDashboard>
         const SizedBox(height: 4),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
             color: valueColor ?? AppTheme.getTextColor(context),
           ),
         ),
@@ -412,105 +424,76 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   Widget _buildQuickStats(UserModel user) {
-    return Card(
-      child: Padding(
-        padding: AppConstants.defaultPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick Stats',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: StatItemWithData(
-                    icon: Icons.trending_up,
-                    label: 'Total Sales',
-                    userId: user.uid,
-                    statType: 'sales',
-                    color: AppTheme.success,
-                  ),
-                ),
-                Expanded(
-                  child: StatItemWithData(
-                    icon: Icons.star,
-                    label: 'Rating',
-                    userId: user.uid,
-                    statType: 'rating',
-                    color: AppTheme.warning,
-                  ),
-                ),
-                Expanded(
-                  child: StatItemWithData(
-                    icon: Icons.inventory,
-                    label: user.role == UserRole.farmer ? 'Products' : 'Inventory',
-                    userId: user.uid,
-                    statType: 'inventory',
-                    color: AppTheme.info,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+        boxShadow: AppTheme.getPremiumShadow(context),
       ),
-    );
-  }
-
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Performance Overview',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: StatItemWithData(
+                  icon: Icons.trending_up_rounded,
+                  label: 'Revenue',
+                  userId: user.uid,
+                  statType: 'sales',
+                  color: Colors.green,
+                ),
+              ),
+              Expanded(
+                child: StatItemWithData(
+                  icon: Icons.star_rounded,
+                  label: 'Rating',
+                  userId: user.uid,
+                  statType: 'rating',
+                  color: Colors.amber,
+                ),
+              ),
+              Expanded(
+                child: StatItemWithData(
+                  icon: Icons.inventory_2_rounded,
+                  label: user.role == UserRole.farmer ? 'Products' : 'Stock',
+                  userId: user.uid,
+                  statType: 'inventory',
+                  color: Colors.blue,
+                ),
+              ),
+            ],
           ),
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.getSecondaryTextColor(context),
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildMenuSections(UserModel user) {
     return Column(
       children: [
-        _buildMenuSection('Account', [
+        _buildMenuSection('Account Settings', [
           _MenuOption(
-            icon: Icons.edit,
+            icon: Icons.person_outline_rounded,
             title: 'Edit Profile',
-            subtitle: 'Update your personal information',
+            subtitle: 'Name, email, and photo',
             onTap: _editProfile,
           ),
           _MenuOption(
-            icon: Icons.security,
+            icon: Icons.security_rounded,
             title: 'Security',
-            subtitle: 'Change password and security settings',
+            subtitle: 'Password and authentication',
             onTap: _openSecurity,
           ),
         ]),
@@ -518,30 +501,30 @@ class _ProfileDashboardState extends State<ProfileDashboard>
         if (user.role == UserRole.farmer)
           _buildMenuSection('Farm Management', [
             _MenuOption(
-              icon: Icons.landscape,
+              icon: Icons.landscape_rounded,
               title: 'Farm Details',
-              subtitle: 'Manage your farm information',
+              subtitle: 'Acreage and location',
               onTap: _openFarmDetails,
             ),
             _MenuOption(
-              icon: Icons.schedule,
+              icon: Icons.calendar_month_rounded,
               title: 'Crop Calendar',
-              subtitle: 'Plan your farming activities',
+              subtitle: 'Seasonal planning',
               onTap: _openCropCalendar,
             ),
           ])
         else
-          _buildMenuSection('Business Management', [
+          _buildMenuSection('Business Hub', [
             _MenuOption(
-              icon: Icons.inventory,
+              icon: Icons.inventory_rounded,
               title: 'Inventory',
-              subtitle: 'Manage your product inventory',
+              subtitle: 'Stock management',
               onTap: _openInventory,
             ),
             _MenuOption(
-              icon: Icons.verified,
+              icon: Icons.verified_rounded,
               title: 'License Management',
-              subtitle: 'View and update your license',
+              subtitle: 'Verification status',
               onTap: _openLicenseManagement,
             ),
           ]),
@@ -550,46 +533,116 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   Widget _buildMenuSection(String title, List<_MenuOption> options) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+        boxShadow: AppTheme.getPremiumShadow(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: const TextStyle(
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
           ...options.map((option) => ListTile(
-            leading: Icon(option.icon, color: AppTheme.getPrimaryAccent(context)),
-            title: Text(option.title, style: TextStyle(color: AppTheme.getTextColor(context))),
-            subtitle: Text(option.subtitle, style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
-            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
-            onTap: option.onTap,
-          )),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.getPrimaryAccent(context)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(option.icon,
+                      color: AppTheme.getPrimaryAccent(context), size: 20),
+                ),
+                title: Text(option.title,
+                    style: TextStyle(
+                      color: AppTheme.getTextColor(context),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    )),
+                subtitle: Text(option.subtitle,
+                    style: TextStyle(
+                        color: AppTheme.getSecondaryTextColor(context),
+                        fontSize: 12)),
+                trailing: Icon(Icons.arrow_forward_ios_rounded,
+                    color: AppTheme.getSecondaryTextColor(context)
+                        .withValues(alpha: 0.3),
+                    size: 14),
+                onTap: option.onTap,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              )),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
   Widget _buildAccountActions() {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
+        boxShadow: AppTheme.getPremiumShadow(context),
+      ),
       child: Column(
         children: [
           ListTile(
-            leading: Icon(Icons.help_outline, color: AppTheme.info),
-            title: Text('Help & Support', style: TextStyle(color: AppTheme.getTextColor(context))),
-            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.help_outline_rounded,
+                  color: Colors.blue, size: 20),
+            ),
+            title: const Text('Help & Support',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            trailing: Icon(Icons.arrow_forward_ios_rounded,
+                color: AppTheme.getSecondaryTextColor(context)
+                    .withValues(alpha: 0.3),
+                size: 14),
             onTap: _openHelp,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           ),
+          const Divider(height: 1, indent: 60),
           ListTile(
-            leading: const Icon(Icons.logout, color: AppTheme.error),
-            title: Text('Logout', style: TextStyle(color: AppTheme.getTextColor(context))),
-            trailing: Icon(Icons.chevron_right, color: AppTheme.getSecondaryTextColor(context)),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child:
+                  const Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+            ),
+            title: const Text('Logout',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Colors.red)),
+            trailing: Icon(Icons.arrow_forward_ios_rounded,
+                color: AppTheme.getSecondaryTextColor(context)
+                    .withValues(alpha: 0.3),
+                size: 14),
             onTap: _logout,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           ),
         ],
       ),
@@ -598,15 +651,49 @@ class _ProfileDashboardState extends State<ProfileDashboard>
 
   Widget _buildLoginPrompt() {
     return Center(
-      child: Text(
-        'Please log in to view your profile',
-        style: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 60),
+          Icon(Icons.lock_person_rounded,
+              size: 80,
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2)),
+          const SizedBox(height: 24),
+          Text(
+            'Please log in to view your profile',
+            style: TextStyle(
+                color: AppTheme.getSecondaryTextColor(context), fontSize: 16),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => Navigator.pushNamed(context, '/login'),
+            child: const Text('LOG IN NOW'),
+          ),
+        ],
       ),
     );
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return '${date.day} ${_getMonth(date.month)} ${date.year}';
+  }
+
+  String _getMonth(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return months[month - 1];
   }
 
   // Action methods
@@ -631,7 +718,8 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   void _openInventory() {
-    _showComingSoon('Inventory management');
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const InventoryPage()));
   }
 
   void _openLicenseManagement() {
@@ -656,11 +744,11 @@ class _ProfileDashboardState extends State<ProfileDashboard>
 
   IconData _getLicenseStatusIcon(AddatModel user) {
     if (user.licenseImageUrl == null) {
-      return Icons.upload_file;
+      return Icons.upload_file_rounded;
     } else if (!user.isLicenseVerified) {
-      return Icons.pending;
+      return Icons.pending_actions_rounded;
     } else {
-      return Icons.verified;
+      return Icons.verified_user_rounded;
     }
   }
 
@@ -675,13 +763,13 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   void _openHelp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Help & Support coming soon!')),
-    );
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const HelpAndSupportPage()));
   }
 
   void _logout() async {
-    final userStateService = Provider.of<UserStateService>(context, listen: false);
+    final userStateService =
+        Provider.of<UserStateService>(context, listen: false);
     await userStateService.clearUser();
     if (mounted) {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
@@ -694,6 +782,7 @@ class _ProfileDashboardState extends State<ProfileDashboard>
         content: Text('$feature coming soon!'),
         backgroundColor: AppTheme.getPrimaryAccent(context),
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -710,7 +799,8 @@ class _ProfileDashboardState extends State<ProfileDashboard>
   }
 
   void _openOrders() {
-    _showComingSoon('Orders');
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const OrdersPage()));
   }
 
   void _openProducts() {
@@ -741,6 +831,7 @@ class StatItemWithData extends StatelessWidget {
   final Color color;
 
   const StatItemWithData({
+    super.key,
     required this.icon,
     required this.label,
     required this.userId,
@@ -754,7 +845,7 @@ class StatItemWithData extends StatelessWidget {
       future: _fetchStatValue(),
       builder: (context, snapshot) {
         String value = '...';
-        
+
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
             value = snapshot.data!;
@@ -768,26 +859,27 @@ class StatItemWithData extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               value,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: color,
+                color: AppTheme.getTextColor(context),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: AppTheme.getSecondaryTextColor(context),
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
             ),
@@ -808,18 +900,18 @@ class StatItemWithData extends StatelessWidget {
               .collection('selling_history')
               .where('sellerId', isEqualTo: userId)
               .get();
-          
+
           double totalRevenue = 0;
           for (var doc in sellingHistorySnapshot.docs) {
             totalRevenue += (doc.data()['totalRevenue'] ?? 0).toDouble();
           }
-          
+
           return '₹${totalRevenue.toStringAsFixed(0)}';
 
         case 'rating':
           // Calculate average rating from buyer reviews/ratings
           // For now, return a placeholder - implement when rating system is added
-          return '4.5';
+          return '4.8';
 
         case 'inventory':
           // Count products by seller
@@ -827,14 +919,13 @@ class StatItemWithData extends StatelessWidget {
               .collection('products')
               .where('sellerId', isEqualTo: userId)
               .get();
-          
+
           return productsSnapshot.docs.length.toString();
 
         default:
           return '0';
       }
     } catch (e) {
-      print('Error fetching stat $statType: $e');
       return '0';
     }
   }

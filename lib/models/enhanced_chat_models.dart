@@ -1,23 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Enhanced Enums for WhatsApp-like functionality
-enum MessageType { 
-  text, 
-  image, 
-  video, 
-  audio, 
-  document, 
-  location, 
-  bid, 
-  system, 
+enum MessageType {
+  text,
+  image,
+  video,
+  audio,
+  document,
+  location,
+  bid,
+  system,
   call,
   product
 }
 
 enum CallType { audio, video }
+
 enum CallStatus { ringing, answered, ended, declined, missed }
+
 enum BidStatus { pending, accepted, rejected, expired, withdrawn, negotiating }
+
 enum MessageStatus { sent, delivered, read }
+
 enum MediaUploadStatus { uploading, completed, failed }
 
 /// Enhanced Chat Message with WhatsApp-like features
@@ -35,7 +39,7 @@ class EnhancedChatMessage {
   final bool isForwarded;
   final String? replyToMessageId;
   final Map<String, dynamic>? metadata;
-  
+
   // Media-specific fields
   final String? mediaUrl;
   final String? thumbnailUrl;
@@ -44,10 +48,10 @@ class EnhancedChatMessage {
   final Duration? duration;
   final double? latitude;
   final double? longitude;
-  
+
   // Bid-specific fields
   final BidOffer? bidOffer;
-  
+
   // Call-specific fields
   final CallInfo? callInfo;
 
@@ -101,17 +105,15 @@ class EnhancedChatMessage {
       thumbnailUrl: map['thumbnailUrl'],
       fileName: map['fileName'],
       fileSize: map['fileSize'],
-      duration: map['duration'] != null 
+      duration: map['duration'] != null
           ? Duration(milliseconds: map['duration'])
           : null,
       latitude: map['latitude']?.toDouble(),
       longitude: map['longitude']?.toDouble(),
-      bidOffer: map['bidOffer'] != null 
-          ? BidOffer.fromMap(map['bidOffer'])
-          : null,
-      callInfo: map['callInfo'] != null 
-          ? CallInfo.fromMap(map['callInfo'])
-          : null,
+      bidOffer:
+          map['bidOffer'] != null ? BidOffer.fromMap(map['bidOffer']) : null,
+      callInfo:
+          map['callInfo'] != null ? CallInfo.fromMap(map['callInfo']) : null,
     );
   }
 
@@ -241,7 +243,7 @@ class CallInfo {
       ),
       startTime: (map['startTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       endTime: (map['endTime'] as Timestamp?)?.toDate(),
-      duration: map['duration'] != null 
+      duration: map['duration'] != null
           ? Duration(milliseconds: map['duration'])
           : null,
       callerId: map['callerId'] ?? '',
@@ -287,12 +289,12 @@ class EnhancedConversation {
   final bool isActive;
   final DateTime createdAt;
   final Map<String, dynamic>? settings;
-  
+
   // Bidding information
   final double? currentHighestBid;
   final int totalBids;
   final List<BidOffer> recentBids;
-  
+
   // Call information
   final CallInfo? lastCall;
 
@@ -344,7 +346,8 @@ class EnhancedConversation {
       buyerAvatar: map['buyerAvatar'] ?? '',
       buyerPhone: map['buyerPhone'] ?? '',
       lastMessage: map['lastMessage'] ?? '',
-      lastMessageTime: (map['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastMessageTime:
+          (map['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       unreadCount: map['unreadCount'] ?? 0,
       isActive: map['isActive'] ?? true,
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -352,11 +355,11 @@ class EnhancedConversation {
       currentHighestBid: map['currentHighestBid']?.toDouble(),
       totalBids: map['totalBids'] ?? 0,
       recentBids: (map['recentBids'] as List<dynamic>?)
-          ?.map((e) => BidOffer.fromMap(e))
-          .toList() ?? [],
-      lastCall: map['lastCall'] != null 
-          ? CallInfo.fromMap(map['lastCall'])
-          : null,
+              ?.map((e) => BidOffer.fromMap(e))
+              .toList() ??
+          [],
+      lastCall:
+          map['lastCall'] != null ? CallInfo.fromMap(map['lastCall']) : null,
     );
   }
 

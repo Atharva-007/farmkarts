@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:math';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
-import '../../utils/app_constants.dart';
 
 class APMCMarketPage extends StatefulWidget {
   const APMCMarketPage({super.key});
@@ -17,12 +16,12 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   late TabController _tabController;
   late AnimationController _animationController;
   late Timer _refreshTimer;
-  
+
   String _selectedLocation = 'All Locations';
   String _selectedCategory = 'All Products';
   String _sortBy = 'Price High to Low';
   bool _isLoading = false;
-  
+
   final List<String> _locations = [
     'All Locations',
     'Mumbai - Vashi APMC',
@@ -66,11 +65,11 @@ class _APMCMarketPageState extends State<APMCMarketPage>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _initializeProducts();
     _filterProducts();
     _animationController.forward();
-    
+
     // Refresh market data every 30 seconds
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _updateMarketPrices();
@@ -87,58 +86,79 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   void _initializeProducts() {
     _products = [
-      APMCProduct('Wheat', 'Grains', 2450, 2480, 2420, 450.5, 'Mumbai - Vashi APMC', true, '1,250 quintals'),
-      APMCProduct('Rice (Basmati)', 'Grains', 3200, 3180, 3220, 320.8, 'Delhi - Azadpur Mandi', false, '890 quintals'),
-      APMCProduct('Corn', 'Grains', 1850, 1880, 1820, 225.3, 'Pune - Market Yard', true, '1,150 quintals'),
-      APMCProduct('Soybeans', 'Oil Seeds', 4100, 4150, 4080, 180.7, 'Bangalore - KR Market', true, '750 quintals'),
-      APMCProduct('Cotton', 'Oil Seeds', 5200, 5100, 5250, 95.2, 'Chennai - Koyambedu', false, '520 quintals'),
-      APMCProduct('Tomato', 'Vegetables', 1250, 1300, 1200, 125.5, 'Mumbai - Vashi APMC', true, '2,100 quintals'),
-      APMCProduct('Onion (Red)', 'Vegetables', 1800, 1750, 1850, 200.0, 'Delhi - Azadpur Mandi', false, '1,850 quintals'),
-      APMCProduct('Potato', 'Vegetables', 950, 980, 920, 180.0, 'Pune - Market Yard', true, '3,200 quintals'),
-      APMCProduct('Banana', 'Fruits', 2200, 2250, 2150, 75.2, 'Bangalore - KR Market', true, '950 quintals'),
-      APMCProduct('Apple', 'Fruits', 8500, 8600, 8400, 45.8, 'Chennai - Koyambedu', true, '425 quintals'),
-      APMCProduct('Mango', 'Fruits', 3500, 3600, 3400, 85.5, 'Kolkata - Sealdah', true, '680 quintals'),
-      APMCProduct('Turmeric', 'Spices', 12500, 12800, 12200, 25.3, 'Hyderabad - Gaddiannaram', true, '180 quintals'),
-      APMCProduct('Chili (Red)', 'Spices', 15000, 15200, 14800, 32.1, 'Nashik - Agricultural Market', false, '220 quintals'),
-      APMCProduct('Coriander', 'Spices', 9800, 10000, 9600, 18.7, 'Indore - Krishi Upaj Mandi', true, '150 quintals'),
-      APMCProduct('Arhar (Toor)', 'Pulses', 6800, 7000, 6600, 120.5, 'Mumbai - Vashi APMC', true, '450 quintals'),
-      APMCProduct('Chana', 'Pulses', 5200, 5300, 5100, 150.8, 'Delhi - Azadpur Mandi', false, '680 quintals'),
-      APMCProduct('Masoor', 'Pulses', 4500, 4600, 4400, 95.2, 'Pune - Market Yard', true, '320 quintals'),
-      APMCProduct('Groundnut', 'Oil Seeds', 5800, 5900, 5700, 180.5, 'Bangalore - KR Market', true, '750 quintals'),
-      APMCProduct('Mustard', 'Oil Seeds', 4200, 4300, 4100, 125.3, 'Chennai - Koyambedu', false, '520 quintals'),
-      APMCProduct('Sugarcane', 'Others', 320, 330, 310, 2500.0, 'Kolkata - Sealdah', true, '15,000 quintals'),
+      APMCProduct('Wheat', 'Grains', 2450, 2480, 2420, 450.5,
+          'Mumbai - Vashi APMC', true, '1,250 quintals'),
+      APMCProduct('Rice (Basmati)', 'Grains', 3200, 3180, 3220, 320.8,
+          'Delhi - Azadpur Mandi', false, '890 quintals'),
+      APMCProduct('Corn', 'Grains', 1850, 1880, 1820, 225.3,
+          'Pune - Market Yard', true, '1,150 quintals'),
+      APMCProduct('Soybeans', 'Oil Seeds', 4100, 4150, 4080, 180.7,
+          'Bangalore - KR Market', true, '750 quintals'),
+      APMCProduct('Cotton', 'Oil Seeds', 5200, 5100, 5250, 95.2,
+          'Chennai - Koyambedu', false, '520 quintals'),
+      APMCProduct('Tomato', 'Vegetables', 1250, 1300, 1200, 125.5,
+          'Mumbai - Vashi APMC', true, '2,100 quintals'),
+      APMCProduct('Onion (Red)', 'Vegetables', 1800, 1750, 1850, 200.0,
+          'Delhi - Azadpur Mandi', false, '1,850 quintals'),
+      APMCProduct('Potato', 'Vegetables', 950, 980, 920, 180.0,
+          'Pune - Market Yard', true, '3,200 quintals'),
+      APMCProduct('Banana', 'Fruits', 2200, 2250, 2150, 75.2,
+          'Bangalore - KR Market', true, '950 quintals'),
+      APMCProduct('Apple', 'Fruits', 8500, 8600, 8400, 45.8,
+          'Chennai - Koyambedu', true, '425 quintals'),
+      APMCProduct('Mango', 'Fruits', 3500, 3600, 3400, 85.5,
+          'Kolkata - Sealdah', true, '680 quintals'),
+      APMCProduct('Turmeric', 'Spices', 12500, 12800, 12200, 25.3,
+          'Hyderabad - Gaddiannaram', true, '180 quintals'),
+      APMCProduct('Chili (Red)', 'Spices', 15000, 15200, 14800, 32.1,
+          'Nashik - Agricultural Market', false, '220 quintals'),
+      APMCProduct('Coriander', 'Spices', 9800, 10000, 9600, 18.7,
+          'Indore - Krishi Upaj Mandi', true, '150 quintals'),
+      APMCProduct('Arhar (Toor)', 'Pulses', 6800, 7000, 6600, 120.5,
+          'Mumbai - Vashi APMC', true, '450 quintals'),
+      APMCProduct('Chana', 'Pulses', 5200, 5300, 5100, 150.8,
+          'Delhi - Azadpur Mandi', false, '680 quintals'),
+      APMCProduct('Masoor', 'Pulses', 4500, 4600, 4400, 95.2,
+          'Pune - Market Yard', true, '320 quintals'),
+      APMCProduct('Groundnut', 'Oil Seeds', 5800, 5900, 5700, 180.5,
+          'Bangalore - KR Market', true, '750 quintals'),
+      APMCProduct('Mustard', 'Oil Seeds', 4200, 4300, 4100, 125.3,
+          'Chennai - Koyambedu', false, '520 quintals'),
+      APMCProduct('Sugarcane', 'Others', 320, 330, 310, 2500.0,
+          'Kolkata - Sealdah', true, '15,000 quintals'),
     ];
   }
 
   void _updateMarketPrices() {
     if (!mounted) return;
-    
+
     setState(() {
       for (var product in _products) {
         final random = Random();
-        final changePercent = (random.nextDouble() - 0.5) * 0.02; // ±1% max change
+        final changePercent =
+            (random.nextDouble() - 0.5) * 0.02; // ±1% max change
         final newPrice = product.currentPrice * (1 + changePercent);
-        
+
         product.currentPrice = newPrice;
         product.highPrice = max(product.highPrice, newPrice);
         product.lowPrice = min(product.lowPrice, newPrice);
         product.isRising = changePercent > 0;
       }
     });
-    
+
     _filterProducts();
   }
 
   void _filterProducts() {
     setState(() {
       _filteredProducts = _products.where((product) {
-        bool matchesLocation = _selectedLocation == 'All Locations' || 
-                              product.location == _selectedLocation;
-        bool matchesCategory = _selectedCategory == 'All Products' || 
-                              product.category == _selectedCategory;
+        bool matchesLocation = _selectedLocation == 'All Locations' ||
+            product.location == _selectedLocation;
+        bool matchesCategory = _selectedCategory == 'All Products' ||
+            product.category == _selectedCategory;
         return matchesLocation && matchesCategory;
       }).toList();
-      
+
       _sortProducts();
     });
   }
@@ -146,10 +166,12 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   void _sortProducts() {
     switch (_sortBy) {
       case 'Price High to Low':
-        _filteredProducts.sort((a, b) => b.currentPrice.compareTo(a.currentPrice));
+        _filteredProducts
+            .sort((a, b) => b.currentPrice.compareTo(a.currentPrice));
         break;
       case 'Price Low to High':
-        _filteredProducts.sort((a, b) => a.currentPrice.compareTo(b.currentPrice));
+        _filteredProducts
+            .sort((a, b) => a.currentPrice.compareTo(b.currentPrice));
         break;
       case 'Quantity High to Low':
         _filteredProducts.sort((a, b) => b.quantity.compareTo(a.quantity));
@@ -195,7 +217,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   Widget _buildHeader() {
     final isDesktop = ResponsiveHelper.isDesktop(context);
-    
+
     return Container(
       padding: ResponsiveHelper.getScreenPadding(context),
       decoration: BoxDecoration(
@@ -217,7 +239,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -233,26 +255,28 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                   children: [
                     Text(
                       'APMC Live Market',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: isDesktop ? 28 : 24,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: isDesktop ? 28 : 24,
+                              ),
                     ),
                     Text(
                       'Real-time agricultural commodity prices',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
-                        fontSize: isDesktop ? 16 : 14,
-                      ),
+                            color: Colors.white70,
+                            fontSize: isDesktop ? 16 : 14,
+                          ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.success.withOpacity(0.3),
+                  color: AppTheme.success.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -281,8 +305,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
           Text(
             'Last updated: ${DateTime.now().toString().substring(11, 19)}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white70,
-            ),
+                  color: Colors.white70,
+                ),
           ),
         ],
       ),
@@ -291,9 +315,10 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   Widget _buildFilters() {
     final isMobile = ResponsiveHelper.isMobile(context);
-    
+
     return Container(
-      padding: ResponsiveHelper.getScreenPadding(context).copyWith(top: 16, bottom: 8),
+      padding: ResponsiveHelper.getScreenPadding(context)
+          .copyWith(top: 16, bottom: 8),
       child: Column(
         children: [
           if (isMobile) ...[
@@ -401,13 +426,14 @@ class _APMCMarketPageState extends State<APMCMarketPage>
               });
             });
           },
-          icon: _isLoading 
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.refresh),
+          icon: _isLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.refresh),
           label: const Text('Refresh'),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppTheme.primaryGreen,
@@ -430,9 +456,9 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: AppTheme.textGrey,
-          ),
+                fontWeight: FontWeight.w500,
+                color: AppTheme.textGrey,
+              ),
         ),
         const SizedBox(height: 4),
         Container(
@@ -468,12 +494,14 @@ class _APMCMarketPageState extends State<APMCMarketPage>
     final isDesktop = ResponsiveHelper.isDesktop(context);
     final totalProducts = _filteredProducts.length;
     final risingProducts = _filteredProducts.where((p) => p.isRising).length;
-    final avgPrice = _filteredProducts.isEmpty 
-        ? 0.0 
-        : _filteredProducts.map((p) => p.currentPrice).reduce((a, b) => a + b) / totalProducts;
-    
+    final avgPrice = _filteredProducts.isEmpty
+        ? 0.0
+        : _filteredProducts.map((p) => p.currentPrice).reduce((a, b) => a + b) /
+            totalProducts;
+
     return Container(
-      margin: ResponsiveHelper.getScreenPadding(context).copyWith(top: 8, bottom: 16),
+      margin: ResponsiveHelper.getScreenPadding(context)
+          .copyWith(top: 8, bottom: 16),
       padding: EdgeInsets.all(isDesktop ? 20 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -513,7 +541,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
     );
   }
 
-  Widget _buildSummaryItem(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryItem(
+      String title, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
@@ -521,15 +550,15 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         Text(
           value,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
         ),
         Text(
           title,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textGrey,
-          ),
+                color: AppTheme.textGrey,
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -538,7 +567,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   Widget _buildTabBar() {
     return Container(
-      margin: ResponsiveHelper.getScreenPadding(context).copyWith(top: 0, bottom: 0),
+      margin: ResponsiveHelper.getScreenPadding(context)
+          .copyWith(top: 0, bottom: 0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -574,7 +604,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   Widget _buildProductCard(APMCProduct product) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -591,9 +621,9 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: product.isRising 
-                        ? AppTheme.success.withOpacity(0.1)
-                        : AppTheme.error.withOpacity(0.1),
+                    color: product.isRising
+                        ? AppTheme.success.withValues(alpha: 0.1)
+                        : AppTheme.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -609,23 +639,24 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                     children: [
                       Text(
                         product.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       Text(
                         product.category,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                        ),
+                              color: AppTheme.textGrey,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         product.location,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                          fontSize: 12,
-                        ),
+                              color: AppTheme.textGrey,
+                              fontSize: 12,
+                            ),
                       ),
                     ],
                   ),
@@ -636,30 +667,38 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                     Text(
                       '₹${product.currentPrice.toStringAsFixed(0)}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: product.isRising ? AppTheme.success : AppTheme.error,
-                      ),
+                            fontWeight: FontWeight.bold,
+                            color: product.isRising
+                                ? AppTheme.success
+                                : AppTheme.error,
+                          ),
                     ),
                     Text(
                       'per quintal',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.textGrey,
-                      ),
+                            color: AppTheme.textGrey,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          product.isRising ? Icons.trending_up : Icons.trending_down,
+                          product.isRising
+                              ? Icons.trending_up
+                              : Icons.trending_down,
                           size: 16,
-                          color: product.isRising ? AppTheme.success : AppTheme.error,
+                          color: product.isRising
+                              ? AppTheme.success
+                              : AppTheme.error,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${product.isRising ? '+' : ''}${(product.currentPrice - (product.highPrice + product.lowPrice) / 2).toStringAsFixed(0)}',
                           style: TextStyle(
-                            color: product.isRising ? AppTheme.success : AppTheme.error,
+                            color: product.isRising
+                                ? AppTheme.success
+                                : AppTheme.error,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -686,15 +725,15 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                       Text(
                         'Quantity',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                          fontWeight: FontWeight.w500,
-                        ),
+                              color: AppTheme.textGrey,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
                       Text(
                         product.quantity,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ],
                   ),
@@ -714,15 +753,15 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppTheme.textGrey,
-            fontWeight: FontWeight.w500,
-          ),
+                color: AppTheme.textGrey,
+                fontWeight: FontWeight.w500,
+              ),
         ),
         Text(
           '₹${price.toStringAsFixed(0)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
       ],
     );
@@ -733,7 +772,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         .where((product) => product.isRising)
         .take(10)
         .toList();
-    
+
     return Container(
       color: Colors.white,
       child: ListView.builder(
@@ -749,10 +788,10 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   Widget _buildLocationAnalysis() {
     final locationGroups = <String, List<APMCProduct>>{};
     for (var product in _filteredProducts) {
-      locationGroups[product.location] = 
+      locationGroups[product.location] =
           (locationGroups[product.location] ?? [])..add(product);
     }
-    
+
     return Container(
       color: Colors.white,
       child: ListView.builder(
@@ -761,7 +800,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         itemBuilder: (context, index) {
           final location = locationGroups.keys.elementAt(index);
           final products = locationGroups[location]!;
-          
+
           return _buildLocationCard(location, products);
         },
       ),
@@ -769,9 +808,11 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   }
 
   Widget _buildLocationCard(String location, List<APMCProduct> products) {
-    final avgPrice = products.map((p) => p.currentPrice).reduce((a, b) => a + b) / products.length;
+    final avgPrice =
+        products.map((p) => p.currentPrice).reduce((a, b) => a + b) /
+            products.length;
     final risingCount = products.where((p) => p.isRising).length;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -782,11 +823,13 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         title: Text(
           location,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
-        subtitle: Text('${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}'),
-        children: products.map((product) => _buildProductCard(product)).toList(),
+        subtitle: Text(
+            '${products.length} products • Avg: ₹${avgPrice.toStringAsFixed(0)}'),
+        children:
+            products.map((product) => _buildProductCard(product)).toList(),
       ),
     );
   }

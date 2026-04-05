@@ -17,13 +17,13 @@ class AIChatService {
   // For now we use the ones found in the project
   static const String _geminiApiKey = ''; // TODO: Add Gemini Key
   static const String _sarvamApiKey = 'sk_w4scrt3a_pbLHPS2dSRw5sGyYEsIWElYJ';
-  
+
   static const String _sarvamTranslateUrl = 'https://api.sarvam.ai/translate';
   static const Duration _requestTimeout = Duration(seconds: 45);
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   GenerativeModel? _model;
 
   void _initGemini() {
@@ -36,23 +36,26 @@ class AIChatService {
   }
 
   // Ask AI Expert with Gemini and fallback to contextual mock
-  Future<AIResponse> askExpert(String query, {String? context, String languageCode = 'en'}) async {
+  Future<AIResponse> askExpert(String query,
+      {String? context, String languageCode = 'en'}) async {
     final analyzedQuery = _analyzeQuery(query, context);
-    print('Query analysis: ${analyzedQuery['intent']} - ${analyzedQuery['topic']}');
-    
+    // print('Query analysis: ${analyzedQuery['intent']} - ${analyzedQuery['topic']}');
+
     // 1. Try Gemini first if available
     if (_model != null) {
       try {
-        print('Attempting Gemini for response...');
+        // print('Attempting Gemini for response...');
         final content = [Content.text(_buildEnhancedPrompt(query, context))];
-        final response = await _model!.generateContent(content).timeout(_requestTimeout);
-        
+        final response =
+            await _model!.generateContent(content).timeout(_requestTimeout);
+
         if (response.text != null) {
           String finalAnswer = response.text!;
-          
+
           // 2. Translate if language is not English using Sarvam AI
           if (languageCode != 'en') {
-            finalAnswer = await translateText(finalAnswer, 'en-IN', _getSarvamLangCode(languageCode));
+            finalAnswer = await translateText(
+                finalAnswer, 'en-IN', _getSarvamLangCode(languageCode));
           }
 
           return AIResponse(
@@ -68,19 +71,20 @@ class AIChatService {
           );
         }
       } catch (e) {
-        print('Gemini failed: $e');
+        // print('Gemini failed: $e');
       }
     }
 
     // 3. Fallback to enhanced contextual responses
-    print('Using enhanced contextual AI responses for farming expertise');
+    // print('Using enhanced contextual AI responses for farming expertise');
     await Future.delayed(const Duration(milliseconds: 800));
     final mockResponse = _getContextualResponse(query, analyzedQuery);
-    
+
     // Translate fallback if needed
     if (languageCode != 'en') {
       try {
-        final translatedAnswer = await translateText(mockResponse.answer, 'en-IN', _getSarvamLangCode(languageCode));
+        final translatedAnswer = await translateText(
+            mockResponse.answer, 'en-IN', _getSarvamLangCode(languageCode));
         return AIResponse(
           answer: translatedAnswer,
           confidence: mockResponse.confidence,
@@ -93,71 +97,89 @@ class AIChatService {
           requestTimestamp: mockResponse.requestTimestamp,
         );
       } catch (e) {
-        print('Mock translation failed: $e');
+        // print('Mock translation failed: $e');
       }
     }
-    
+
     return mockResponse;
   }
 
   // Sarvam AI Translation
-  Future<String> translateText(String text, String sourceLang, String targetLang) async {
+  Future<String> translateText(
+      String text, String sourceLang, String targetLang) async {
     try {
-      final response = await http.post(
-        Uri.parse(_sarvamTranslateUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'api-subscription-key': _sarvamApiKey,
-        },
-        body: jsonEncode({
-          'input': text,
-          'source_language_code': sourceLang,
-          'target_language_code': targetLang,
-          'speaker_gender': 'Male',
-          'mode': 'formal',
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(_sarvamTranslateUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'api-subscription-key': _sarvamApiKey,
+            },
+            body: jsonEncode({
+              'input': text,
+              'source_language_code': sourceLang,
+              'target_language_code': targetLang,
+              'speaker_gender': 'Male',
+              'mode': 'formal',
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['translated_text'] ?? text;
       } else {
-        print('Sarvam translation failed with status: ${response.statusCode}');
+        // print('Sarvam translation failed with status: ${response.statusCode}');
         return text;
       }
     } catch (e) {
-      print('Sarvam translation error: $e');
+      // print('Sarvam translation error: $e');
       return text;
     }
   }
 
   String _getSarvamLangCode(String flutterCode) {
     switch (flutterCode) {
-      case 'hi': return 'hi-IN';
-      case 'mr': return 'mr-IN';
-      case 'en': return 'en-IN';
-      default: return 'en-IN';
+      case 'hi':
+        return 'hi-IN';
+      case 'mr':
+        return 'mr-IN';
+      case 'en':
+        return 'en-IN';
+      default:
+        return 'en-IN';
     }
   }
 
   // Smart query analysis
   Map<String, String> _analyzeQuery(String query, String? context) {
     final queryLower = query.toLowerCase();
-    
+
     String topic = 'general';
-    if (queryLower.contains('wheat')) topic = 'wheat';
-    else if (queryLower.contains('rice')) topic = 'rice';
-    else if (queryLower.contains('soil')) topic = 'soil';
-    else if (queryLower.contains('pest') || queryLower.contains('disease')) topic = 'pest_control';
-    else if (queryLower.contains('irrigation') || queryLower.contains('water')) topic = 'irrigation';
-    
+    if (queryLower.contains('wheat')) {
+      topic = 'wheat';
+    } else if (queryLower.contains('rice'))
+      topic = 'rice';
+    else if (queryLower.contains('soil'))
+      topic = 'soil';
+    else if (queryLower.contains('pest') || queryLower.contains('disease'))
+      topic = 'pest_control';
+    else if (queryLower.contains('irrigation') || queryLower.contains('water'))
+      topic = 'irrigation';
+
     String intent = 'general_info';
-    if (queryLower.contains('disease') || queryLower.contains('pest')) intent = 'pest_disease';
-    else if (queryLower.contains('fertilizer') || queryLower.contains('nutrition')) intent = 'nutrition';
-    else if (queryLower.contains('improve') || queryLower.contains('better')) intent = 'improvement';
-    else if (queryLower.contains('when') || queryLower.contains('time')) intent = 'timing';
-    else if (queryLower.contains('how') || queryLower.contains('method')) intent = 'methodology';
-    
+    if (queryLower.contains('disease') || queryLower.contains('pest')) {
+      intent = 'pest_disease';
+    } else if (queryLower.contains('fertilizer') ||
+        queryLower.contains('nutrition'))
+      intent = 'nutrition';
+    else if (queryLower.contains('improve') || queryLower.contains('better'))
+      intent = 'improvement';
+    else if (queryLower.contains('when') || queryLower.contains('time'))
+      intent = 'timing';
+    else if (queryLower.contains('how') || queryLower.contains('method'))
+      intent = 'methodology';
+
     return {
       'topic': topic,
       'intent': intent,
@@ -166,14 +188,15 @@ class AIChatService {
   }
 
   // Generate contextual response
-  AIResponse _getContextualResponse(String query, Map<String, String> analysis) {
+  AIResponse _getContextualResponse(
+      String query, Map<String, String> analysis) {
     final response = _getEnhancedMockResponse(query);
-    
+
     double adjustedConfidence = response.confidence;
     if (analysis['topic'] != 'general') adjustedConfidence += 0.03;
     if (analysis['intent'] != 'general_info') adjustedConfidence += 0.02;
     adjustedConfidence = math.min(adjustedConfidence, 0.98);
-    
+
     return AIResponse(
       answer: "${_getPersonalizedGreeting(analysis)}\n\n${response.answer}",
       confidence: adjustedConfidence,
@@ -218,7 +241,7 @@ class AIChatService {
 
     if (queryContext['crop'] == 'wheat') {
       if (queryContext['problem_type'] == 'disease') {
-        answer = '''🌾 **Wheat Disease Management - ${urgencyLevel} Priority**
+        answer = '''🌾 **Wheat Disease Management - $urgencyLevel Priority**
 
 **EXPERT ANALYSIS:**
 Your wheat crop appears to be showing signs of ${queryContext['specific_issue']}. Given the current ${seasonalContext['season']}, this is a critical period requiring immediate attention to prevent yield losses.
@@ -232,9 +255,11 @@ Your wheat crop appears to be showing signs of ${queryContext['specific_issue']}
 ⚠️ **Disease Spread**: Wheat rust can spread rapidly in cool, moist conditions
 ⚠️ **Spray Safety**: Use protective equipment and maintain 15-day pre-harvest interval
 ⚠️ **Resistance Management**: Rotate fungicides to prevent resistance development''';
-        sources = ['Wheat Disease Manual IARI', 'Plant Pathology Research Institute'];
+        sources = [
+          'Wheat Disease Manual IARI',
+          'Plant Pathology Research Institute'
+        ];
         confidence = 0.95;
-
       } else if (queryContext['problem_type'] == 'nutrition') {
         answer = '''🌾 **Wheat Nutrition Management - Precision Approach**
 
@@ -247,7 +272,6 @@ Based on your query about wheat nutrition, implementing a scientific nutrient ma
 3. **Critical Timing**: Top dress nitrogen at Crown Root Initiation (CRI) stage''';
         confidence = 0.94;
         sources = ['IARI Fertilizer Manual', 'Wheat Nutrition Research'];
-
       } else {
         answer = '''📈 **Comprehensive Wheat Cultivation Guide**
 
@@ -259,9 +283,11 @@ Wheat cultivation requires precise management throughout its growing period. Suc
 2. **Land Preparation**: Ensure proper seedbed preparation with adequate moisture
 3. **Sowing Time**: Optimal window is November 15-December 15 for most regions''';
         confidence = 0.92;
-        sources = ['Wheat Production Manual', 'Agricultural Extension Guidelines'];
+        sources = [
+          'Wheat Production Manual',
+          'Agricultural Extension Guidelines'
+        ];
       }
-
     } else if (queryContext['crop'] == 'rice') {
       answer = '''🌾 **Modern Rice Cultivation - Best Practices**
 
@@ -314,14 +340,17 @@ Successful farming requires integration of traditional wisdom with modern techno
 
     if (queryLower.contains('wheat') || queryLower.contains('gehun')) {
       context['crop'] = 'wheat';
-    } else if (queryLower.contains('rice') || queryLower.contains('paddy') || queryLower.contains('dhaan')) {
-      context['crop'] = 'rice';  
+    } else if (queryLower.contains('rice') ||
+        queryLower.contains('paddy') ||
+        queryLower.contains('dhaan')) {
+      context['crop'] = 'rice';
     }
 
     if (queryLower.contains('disease') || queryLower.contains('infection')) {
       context['problem_type'] = 'disease';
-    } else if (queryLower.contains('nutrition') || queryLower.contains('fertilizer')) {
-      context['problem_type'] = 'nutrition';  
+    } else if (queryLower.contains('nutrition') ||
+        queryLower.contains('fertilizer')) {
+      context['problem_type'] = 'nutrition';
     }
 
     return context;
@@ -343,7 +372,7 @@ Successful farming requires integration of traditional wisdom with modern techno
 
   String _buildEnhancedPrompt(String query, String? context) {
     final contextInfo = context ?? 'general farming';
-    
+
     return '''You are an expert agricultural advisor for FarmKart, specializing in Indian farming practices. 
 
 Context Area: $contextInfo
@@ -370,7 +399,8 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
   }
 
   // Session Management
-  Future<AIChatSession> getOrCreateChatSession(String title, String category) async {
+  Future<AIChatSession> getOrCreateChatSession(
+      String title, String category) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not authenticated');
 
@@ -389,7 +419,7 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
         return AIChatSession.fromMap(doc.id, doc.data());
       }
     } catch (e) {
-      print('Error finding existing session: $e');
+      // print('Error finding existing session: $e');
     }
 
     return createChatSession(title, category);
@@ -418,7 +448,7 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
           .doc(sessionId)
           .set(session.toMap());
     } catch (e) {
-      print('Firebase save failed: $e');
+      // print('Firebase save failed: $e');
     }
 
     return session;
@@ -436,7 +466,8 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
             .toList());
   }
 
-  Future<void> addMessageToSession(String sessionId, AIChatMessage message) async {
+  Future<void> addMessageToSession(
+      String sessionId, AIChatMessage message) async {
     try {
       final messageData = message.toMap();
       messageData.remove('id');
@@ -447,24 +478,21 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
           .collection('messages')
           .add(messageData);
 
-      await _firestore
-          .collection('ai_chat_sessions')
-          .doc(sessionId)
-          .update({
+      await _firestore.collection('ai_chat_sessions').doc(sessionId).update({
         'lastMessageTime': FieldValue.serverTimestamp(),
-        'lastMessage': message.content.length > 100 
-            ? message.content.substring(0, 100) 
+        'lastMessage': message.content.length > 100
+            ? message.content.substring(0, 100)
             : message.content,
         'messageCount': FieldValue.increment(1),
       });
     } catch (e) {
-      print('Error adding message: $e');
+      // print('Error adding message: $e');
     }
   }
 
   String _generateSessionId() {
     return DateTime.now().millisecondsSinceEpoch.toString() +
-           math.Random().nextInt(1000).toString();
+        math.Random().nextInt(1000).toString();
   }
 
   Stream<List<AIChatSession>> getUserChatSessions() {
@@ -482,6 +510,71 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
   }
 
   // --- NEW METHODS ADDED TO FIX COMPILATION ERRORS ---
+
+  /// Alias for getSessionMessages
+  Stream<List<AIChatMessage>> getChatMessages(String sessionId) {
+    return getSessionMessages(sessionId);
+  }
+
+  /// Create a new session with named parameters
+  Future<String> createNewSession(
+      {required String title, required String category}) async {
+    final session = await createChatSession(title, category);
+    return session.id;
+  }
+
+  /// Get a single session by ID
+  Future<AIChatSession?> getSession(String sessionId) async {
+    try {
+      final doc =
+          await _firestore.collection('ai_chat_sessions').doc(sessionId).get();
+      if (doc.exists) {
+        return AIChatSession.fromMap(doc.id, doc.data()!);
+      }
+      return null;
+    } catch (e) {
+      // print('Error getting session: $e');
+      return null;
+    }
+  }
+
+  /// Send message and get AI response
+  Future<String> sendMessage(
+      {required String sessionId, required String content}) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    // 1. Add user message to Firestore
+    final userMessage = AIChatMessage(
+      id: '',
+      userId: user.uid,
+      content: content,
+      type: AIChatMessageType.user,
+      timestamp: DateTime.now(),
+      sessionId: sessionId,
+    );
+    await addMessageToSession(sessionId, userMessage);
+
+    // 2. Get AI response
+    // Fetch session for context if needed
+    final session = await getSession(sessionId);
+    final response = await askExpert(content, context: session?.category);
+
+    // 3. Add AI message to Firestore
+    final aiMessage = AIChatMessage(
+      id: '',
+      userId: 'ai',
+      content: response.answer,
+      type: AIChatMessageType.ai,
+      timestamp: DateTime.now(),
+      sessionId: sessionId,
+      confidence: response.confidence,
+      sources: response.sources,
+    );
+    await addMessageToSession(sessionId, aiMessage);
+
+    return response.answer;
+  }
 
   Future<Map<String, dynamic>> getSessionStatistics() async {
     final user = _auth.currentUser;
@@ -507,10 +600,12 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
         'totalSessions': snapshot.docs.length,
         'activeSessions': activeSessions,
         'totalMessages': totalMessages,
-        'lastActive': snapshot.docs.isNotEmpty ? snapshot.docs.first.data()['lastMessageTime'] : null,
+        'lastActive': snapshot.docs.isNotEmpty
+            ? snapshot.docs.first.data()['lastMessageTime']
+            : null,
       };
     } catch (e) {
-      print('Error getting stats: $e');
+      // print('Error getting stats: $e');
       return {};
     }
   }
@@ -525,16 +620,19 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
           .where('userId', isEqualTo: user.uid)
           .get();
 
-      final allSessions = snapshot.docs.map((doc) => AIChatSession.fromMap(doc.id, doc.data())).toList();
-      
+      final allSessions = snapshot.docs
+          .map((doc) => AIChatSession.fromMap(doc.id, doc.data()))
+          .toList();
+
       if (query.isEmpty) return allSessions;
 
-      return allSessions.where((s) => 
-        s.title.toLowerCase().contains(query.toLowerCase()) || 
-        s.lastMessage.toLowerCase().contains(query.toLowerCase())
-      ).toList();
+      return allSessions
+          .where((s) =>
+              s.title.toLowerCase().contains(query.toLowerCase()) ||
+              s.lastMessage.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     } catch (e) {
-      print('Error searching sessions: $e');
+      // print('Error searching sessions: $e');
       return [];
     }
   }
@@ -555,11 +653,16 @@ Keep your response practical, specific to Indian conditions, and suitable for fa
   Future<Map<String, dynamic>> validateCommunityPost(String content) async {
     // Basic validation logic
     final isTooShort = content.length < 10;
-    final hasInappropriateLanguage = content.toLowerCase().contains('spam'); // Simplified
-    
+    final hasInappropriateLanguage =
+        content.toLowerCase().contains('spam'); // Simplified
+
     return {
       'isValid': !isTooShort && !hasInappropriateLanguage,
-      'reason': isTooShort ? 'Content too short' : (hasInappropriateLanguage ? 'Inappropriate language detected' : 'Valid'),
+      'reason': isTooShort
+          ? 'Content too short'
+          : (hasInappropriateLanguage
+              ? 'Inappropriate language detected'
+              : 'Valid'),
       'confidence': 0.9,
     };
   }

@@ -5,16 +5,14 @@ import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../pages/main_app_layout.dart';
 import '../pages/contacted_sellers_page.dart';
-import '../features/chat/ai_chat_sessions_page.dart';
+import '../features/crops/ai_crop_page.dart';
 import '../features/community/community_dashboard.dart';
 import '../pages/settings_page.dart';
 import '../pages/wishlist_page.dart';
 import '../pages/inventory_page.dart';
 import '../pages/orders_page.dart';
 import '../pages/help_support_page.dart';
-import '../pages/market_history_page.dart';
 import '../services/user_state_service.dart';
-import '../services/notification_service.dart';
 import '../models/user_model.dart';
 
 class UniversalDrawer extends StatelessWidget {
@@ -31,15 +29,14 @@ class UniversalDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userState = Provider.of<UserStateService>(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.9),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.9),
         border: Border(
           right: BorderSide(
-            color: AppTheme.getBorderColor(context).withOpacity(0.1),
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -56,6 +53,7 @@ class UniversalDrawer extends StatelessWidget {
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.symmetric(vertical: 0),
+                    physics: const BouncingScrollPhysics(),
                     children: [
                       _buildSectionHeader('GENERAL'),
                       _buildDrawerItem(
@@ -91,12 +89,12 @@ class UniversalDrawer extends StatelessWidget {
                       ),
                       _buildDrawerItem(
                         context,
-                        icon: Icons.psychology_rounded,
-                        title: 'AI Expert Assistant',
-                        page: 'ai-chat',
-                        route: '/ai-chat',
+                        icon: Icons.auto_awesome_rounded,
+                        title: 'AI Crop',
+                        page: 'crops',
+                        route: '/crops',
                       ),
-                      
+
                       _buildSectionHeader('MY ACTIVITY'),
                       _buildDrawerItem(
                         context,
@@ -114,7 +112,10 @@ class UniversalDrawer extends StatelessWidget {
                           if (Scaffold.of(context).isDrawerOpen) {
                             Navigator.pop(context);
                           }
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const WishlistPage()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const WishlistPage()));
                         },
                       ),
                       _buildDrawerItem(
@@ -131,14 +132,7 @@ class UniversalDrawer extends StatelessWidget {
                         page: 'inventory',
                         route: '/inventory',
                       ),
-                      _buildDrawerItem(
-                        context,
-                        icon: Icons.history_edu_rounded,
-                        title: 'Market Trends',
-                        page: 'history',
-                        route: '/history',
-                      ),
-                      
+
                       _buildSectionHeader('SUPPORT & ACCOUNT'),
                       _buildDrawerItem(
                         context,
@@ -154,10 +148,23 @@ class UniversalDrawer extends StatelessWidget {
                         page: 'help',
                         route: '/help',
                       ),
+
+                      // SIGN OUT INTEGRATED INTO SECTION
+                      _buildDrawerItem(
+                        context,
+                        icon: Icons.logout_rounded,
+                        title: 'Sign Out',
+                        page: 'logout',
+                        onTap: () => _showLogoutDialog(context),
+                        iconColor: AppTheme.error,
+                        textColor: AppTheme.error,
+                      ),
+
+                      // CRITICAL: Bottom Padding to clear Floating Nav Bar
+                      const SizedBox(height: 120),
                     ],
                   ),
                 ),
-                _buildBottomActions(context),
               ],
             ),
           ),
@@ -175,44 +182,47 @@ class UniversalDrawer extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 1.2,
-          color: AppTheme.primaryGreen.withOpacity(0.8),
+          color: AppTheme.primaryGreen.withValues(alpha: 0.8),
         ),
       ),
     );
   }
 
-  Widget _buildDivider(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Divider(
-        height: 1,
-        thickness: 1,
-        color: AppTheme.getBorderColor(context).withOpacity(0.05),
-      ),
-    );
-  }
+  Widget _buildDrawerHeader(
+      User? user, UserStateService userState, BuildContext context) {
+    final userName =
+        userState.currentUser?.fullName ?? user?.displayName ?? 'Guest User';
 
-  Widget _buildDrawerHeader(User? user, UserStateService userState, BuildContext context) {
-    final userName = userState.currentUser?.fullName ?? user?.displayName ?? 'Guest User';
-    
     String userRoleLabel = 'Guest';
     if (userState.currentUser != null) {
       switch (userState.currentUser!.role) {
-        case UserRole.farmer: userRoleLabel = 'Farmer'; break;
-        case UserRole.addat: userRoleLabel = 'Addat'; break;
-        case UserRole.vendor: userRoleLabel = 'Vendor'; break;
-        case UserRole.wholesaler: userRoleLabel = 'Wholesaler'; break;
-        case UserRole.admin: userRoleLabel = 'Admin'; break;
-        case UserRole.customer: userRoleLabel = 'Customer'; break;
+        case UserRole.farmer:
+          userRoleLabel = 'Farmer';
+          break;
+        case UserRole.addat:
+          userRoleLabel = 'Addat';
+          break;
+        case UserRole.vendor:
+          userRoleLabel = 'Vendor';
+          break;
+        case UserRole.wholesaler:
+          userRoleLabel = 'Wholesaler';
+          break;
+        case UserRole.admin:
+          userRoleLabel = 'Admin';
+          break;
+        case UserRole.customer:
+          userRoleLabel = 'Customer';
+          break;
       }
     }
-    
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 20),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppTheme.getBorderColor(context).withOpacity(0.05),
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.05),
           ),
         ),
       ),
@@ -229,7 +239,7 @@ class UniversalDrawer extends StatelessWidget {
                   gradient: AppTheme.primaryGradient,
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryGreen.withOpacity(0.3),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -237,7 +247,9 @@ class UniversalDrawer extends StatelessWidget {
                 ),
                 child: Center(
                   child: user?.photoURL != null
-                      ? ClipOval(child: Image.network(user!.photoURL!, width: 52, height: 52, fit: BoxFit.cover))
+                      ? ClipOval(
+                          child: Image.network(user!.photoURL!,
+                              width: 52, height: 52, fit: BoxFit.cover))
                       : Text(
                           userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
                           style: const TextStyle(
@@ -265,9 +277,11 @@ class UniversalDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+                        color: AppTheme.getPrimaryAccent(context)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -290,61 +304,6 @@ class UniversalDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomActions(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: AppTheme.getBorderColor(context).withOpacity(0.05),
-          ),
-        ),
-      ),
-      child: InkWell(
-        onTap: () => _showLogoutDialog(context),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: AppTheme.error.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.error.withOpacity(0.2)),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.logout_rounded, color: AppTheme.error, size: 20),
-              SizedBox(width: 12),
-              Text(
-                'Sign Out',
-                style: TextStyle(
-                  color: AppTheme.error,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.success,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
   Widget _buildDrawerItem(
     BuildContext context, {
     required IconData icon,
@@ -354,6 +313,8 @@ class UniversalDrawer extends StatelessWidget {
     String? route,
     VoidCallback? onTap,
     Widget? trailing,
+    Color? iconColor,
+    Color? textColor,
   }) {
     final isSelected = currentPage.toLowerCase() == page.toLowerCase();
     final accentColor = AppTheme.getPrimaryAccent(context);
@@ -361,7 +322,9 @@ class UniversalDrawer extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+        color: isSelected
+            ? accentColor.withValues(alpha: 0.1)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -369,7 +332,6 @@ class UniversalDrawer extends StatelessWidget {
             if (onTap != null) {
               onTap();
             } else if (index != null && onNavigate != null) {
-              // For embedded cases like MainAppLayout, we don't pop
               onNavigate!(index);
             } else {
               _navigateToPage(context, route);
@@ -381,7 +343,11 @@ class UniversalDrawer extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? accentColor : AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
+                  color: isSelected
+                      ? accentColor
+                      : (iconColor ??
+                          AppTheme.getSecondaryTextColor(context)
+                              .withValues(alpha: 0.7)),
                   size: 22,
                 ),
                 const SizedBox(width: 16),
@@ -390,8 +356,13 @@ class UniversalDrawer extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected ? accentColor : AppTheme.getTextColor(context).withOpacity(0.8),
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isSelected
+                          ? accentColor
+                          : (textColor ??
+                              AppTheme.getTextColor(context)
+                                  .withValues(alpha: 0.8)),
                     ),
                   ),
                 ),
@@ -406,56 +377,85 @@ class UniversalDrawer extends StatelessWidget {
 
   void _navigateToPage(BuildContext context, String? route) {
     if (route == null) return;
-    
-    // Detect if we are in a modal drawer or embedded
+
     final isDrawer = Scaffold.maybeOf(context)?.isDrawerOpen ?? false;
     if (isDrawer) {
       Navigator.pop(context);
     }
 
-    // If we're already on the page, don't push again
     if (currentPage == route.replaceFirst('/', '')) return;
 
     switch (route) {
-      case '/home':
       case '/dashboard':
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 0)));
+      case '/home':
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 0)));
         break;
       case '/marketplace':
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 1)));
-        break;
-      case '/crops':
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 2)));
-        break;
-      case '/apmc':
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 3)));
-        break;
-      case '/profile':
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 4)));
-        break;
-      case '/orders':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const OrdersPage()));
-        break;
-      case '/contacted-sellers':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const ContactedSellersPage()));
-        break;
-      case '/inventory':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryPage()));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 1)));
         break;
       case '/ai-chat':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const AIChatSessionsPage()));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 2)));
+        break;
+      case '/apmc':
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 3)));
+        break;
+      case '/profile':
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 4)));
+        break;
+      case '/crops':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const AICropPage()));
         break;
       case '/community':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const CommunityDashboard()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const CommunityDashboard()));
+        break;
+      case '/orders':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        break;
+      case '/contacted-sellers':
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const ContactedSellersPage()));
+        break;
+      case '/inventory':
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const InventoryPage()));
         break;
       case '/settings':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const SettingsPage()));
         break;
       case '/help':
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpAndSupportPage()));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const HelpAndSupportPage()));
         break;
       default:
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MainAppLayout(initialIndex: 0)));
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const MainAppLayout(initialIndex: 0)));
     }
   }
 
@@ -464,25 +464,32 @@ class UniversalDrawer extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.getSurfaceColor(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out from FarmKarts?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Sign Out',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content:
+            const Text('Are you sure you want to sign out from FarmKarts?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+            child: Text('Cancel',
+                style:
+                    TextStyle(color: AppTheme.getSecondaryTextColor(context))),
           ),
           ElevatedButton(
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/login', (route) => false);
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.error,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: const Text('Sign Out'),
           ),

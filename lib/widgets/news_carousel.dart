@@ -10,20 +10,26 @@ class NewsCarousel extends StatelessWidget {
     final news = [
       _NewsItem(
         title: 'Government launches new subsidy scheme for organic farming',
-        summary: 'Farmers can now get up to 50% subsidy on organic fertilizers and equipment.',
-        imageUrl: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
+        summary:
+            'Farmers can now get up to 50% subsidy on organic fertilizers and equipment.',
+        imageUrl:
+            'https://images.unsplash.com/photo-1500595046743-cd271d694d30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
         timeAgo: '2 hours ago',
       ),
       _NewsItem(
         title: 'Record high wheat prices in international markets',
-        summary: 'Global wheat shortage drives prices to 15-year high, benefiting Indian farmers.',
-        imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
+        summary:
+            'Global wheat shortage drives prices to 15-year high, benefiting Indian farmers.',
+        imageUrl:
+            'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
         timeAgo: '5 hours ago',
       ),
       _NewsItem(
         title: 'New drought-resistant crop varieties developed',
-        summary: 'Scientists develop climate-resilient seeds that can withstand extreme weather.',
-        imageUrl: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
+        summary:
+            'Scientists develop climate-resilient seeds that can withstand extreme weather.',
+        imageUrl:
+            'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
         timeAgo: '1 day ago',
       ),
     ];
@@ -45,10 +51,11 @@ class NewsCarousel extends StatelessWidget {
   Widget _buildNewsCard(BuildContext context, _NewsItem newsItem) {
     final cardWidth = ResponsiveHelper.isMobile(context) ? 240.0 : 260.0;
     final imageHeight = ResponsiveHelper.isMobile(context) ? 70.0 : 80.0;
-    
+
     return Container(
       width: cardWidth,
-      margin: EdgeInsets.only(right: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+      margin: EdgeInsets.only(
+          right: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
       child: Material(
         borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context),
         child: InkWell(
@@ -77,7 +84,9 @@ class NewsCarousel extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.vertical(
                     top: Radius.circular(
-                      ResponsiveHelper.getResponsiveBorderRadius(context).topLeft.x,
+                      ResponsiveHelper.getResponsiveBorderRadius(context)
+                          .topLeft
+                          .x,
                     ),
                   ),
                   child: Image.network(
@@ -110,7 +119,8 @@ class NewsCarousel extends StatelessWidget {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: ResponsiveHelper.getResponsivePadding(context).copyWith(
+                    padding:
+                        ResponsiveHelper.getResponsivePadding(context).copyWith(
                       top: 12,
                       bottom: 12,
                     ),
@@ -120,10 +130,14 @@ class NewsCarousel extends StatelessWidget {
                         ResponsiveHelper.autoSizeText(
                           newsItem.title,
                           context: context,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            fontSize: ResponsiveHelper.getFontSize(context, 14),
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize:
+                                    ResponsiveHelper.getFontSize(context, 14),
+                              ),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 4),
@@ -131,28 +145,38 @@ class NewsCarousel extends StatelessWidget {
                           child: ResponsiveHelper.autoSizeText(
                             newsItem.summary,
                             context: context,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textGrey,
-                              fontSize: ResponsiveHelper.getFontSize(context, 11),
-                            ),
-                            maxLines: ResponsiveHelper.isMobile(context) ? 2 : 3,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: AppTheme.textGrey,
+                                  fontSize:
+                                      ResponsiveHelper.getFontSize(context, 11),
+                                ),
+                            maxLines:
+                                ResponsiveHelper.isMobile(context) ? 2 : 3,
                           ),
                         ),
                         Row(
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: ResponsiveHelper.isMobile(context) ? 10 : 12,
+                              size:
+                                  ResponsiveHelper.isMobile(context) ? 10 : 12,
                               color: AppTheme.textGrey,
                             ),
                             const SizedBox(width: 4),
                             ResponsiveHelper.autoSizeText(
                               newsItem.timeAgo,
                               context: context,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppTheme.textGrey,
-                                fontSize: ResponsiveHelper.getFontSize(context, 10),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppTheme.textGrey,
+                                    fontSize: ResponsiveHelper.getFontSize(
+                                        context, 10),
+                                  ),
                             ),
                           ],
                         ),

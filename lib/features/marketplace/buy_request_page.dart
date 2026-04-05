@@ -23,7 +23,7 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  
+
   String _deliveryOption = 'pickup';
   bool _isSubmitting = false;
 
@@ -37,7 +37,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice = (double.tryParse(widget.product['price'] ?? '0') ?? 0) * widget.quantity;
+    final totalPrice = (double.tryParse(widget.product['price'] ?? '0') ?? 0) *
+        widget.quantity;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -79,8 +80,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Text(
               'Order Summary',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -89,7 +90,7 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: AppTheme.lightGreen.withOpacity(0.1),
+                    color: AppTheme.lightGreen.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -105,15 +106,16 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
                     children: [
                       Text(
                         widget.product['productName'] ?? 'Product',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       Text(
                         'Seller: ${widget.product['sellerName'] ?? 'Unknown'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.textGrey,
-                        ),
+                              color: AppTheme.textGrey,
+                            ),
                       ),
                       Text(
                         '₹${widget.product['price']} / ${widget.product['unit'] ?? 'kg'}',
@@ -131,7 +133,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Quantity:', style: Theme.of(context).textTheme.bodyMedium),
+                Text('Quantity:',
+                    style: Theme.of(context).textTheme.bodyMedium),
                 Text('${widget.quantity} ${widget.product['unit'] ?? 'kg'}'),
               ],
             ),
@@ -139,7 +142,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Unit Price:', style: Theme.of(context).textTheme.bodyMedium),
+                Text('Unit Price:',
+                    style: Theme.of(context).textTheme.bodyMedium),
                 Text('₹${widget.product['price']}'),
               ],
             ),
@@ -150,15 +154,15 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
                 Text(
                   'Total Amount:',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Text(
                   '₹${totalPrice.toStringAsFixed(2)}',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryGreen,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGreen,
+                      ),
                 ),
               ],
             ),
@@ -178,8 +182,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Text(
               'Contact Information',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -210,7 +214,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
               ),
               maxLines: 3,
               validator: (value) {
-                if (_deliveryOption == 'delivery' && (value == null || value.trim().isEmpty)) {
+                if (_deliveryOption == 'delivery' &&
+                    (value == null || value.trim().isEmpty)) {
                   return 'Address is required for delivery';
                 }
                 return null;
@@ -232,8 +237,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Text(
               'Delivery Options',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             RadioListTile(
@@ -276,8 +281,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
             Text(
               'Additional Message',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -352,7 +357,8 @@ class _BuyRequestPageState extends State<BuyRequestPage> {
         'quantity': widget.quantity,
         'unit': widget.product['unit'],
         'unitPrice': widget.product['price'],
-        'totalAmount': (double.tryParse(widget.product['price'] ?? '0') ?? 0) * widget.quantity,
+        'totalAmount': (double.tryParse(widget.product['price'] ?? '0') ?? 0) *
+            widget.quantity,
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
         'deliveryOption': _deliveryOption,

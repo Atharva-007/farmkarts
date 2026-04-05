@@ -7,13 +7,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 /// Push Notification Service
 /// Handles FCM push notifications for orders, chats, and product updates
 class PushNotificationService {
-  static final PushNotificationService _instance = PushNotificationService._internal();
+  static final PushNotificationService _instance =
+      PushNotificationService._internal();
   factory PushNotificationService() => _instance;
   PushNotificationService._internal();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
-  
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
   bool _initialized = false;
   String? _fcmToken;
 
@@ -34,11 +36,11 @@ class PushNotificationService {
         sound: true,
       );
 
-      debugPrint('PushNotification: Permission status - ${settings.authorizationStatus}');
+      debugPrint(
+          'PushNotification: Permission status - ${settings.authorizationStatus}');
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        
         // Initialize local notifications
         await _initializeLocalNotifications();
 
@@ -67,7 +69,8 @@ class PushNotificationService {
 
   /// Initialize local notifications
   Future<void> _initializeLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -141,7 +144,7 @@ class PushNotificationService {
   /// Handle notification opened (background/terminated)
   void _handleNotificationOpen(RemoteMessage message) {
     debugPrint('PushNotification: Notification opened - ${message.messageId}');
-    
+
     final data = message.data;
     final type = data['type'] as String?;
 
@@ -163,8 +166,9 @@ class PushNotificationService {
 
   /// Handle notification tap from local notification
   void _handleNotificationTap(NotificationResponse response) {
-    debugPrint('PushNotification: Local notification tapped - ${response.payload}');
-    
+    debugPrint(
+        'PushNotification: Local notification tapped - ${response.payload}');
+
     if (response.payload != null) {
       final parts = response.payload!.split('|');
       if (parts.length >= 2) {
@@ -216,7 +220,10 @@ class PushNotificationService {
 
     // Create payload for navigation
     final type = message.data['type'] as String? ?? '';
-    final id = message.data['orderId'] ?? message.data['chatId'] ?? message.data['productId'] ?? '';
+    final id = message.data['orderId'] ??
+        message.data['chatId'] ??
+        message.data['productId'] ??
+        '';
     final payload = '$type|$id';
 
     await _localNotifications.show(
@@ -471,7 +478,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Title: ${message.notification?.title}');
   debugPrint('Body: ${message.notification?.body}');
   debugPrint('Data: ${message.data}');
-  
+
   // Handle background notification
   // You can update local database, show notification, etc.
 }

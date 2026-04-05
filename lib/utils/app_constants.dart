@@ -8,7 +8,7 @@ class AppConstants {
   static const EdgeInsets defaultPadding = EdgeInsets.all(16.0);
   static const EdgeInsets smallPadding = EdgeInsets.all(8.0);
   static const EdgeInsets largePadding = EdgeInsets.all(24.0);
-  
+
   // Default shadow
   static const List<BoxShadow> defaultShadow = [
     BoxShadow(
@@ -37,7 +37,8 @@ class AppConstants {
   }
 
   // Responsive font sizes
-  static double getResponsiveFontSize(BuildContext context, double baseFontSize) {
+  static double getResponsiveFontSize(
+      BuildContext context, double baseFontSize) {
     if (ResponsiveHelper.isDesktop(context)) return baseFontSize + 2;
     if (ResponsiveHelper.isTablet(context)) return baseFontSize + 1;
     return baseFontSize;

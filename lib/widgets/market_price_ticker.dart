@@ -39,7 +39,7 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(
       begin: 1.0,
       end: 1.05,
@@ -94,18 +94,20 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
                   child: Text(
                     'Live Market Rates',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textDark,
-                    ),
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textDark,
+                        ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppTheme.success.withOpacity(0.1),
+                    color: AppTheme.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.success.withOpacity(0.3)),
+                    border: Border.all(
+                        color: AppTheme.success.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -130,22 +132,22 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
               ],
             ),
           ),
-          
+
           // Enhanced ticker with fixed overflow
           Container(
             height: ResponsiveHelper.isDesktop(context) ? 110 : 90,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppTheme.primaryGreen.withOpacity(0.05),
-                  AppTheme.skyBlue.withOpacity(0.05),
+                  AppTheme.primaryGreen.withValues(alpha: 0.05),
+                  AppTheme.skyBlue.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: AppTheme.primaryGreen.withOpacity(0.2),
+                color: AppTheme.primaryGreen.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -171,7 +173,7 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
               ),
             ),
           ),
-          
+
           // Speed control info
           const SizedBox(height: 6),
           Row(
@@ -214,13 +216,13 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border.all(
-          color: changeColor.withOpacity(0.2),
+          color: changeColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -241,7 +243,7 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 3),
-          
+
           // Price and quantity
           Row(
             children: [
@@ -268,12 +270,12 @@ class _MarketPriceTickerState extends State<MarketPriceTicker>
                   ],
                 ),
               ),
-              
+
               // Change indicator
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: changeColor.withOpacity(0.1),
+                  color: changeColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -311,5 +313,6 @@ class _MarketPrice {
   final bool isPositive;
   final double quantity; // Added quantity
 
-  _MarketPrice(this.name, this.price, this.change, this.isPositive, this.quantity);
+  _MarketPrice(
+      this.name, this.price, this.change, this.isPositive, this.quantity);
 }

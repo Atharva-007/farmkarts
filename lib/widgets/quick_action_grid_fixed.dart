@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../utils/responsive_helper.dart';
-import '../features/marketplace/marketplace_home.dart';
-import '../features/community/community_dashboard.dart';
-import '../features/profile/profile_dashboard.dart';
-import '../pages/sell_page.dart';
-import '../pages/settings_page.dart';
+import '../pages/add_product_page.dart';
 
 class QuickActionGrid extends StatelessWidget {
   final Function(int)? onNavigate;
-  
+
   const QuickActionGrid({super.key, this.onNavigate});
 
   @override
@@ -77,16 +73,16 @@ class QuickActionGrid extends StatelessWidget {
       builder: (context, constraints) {
         final crossAxisCount = ResponsiveHelper.getGridCrossAxisCount(context);
         final childAspectRatio = ResponsiveHelper.getCardAspectRatio(context);
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Quick Actions',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryGreen,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.primaryGreen,
+                  ),
             ),
             const SizedBox(height: 16),
             GridView.builder(
@@ -94,7 +90,8 @@ class QuickActionGrid extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: crossAxisCount,
-                crossAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context),
+                crossAxisSpacing:
+                    ResponsiveHelper.getResponsiveSpacing(context),
                 mainAxisSpacing: ResponsiveHelper.getResponsiveSpacing(context),
                 childAspectRatio: childAspectRatio,
               ),
@@ -120,15 +117,16 @@ class QuickActionGrid extends StatelessWidget {
         onTap: action.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
+          padding:
+              EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                action.color.withOpacity(0.1),
-                action.color.withOpacity(0.05),
+                action.color.withValues(alpha: 0.1),
+                action.color.withValues(alpha: 0.05),
               ],
             ),
           ),
@@ -136,20 +134,23 @@ class QuickActionGrid extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 16 : 12),
+                padding: EdgeInsets.all(
+                    ResponsiveHelper.isDesktop(context) ? 16 : 12),
                 decoration: BoxDecoration(
-                  color: action.color.withOpacity(0.2),
+                  color: action.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(action.icon, color: action.color, size: ResponsiveHelper.isDesktop(context) ? 28 : 24),
+                child: Icon(action.icon,
+                    color: action.color,
+                    size: ResponsiveHelper.isDesktop(context) ? 28 : 24),
               ),
               const SizedBox(height: 12),
               Text(
                 action.title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: action.color,
-                ),
+                      fontWeight: FontWeight.bold,
+                      color: action.color,
+                    ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -158,8 +159,8 @@ class QuickActionGrid extends StatelessWidget {
               Text(
                 action.subtitle,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppTheme.textGrey,
-                ),
+                      color: AppTheme.textGrey,
+                    ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -183,7 +184,7 @@ class QuickActionGrid extends StatelessWidget {
   static void _navigateToSellPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SellPage()),
+      MaterialPageRoute(builder: (context) => const AddProductPage()),
     );
   }
 }

@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/product_model.dart';
 import '../models/conversation_model.dart';
+import '../models/marketplace_models.dart';
 import 'conversation_service.dart';
 
 class EnhancedMarketplaceService {
-  static final EnhancedMarketplaceService _instance = EnhancedMarketplaceService._internal();
+  static final EnhancedMarketplaceService _instance =
+      EnhancedMarketplaceService._internal();
   factory EnhancedMarketplaceService() => _instance;
   EnhancedMarketplaceService._internal();
 
@@ -66,7 +68,8 @@ class EnhancedMarketplaceService {
       if (user == null) throw Exception('User not authenticated');
 
       // Get conversation details
-      final conversation = await _conversationService.getConversation(conversationId);
+      final conversation =
+          await _conversationService.getConversation(conversationId);
       if (conversation == null) throw Exception('Conversation not found');
 
       final bidMessage = 'BID OFFER:\n'
@@ -107,6 +110,25 @@ class EnhancedMarketplaceService {
     }
   }
 
+  /// Get buyer interests for a product
+  Future<List<BuyerInterest>> getProductInterests(String productId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('buyer_interests')
+          .where('productId', isEqualTo: productId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => BuyerInterest.fromMap({...doc.data(), 'id': doc.id}))
+          .toList();
+    } catch (e) {
+      // print('Error getting product interests: $e');
+      // Fallback: return empty list
+      return [];
+    }
+  }
+
   /// Get seller's products with interaction counts
   Future<List<Map<String, dynamic>>> getSellerProductsWithInteractions() async {
     try {
@@ -123,7 +145,7 @@ class EnhancedMarketplaceService {
 
       for (final productDoc in products.docs) {
         final product = Product.fromMap(productDoc.id, productDoc.data());
-        
+
         // Get interaction count for this product
         final conversations = await _firestore
             .collection('conversations')
@@ -147,8 +169,8 @@ class EnhancedMarketplaceService {
       }
 
       // Sort by interaction count (most active first)
-      productsWithInteractions.sort((a, b) => 
-          (b['interactionCount'] as int).compareTo(a['interactionCount'] as int));
+      productsWithInteractions.sort((a, b) => (b['interactionCount'] as int)
+          .compareTo(a['interactionCount'] as int));
 
       return productsWithInteractions;
     } catch (e) {
@@ -209,7 +231,7 @@ class EnhancedMarketplaceService {
       });
     } catch (e) {
       // Silent fail for notifications
-      print('Failed to create notification: $e');
+      // print('Failed to create notification: $e');
     }
   }
 
@@ -240,7 +262,7 @@ class EnhancedMarketplaceService {
           .doc(notificationId)
           .update({'isRead': true});
     } catch (e) {
-      print('Failed to mark notification as read: $e');
+      // print('Failed to mark notification as read: $e');
     }
   }
 
@@ -266,32 +288,40 @@ class EnhancedMarketplaceService {
       }
 
       if (location != null && location.isNotEmpty) {
-        queryRef = queryRef.where('location', isGreaterThanOrEqualTo: location)
-            .where('location', isLessThan: location + '\uf8ff');
+        queryRef = queryRef
+            .where('location', isGreaterThanOrEqualTo: location)
+            .where('location', isLessThan: '$location\uf8ff');
       }
 
       queryRef = queryRef.limit(limit);
 
       final snapshot = await queryRef.get();
       List<Product> products = snapshot.docs
-          .map((doc) => Product.fromMap(doc.id, doc.data() as Map<String, dynamic>))
+          .map((doc) =>
+              Product.fromMap(doc.id, doc.data() as Map<String, dynamic>))
           .toList();
 
       // Apply client-side filters
       if (query != null && query.isNotEmpty) {
-        products = products.where((product) =>
-            product.name.toLowerCase().contains(query.toLowerCase()) ||
-            product.description.toLowerCase().contains(query.toLowerCase()) ||
-            product.tags.any((tag) => tag.toLowerCase().contains(query.toLowerCase())))
+        products = products
+            .where((product) =>
+                product.name.toLowerCase().contains(query.toLowerCase()) ||
+                product.description
+                    .toLowerCase()
+                    .contains(query.toLowerCase()) ||
+                product.tags.any(
+                    (tag) => tag.toLowerCase().contains(query.toLowerCase())))
             .toList();
       }
 
       if (minPrice != null) {
-        products = products.where((product) => product.price >= minPrice).toList();
+        products =
+            products.where((product) => product.price >= minPrice).toList();
       }
 
       if (maxPrice != null) {
-        products = products.where((product) => product.price <= maxPrice).toList();
+        products =
+            products.where((product) => product.price <= maxPrice).toList();
       }
 
       return products;
@@ -321,8 +351,71 @@ class EnhancedMarketplaceService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error submitting price offer: $e');
+      // print('Error submitting price offer: $e');
     }
   }
 
+  /// Get selling history for current user
+  Future<List<SellingHistoryItem>> getSellingHistory(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('selling_history')
+          .where('sellerId', isEqualTo: userId)
+          .orderBy('transactionDate', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => SellingHistoryItem.fromMap(doc.data()..['id'] = doc.id))
+          .toList();
+    } catch (e) {
+      // print('Error getting selling history: $e');
+      return [];
+    }
+  }
+
+  /// Get price offers for a product
+  Future<List<Map<String, dynamic>>> getProductOffers(String productId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('price_offers')
+          .where('productId', isEqualTo: productId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
+    } catch (e) {
+      // print('Error getting product offers: $e');
+      return [];
+    }
+  }
+
+  /// Get simplified statistics for user
+  Future<Map<String, dynamic>> getUserStatistics(String userId) async {
+    try {
+      final sellingHistory = await getSellingHistory(userId);
+      double totalEarnings = 0;
+      for (var item in sellingHistory) {
+        totalEarnings += item.totalRevenue;
+      }
+
+      return {
+        'totalSales': sellingHistory.length,
+        'totalEarnings': totalEarnings,
+        'averageRating': 4.5,
+        'activeListings': 0,
+      };
+    } catch (e) {
+      return {
+        'totalSales': 0,
+        'totalEarnings': 0.0,
+        'averageRating': 0.0,
+        'activeListings': 0,
+      };
+    }
+  }
 }

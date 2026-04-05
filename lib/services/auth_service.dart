@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -30,60 +29,67 @@ class AuthService {
 
       // Check file size early
       if (kIsWeb && imageBytes != null && imageBytes.length > 2 * 1024 * 1024) {
-        throw Exception('Image too large. Please select an image smaller than 2MB.');
+        throw Exception(
+            'Image too large. Please select an image smaller than 2MB.');
       }
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = '${uid}_$timestamp.jpg';
       final ref = _storage.ref().child('licenses').child(fileName);
 
-      print('Creating storage reference: licenses/$fileName');
+      // print('Creating storage reference: licenses/$fileName');
 
       // Simplified upload without complex metadata
       late UploadTask uploadTask;
 
       if (kIsWeb && imageBytes != null) {
-        print('Uploading image bytes for web platform (${imageBytes.length} bytes)');
+        // print('Uploading image bytes for web platform (${imageBytes.length} bytes)');
         uploadTask = ref.putData(imageBytes);
       } else if (!kIsWeb && licenseImage != null) {
-        print('Uploading image file for mobile platform');
+        // print('Uploading image file for mobile platform');
         uploadTask = ref.putFile(licenseImage);
       } else {
         throw Exception('Platform mismatch');
       }
 
-      print('Starting upload task with timeout...');
-      
+      // print('Starting upload task with timeout...');
+
       // Tracking upload progress
       uploadTask.snapshotEvents.listen((event) {
-        double progress = event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
-        print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
+        double progress =
+            event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
+        // print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
       });
 
       // Increased timeout for better resilience on slower networks
       final snapshot = await uploadTask.timeout(
         const Duration(seconds: 60),
-        onTimeout: () => throw Exception('Upload timed out. Your connection might be too slow for this image size. Please try again or use a smaller image.'),
+        onTimeout: () => throw Exception(
+            'Upload timed out. Your connection might be too slow for this image size. Please try again or use a smaller image.'),
       );
 
       if (snapshot.state == TaskState.success) {
         final downloadUrl = await snapshot.ref.getDownloadURL();
-        print('Upload successful. Download URL: $downloadUrl');
+        // print('Upload successful. Download URL: $downloadUrl');
         return downloadUrl;
       } else {
         throw Exception('Upload failed with state: ${snapshot.state}');
       }
-
     } catch (e) {
-      print('Error uploading license image: $e');
+      // print('Error uploading license image: $e');
       if (e.toString().toLowerCase().contains('timeout')) {
-        throw Exception('Upload timed out. Please check your internet connection and try again.');
+        throw Exception(
+            'Upload timed out. Please check your internet connection and try again.');
       } else if (e.toString().toLowerCase().contains('permission')) {
-        throw Exception('Permission denied. Please check your internet connection.');
-      } else if (e.toString().toLowerCase().contains('too large') || e.toString().toLowerCase().contains('size')) {
-        throw Exception('Image file is too large. Please select an image smaller than 2MB.');
+        throw Exception(
+            'Permission denied. Please check your internet connection.');
+      } else if (e.toString().toLowerCase().contains('too large') ||
+          e.toString().toLowerCase().contains('size')) {
+        throw Exception(
+            'Image file is too large. Please select an image smaller than 2MB.');
       } else {
-        throw Exception('Upload failed. Please try with a different image or check your internet connection.');
+        throw Exception(
+            'Upload failed. Please try with a different image or check your internet connection.');
       }
     }
   }
@@ -113,7 +119,8 @@ class AuthService {
 
       // Upload license image if needed (for addats) - now optional during signup
       String? licenseImageUrl;
-      if (role == UserRole.addat && (licenseImage != null || licenseImageBytes != null)) {
+      if (role == UserRole.addat &&
+          (licenseImage != null || licenseImageBytes != null)) {
         licenseImageUrl = await _uploadLicenseImageQuick(
           uid,
           licenseImage: licenseImage,
@@ -157,7 +164,7 @@ class AuthService {
         try {
           await _auth.currentUser!.delete();
         } catch (deleteError) {
-          print('Could not clean up auth user: $deleteError');
+          // print('Could not clean up auth user: $deleteError');
         }
       }
       throw Exception(e.toString().replaceAll('Exception: ', ''));
@@ -191,15 +198,16 @@ class AuthService {
           .doc(uid)
           .get()
           .timeout(const Duration(seconds: 15));
-      
+
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         final roleString = data['role'] as String?;
-        
+
         if (roleString == null) {
-          throw Exception('User profile is corrupted - missing role information');
+          throw Exception(
+              'User profile is corrupted - missing role information');
         }
-        
+
         final role = UserRole.values.firstWhere(
           (e) => e.toString().split('.').last == roleString,
           orElse: () => UserRole.farmer,
@@ -225,11 +233,11 @@ class AuthService {
   Future<UserModel?> getCurrentUserModel() async {
     final user = _auth.currentUser;
     if (user == null) return null;
-    
+
     try {
       return await getUserProfile(user.uid);
     } catch (e) {
-      print('Error getting current user model: $e');
+      // print('Error getting current user model: $e');
       return null;
     }
   }
@@ -237,7 +245,10 @@ class AuthService {
   // Update user profile
   Future<void> updateUserProfile(UserModel userModel) async {
     try {
-      await _firestore.collection('users').doc(userModel.uid).update(userModel.toMap());
+      await _firestore
+          .collection('users')
+          .doc(userModel.uid)
+          .update(userModel.toMap());
     } catch (e) {
       throw Exception('Failed to update user profile: ${e.toString()}');
     }
@@ -248,10 +259,10 @@ class AuthService {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('No user logged in');
-      
+
       // Delete user document from Firestore
       await _firestore.collection('users').doc(user.uid).delete();
-      
+
       // Delete authentication account
       await user.delete();
     } catch (e) {
@@ -273,9 +284,9 @@ class AuthService {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('No user logged in');
-      
+
       await user.verifyBeforeUpdateEmail(newEmail);
-      
+
       // Update email in user profile
       final userProfile = await getUserProfile(user.uid);
       if (userProfile != null) {
@@ -297,7 +308,7 @@ class AuthService {
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('No user logged in');
-      
+
       await user.updatePassword(newPassword);
     } catch (e) {
       throw Exception('Failed to update password: ${e.toString()}');

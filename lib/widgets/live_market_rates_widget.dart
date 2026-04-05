@@ -14,7 +14,7 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
   late ScrollController _scrollController;
   late Timer _scrollTimer;
   late Timer _priceUpdateTimer;
-  
+
   // Mock data for live market rates (standard prices per quintal/100kg)
   final List<MarketRate> _marketRates = [
     MarketRate(commodity: 'Wheat', price: 2450.0, unit: 'qtl', change: 12.5),
@@ -31,12 +31,12 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    
+
     // Start continuous fast scrolling after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startScrolling();
     });
-    
+
     // Simulate live price updates
     _priceUpdateTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (mounted) _updatePrices();
@@ -45,13 +45,14 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
 
   void _startScrolling() {
     const double step = 1.0; // Distance per tick
-    const Duration duration = Duration(milliseconds: 30); // Tick interval (smaller = faster)
-    
+    const Duration duration =
+        Duration(milliseconds: 30); // Tick interval (smaller = faster)
+
     _scrollTimer = Timer.periodic(duration, (timer) {
       if (_scrollController.hasClients) {
         double maxScroll = _scrollController.position.maxScrollExtent;
         double currentScroll = _scrollController.offset;
-        
+
         if (currentScroll >= maxScroll) {
           _scrollController.jumpTo(0);
         } else {
@@ -65,7 +66,7 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
     setState(() {
       for (var rate in _marketRates) {
         final random = Random();
-        final changePercent = (random.nextDouble() - 0.5) * 0.02; 
+        final changePercent = (random.nextDouble() - 0.5) * 0.02;
         rate.price = rate.price * (1 + changePercent);
         rate.change = (random.nextDouble() - 0.5) * 50;
       }
@@ -90,7 +91,7 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -115,13 +116,17 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
                   SizedBox(width: 4),
                   Text(
                     'LIVE',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        letterSpacing: 1),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Scrolling Ticker
           Expanded(
             child: ListView.builder(
@@ -141,7 +146,7 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
 
   Widget _buildTickerItem(MarketRate rate) {
     final bool isPositive = rate.change >= 0;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
@@ -171,7 +176,7 @@ class _LiveMarketRatesWidgetState extends State<LiveMarketRatesWidget> {
                 TextSpan(
                   text: '/qtl',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     fontSize: 11,
                     fontWeight: FontWeight.normal,
                   ),

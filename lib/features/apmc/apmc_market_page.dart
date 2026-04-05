@@ -3,7 +3,6 @@ import 'dart:async';
 import 'dart:math';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_helper.dart';
-import '../../utils/app_constants.dart';
 
 class APMCMarketPage extends StatefulWidget {
   const APMCMarketPage({super.key});
@@ -17,12 +16,12 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   late TabController _tabController;
   late AnimationController _animationController;
   late Timer _refreshTimer;
-  
+
   String _selectedLocation = 'All Locations';
   String _selectedCategory = 'All Products';
   String _sortBy = 'Price High to Low';
-  bool _isLoading = false;
-  
+  final bool _isLoading = false;
+
   final List<String> _locations = [
     'All Locations',
     'Mumbai - Vashi APMC',
@@ -66,7 +65,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _generateMockData();
     _startRealTimeUpdates();
     _animationController.forward();
@@ -83,11 +82,28 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   void _generateMockData() {
     final random = Random();
     final products = [
-      'Tomato', 'Onion', 'Potato', 'Rice', 'Wheat', 'Sugar', 'Turmeric',
-      'Chili', 'Garlic', 'Ginger', 'Apple', 'Banana', 'Orange', 'Mango',
-      'Grapes', 'Soybean', 'Cotton', 'Groundnut', 'Mustard', 'Bajra'
+      'Tomato',
+      'Onion',
+      'Potato',
+      'Rice',
+      'Wheat',
+      'Sugar',
+      'Turmeric',
+      'Chili',
+      'Garlic',
+      'Ginger',
+      'Apple',
+      'Banana',
+      'Orange',
+      'Mango',
+      'Grapes',
+      'Soybean',
+      'Cotton',
+      'Groundnut',
+      'Mustard',
+      'Bajra'
     ];
-    
+
     _marketRates = products.map((product) {
       final basePrice = random.nextDouble() * 100 + 20;
       final change = (random.nextDouble() - 0.5) * 10;
@@ -100,20 +116,26 @@ class _APMCMarketPageState extends State<APMCMarketPage>
         quantity: random.nextInt(10000) + 1000,
         unit: _getUnitForProduct(product),
         location: _locations[random.nextInt(_locations.length - 1) + 1],
-        lastUpdated: DateTime.now().subtract(Duration(minutes: random.nextInt(60))),
+        lastUpdated:
+            DateTime.now().subtract(Duration(minutes: random.nextInt(60))),
         volume: random.nextInt(50000) + 5000,
-        trend: change > 0 ? PriceTrend.up : change < 0 ? PriceTrend.down : PriceTrend.stable,
+        trend: change > 0
+            ? PriceTrend.up
+            : change < 0
+                ? PriceTrend.down
+                : PriceTrend.stable,
         qualityGrade: _getRandomGrade(),
       );
     }).toList();
-    
+
     _filterAndSortRates();
   }
 
   String _getCategoryForProduct(String product) {
     if (['Tomato', 'Onion', 'Potato', 'Garlic', 'Ginger'].contains(product)) {
       return 'Vegetables';
-    } else if (['Apple', 'Banana', 'Orange', 'Mango', 'Grapes'].contains(product)) {
+    } else if (['Apple', 'Banana', 'Orange', 'Mango', 'Grapes']
+        .contains(product)) {
       return 'Fruits';
     } else if (['Rice', 'Wheat', 'Bajra'].contains(product)) {
       return 'Grains';
@@ -154,11 +176,13 @@ class _APMCMarketPageState extends State<APMCMarketPage>
       rate.previousPrice = rate.currentPrice;
       rate.currentPrice = (rate.currentPrice + change).clamp(1.0, 1000.0);
       rate.lastUpdated = DateTime.now();
-      rate.trend = change > 0.1 ? PriceTrend.up 
-          : change < -0.1 ? PriceTrend.down 
-          : PriceTrend.stable;
+      rate.trend = change > 0.1
+          ? PriceTrend.up
+          : change < -0.1
+              ? PriceTrend.down
+              : PriceTrend.stable;
     }
-    
+
     if (mounted) {
       setState(() {
         _filterAndSortRates();
@@ -168,13 +192,13 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   void _filterAndSortRates() {
     _filteredRates = _marketRates.where((rate) {
-      final locationMatch = _selectedLocation == 'All Locations' || 
+      final locationMatch = _selectedLocation == 'All Locations' ||
           rate.location == _selectedLocation;
-      final categoryMatch = _selectedCategory == 'All Products' || 
+      final categoryMatch = _selectedCategory == 'All Products' ||
           rate.category == _selectedCategory;
       return locationMatch && categoryMatch;
     }).toList();
-    
+
     // Sort rates
     switch (_sortBy) {
       case 'Price High to Low':
@@ -231,7 +255,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -247,24 +271,29 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                       children: [
                         Text(
                           'APMC Market',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         Text(
                           'Live Commodity Prices',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -402,11 +431,14 @@ class _APMCMarketPageState extends State<APMCMarketPage>
 
   Widget _buildMarketOverview() {
     final totalRates = _filteredRates.length;
-    final avgPrice = _filteredRates.isEmpty 
-        ? 0.0 
-        : _filteredRates.map((r) => r.currentPrice).reduce((a, b) => a + b) / totalRates;
-    final upTrend = _filteredRates.where((r) => r.trend == PriceTrend.up).length;
-    final downTrend = _filteredRates.where((r) => r.trend == PriceTrend.down).length;
+    final avgPrice = _filteredRates.isEmpty
+        ? 0.0
+        : _filteredRates.map((r) => r.currentPrice).reduce((a, b) => a + b) /
+            totalRates;
+    final upTrend =
+        _filteredRates.where((r) => r.trend == PriceTrend.up).length;
+    final downTrend =
+        _filteredRates.where((r) => r.trend == PriceTrend.down).length;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -458,11 +490,12 @@ class _APMCMarketPageState extends State<APMCMarketPage>
     );
   }
 
-  Widget _buildOverviewCard(String title, String value, IconData icon, Color color) {
+  Widget _buildOverviewCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -526,7 +559,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                 ),
                 IconButton(
                   onPressed: () => _updatePrices(),
-                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                  icon:
+                      const Icon(Icons.refresh, color: Colors.white, size: 20),
                 ),
               ],
             ),
@@ -567,7 +601,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   Widget _buildRateCard(MarketRate rate) {
     final priceChange = rate.currentPrice - rate.previousPrice;
     final percentageChange = (priceChange / rate.previousPrice) * 100;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -586,7 +620,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen.withOpacity(0.1),
+                      color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -643,9 +677,10 @@ class _APMCMarketPageState extends State<APMCMarketPage>
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getTrendColor(rate.trend).withOpacity(0.1),
+                      color: _getTrendColor(rate.trend).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
@@ -744,7 +779,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
@@ -768,7 +803,7 @@ class _APMCMarketPageState extends State<APMCMarketPage>
   Widget _buildProductDetailsSheet(MarketRate rate) {
     final priceChange = rate.currentPrice - rate.previousPrice;
     final percentageChange = (priceChange / rate.previousPrice) * 100;
-    
+
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       maxChildSize: 0.9,
@@ -803,7 +838,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryGreen.withOpacity(0.1),
+                                color: AppTheme.primaryGreen
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
@@ -835,9 +871,11 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: _getTrendColor(rate.trend).withOpacity(0.1),
+                                color: _getTrendColor(rate.trend)
+                                    .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -898,7 +936,8 @@ class _APMCMarketPageState extends State<APMCMarketPage>
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Contact seller feature coming soon!'),
+                                  content: Text(
+                                      'Contact seller feature coming soon!'),
                                   backgroundColor: AppTheme.primaryGreen,
                                 ),
                               );

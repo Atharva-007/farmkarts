@@ -23,7 +23,8 @@ class EnhancedOrderTrackingPage extends StatefulWidget {
   });
 
   @override
-  State<EnhancedOrderTrackingPage> createState() => _EnhancedOrderTrackingPageState();
+  State<EnhancedOrderTrackingPage> createState() =>
+      _EnhancedOrderTrackingPageState();
 }
 
 class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
@@ -46,7 +47,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     if (widget.trackingId != null) {
       _trackingController.text = widget.trackingId!;
       _trackOrder();
@@ -71,7 +72,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
 
     // Input sanitization
     final trackingId = _trackingController.text.trim().toUpperCase();
-    
+
     // Validate tracking ID format
     if (!_validateTrackingId(trackingId)) {
       setState(() => _error = 'Invalid tracking ID format');
@@ -91,30 +92,31 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
           .limit(1)
           .get()
           .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw Exception('Request timeout. Please try again.');
-            },
-          );
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Request timeout. Please try again.');
+        },
+      );
 
       if (querySnapshot.docs.isNotEmpty) {
         final orderDoc = querySnapshot.docs.first;
         final orderData = orderDoc.data();
-        
+
         // Security check: Verify user has access to this order
         final userId = _auth.currentUser?.uid;
         if (userId == null ||
-            (orderData['buyerId'] != userId && orderData['sellerId'] != userId)) {
+            (orderData['buyerId'] != userId &&
+                orderData['sellerId'] != userId)) {
           throw Exception('Access denied. You cannot view this order.');
         }
 
         final order = OrderModel.fromMap(orderDoc.id, orderData);
-        
+
         setState(() {
           _currentOrder = order;
           _trackingDetails = _buildTrackingDetails(order);
           _isLoading = false;
-          
+
           // Setup real-time updates
           _setupRealtimeTracking(orderDoc.id);
         });
@@ -140,23 +142,20 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
     });
 
     try {
-      final orderDoc = await _firestore
-          .collection('orders')
-          .doc(orderId)
-          .get()
-          .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              throw Exception('Request timeout. Please try again.');
-            },
-          );
+      final orderDoc =
+          await _firestore.collection('orders').doc(orderId).get().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Request timeout. Please try again.');
+        },
+      );
 
       if (!orderDoc.exists) {
         throw Exception('Order not found');
       }
 
       final orderData = orderDoc.data() as Map<String, dynamic>;
-      
+
       // Security check
       final userId = _auth.currentUser?.uid;
       if (userId == null ||
@@ -165,13 +164,13 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
       }
 
       final order = OrderModel.fromMap(orderDoc.id, orderData);
-      
+
       setState(() {
         _currentOrder = order;
         _trackingController.text = order.trackingId ?? '';
         _trackingDetails = _buildTrackingDetails(order);
         _isLoading = false;
-        
+
         _setupRealtimeTracking(orderId);
       });
     } catch (e) {
@@ -185,10 +184,11 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
   /// Setup real-time order tracking
   void _setupRealtimeTracking(String orderId) {
     _orderStream = _firestore.collection('orders').doc(orderId).snapshots();
-    
+
     _orderStream!.listen((snapshot) {
       if (snapshot.exists && snapshot.data() != null && mounted) {
-        final order = OrderModel.fromMap(snapshot.id, snapshot.data() as Map<String, dynamic>);
+        final order = OrderModel.fromMap(
+            snapshot.id, snapshot.data() as Map<String, dynamic>);
         setState(() {
           _currentOrder = order;
           _trackingDetails = _buildTrackingDetails(order);
@@ -200,7 +200,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
   /// Build tracking details from order
   OrderTrackingDetails _buildTrackingDetails(OrderModel order) {
     final timeline = <TrackingTimeline>[];
-    
+
     // Order Placed
     timeline.add(TrackingTimeline(
       status: 'Order Placed',
@@ -349,14 +349,15 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
   bool _validateTrackingId(String trackingId) {
     // Format: FK + timestamp or custom format
     if (trackingId.length < 8) return false;
-    if (!trackingId.startsWith('FK') && !trackingId.startsWith('TRK')) return false;
+    if (!trackingId.startsWith('FK') && !trackingId.startsWith('TRK'))
+      return false;
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Track Your Order'),
@@ -384,7 +385,9 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
                 indicatorColor: Colors.white,
                 tabs: const [
                   Tab(text: 'Timeline', icon: Icon(Icons.timeline, size: 18)),
-                  Tab(text: 'Details', icon: Icon(Icons.info_outline, size: 18)),
+                  Tab(
+                      text: 'Details',
+                      icon: Icon(Icons.info_outline, size: 18)),
                   Tab(text: 'Actions', icon: Icon(Icons.settings, size: 18)),
                 ],
               )
@@ -508,7 +511,8 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+                  Icon(Icons.info_outline,
+                      color: Colors.blue.shade700, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -664,7 +668,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
         padding: AppConstants.defaultPadding,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [statusColor.withOpacity(0.1), Colors.white],
+            colors: [statusColor.withValues(alpha: 0.1), Colors.white],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -704,9 +708,8 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
   Widget _buildDeliveryEstimateCard() {
     if (_trackingDetails!.estimatedDelivery == null) return const SizedBox();
 
-    final daysRemaining = _trackingDetails!.estimatedDelivery!
-        .difference(DateTime.now())
-        .inDays;
+    final daysRemaining =
+        _trackingDetails!.estimatedDelivery!.difference(DateTime.now()).inDays;
 
     return Card(
       child: Padding(
@@ -730,9 +733,10 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
+                color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppTheme.primaryGreen.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -807,7 +811,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
                   index == _trackingDetails!.trackingTimeline.length - 1;
 
               return _buildTimelineItem(timeline, isLast);
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -824,14 +828,12 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: timeline.completed
-                    ? AppTheme.success
-                    : Colors.grey[300],
+                color: timeline.completed ? AppTheme.success : Colors.grey[300],
                 shape: BoxShape.circle,
                 boxShadow: timeline.completed
                     ? [
                         BoxShadow(
-                          color: AppTheme.success.withOpacity(0.3),
+                          color: AppTheme.success.withValues(alpha: 0.3),
                           blurRadius: 8,
                           spreadRadius: 2,
                         )
@@ -848,8 +850,7 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
               Container(
                 width: 2,
                 height: 60,
-                color:
-                    timeline.completed ? AppTheme.success : Colors.grey[300],
+                color: timeline.completed ? AppTheme.success : Colors.grey[300],
               ),
           ],
         ),
@@ -860,12 +861,12 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               color: timeline.completed
-                  ? AppTheme.success.withOpacity(0.05)
+                  ? AppTheme.success.withValues(alpha: 0.05)
                   : Colors.grey[50],
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: timeline.completed
-                    ? AppTheme.success.withOpacity(0.2)
+                    ? AppTheme.success.withValues(alpha: 0.2)
                     : Colors.grey[300]!,
               ),
             ),
@@ -936,11 +937,13 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
             _buildInfoRow('Tracking ID', order.trackingId ?? 'Not available'),
             _buildInfoRow('Product', order.productName),
             _buildInfoRow('Quantity', '${order.quantity} ${order.unit}'),
-            _buildInfoRow('Unit Price', '₹${order.unitPrice.toStringAsFixed(2)}'),
-            _buildInfoRow('Total Amount',
-                '₹${order.totalAmount.toStringAsFixed(2)}', isBold: true),
             _buildInfoRow(
-                'Order Date', DateFormat('MMM dd, yyyy').format(order.orderDate)),
+                'Unit Price', '₹${order.unitPrice.toStringAsFixed(2)}'),
+            _buildInfoRow(
+                'Total Amount', '₹${order.totalAmount.toStringAsFixed(2)}',
+                isBold: true),
+            _buildInfoRow('Order Date',
+                DateFormat('MMM dd, yyyy').format(order.orderDate)),
           ],
         ),
       ),
@@ -992,8 +995,10 @@ class _EnhancedOrderTrackingPageState extends State<EnhancedOrderTrackingPage>
                   ),
             ),
             const Divider(),
-            _buildInfoRow('Delivery Type', order.deliveryType.toString().split('.').last),
-            _buildInfoRow('Delivery Address', order.deliveryAddress ?? order.buyerAddress),
+            _buildInfoRow(
+                'Delivery Type', order.deliveryType.toString().split('.').last),
+            _buildInfoRow('Delivery Address',
+                order.deliveryAddress ?? order.buyerAddress),
             if (order.trackingNumber != null)
               _buildInfoRow('Tracking Number', order.trackingNumber!),
             _buildInfoRow('Buyer Name', order.buyerName),

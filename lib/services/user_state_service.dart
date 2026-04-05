@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
@@ -13,7 +12,7 @@ class UserStateService extends ChangeNotifier {
   }
 
   final AuthService _authService = AuthService();
-  
+
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _error;
@@ -32,26 +31,27 @@ class UserStateService extends ChangeNotifier {
   bool get isOnline => _isOnline;
 
   void _initializeConnectivityListener() {
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((dynamic result) {
+    _connectivitySubscription =
+        Connectivity().onConnectivityChanged.listen((dynamic result) {
       final wasOnline = _isOnline;
-      
+
       bool isNowOnline = false;
       if (result is List) {
         isNowOnline = !result.contains(ConnectivityResult.none);
       } else {
         isNowOnline = result != ConnectivityResult.none;
       }
-      
+
       _isOnline = isNowOnline;
-      
+
       if (!wasOnline && _isOnline) {
-        print('UserStateService: Connection restored');
+        // print('UserStateService: Connection restored');
         if (_currentUser == null && _authService.currentUser != null) {
-          print('UserStateService: Attempting to load user profile after reconnection');
+          // print('UserStateService: Attempting to load user profile after reconnection');
           setCurrentUser(_authService.currentUser!.uid);
         }
       }
-      
+
       notifyListeners();
     });
   }
@@ -61,13 +61,13 @@ class UserStateService extends ChangeNotifier {
     _setLoading(true);
     _retryCount = 0;
     _error = null;
-    
+
     try {
       final currentUser = await _authService.getCurrentUserModel();
       _currentUser = currentUser;
       _error = null;
       _retryCount = 0;
-      print('UserStateService: User initialized successfully');
+      // print('UserStateService: User initialized successfully');
     } catch (e) {
       await _handleError(e, () => initializeUser());
     }
@@ -79,21 +79,22 @@ class UserStateService extends ChangeNotifier {
     _setLoading(true);
     _retryCount = 0;
     _error = null;
-    
+
     try {
-      print('UserStateService: Loading user profile for UID: $uid');
-      
+      // print('UserStateService: Loading user profile for UID: $uid');
+
       final userModel = await _authService.getUserProfile(uid);
-      
+
       if (userModel != null) {
         _currentUser = userModel;
         _error = null;
         _retryCount = 0;
-        print('UserStateService: User profile loaded successfully - ${userModel.fullName} (${userModel.role})');
+        // print('UserStateService: User profile loaded successfully - ${userModel.fullName} (${userModel.role})');
       } else {
-        _error = 'User profile not found in database. Please try registering again.';
+        _error =
+            'User profile not found in database. Please try registering again.';
         _currentUser = null;
-        print('UserStateService: User profile not found for UID: $uid');
+        // print('UserStateService: User profile not found for UID: $uid');
       }
     } catch (e) {
       await _handleError(e, () => setCurrentUser(uid));
@@ -108,7 +109,7 @@ class UserStateService extends ChangeNotifier {
       await _authService.updateUserProfile(updatedUser);
       _currentUser = updatedUser;
       _error = null;
-      print('UserStateService: User profile updated successfully');
+      // print('UserStateService: User profile updated successfully');
     } catch (e) {
       await _handleError(e, () => updateUserProfile(updatedUser));
     }
@@ -123,9 +124,9 @@ class UserStateService extends ChangeNotifier {
       _currentUser = null;
       _error = null;
       _retryCount = 0;
-      print('UserStateService: User cleared successfully');
+      // print('UserStateService: User cleared successfully');
     } catch (e) {
-      print('UserStateService: Error clearing user: $e');
+      // print('UserStateService: Error clearing user: $e');
       _currentUser = null;
       _error = null;
     }
@@ -143,44 +144,52 @@ class UserStateService extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleError(dynamic error, Future<void> Function() retryFunction) async {
+  Future<void> _handleError(
+      dynamic error, Future<void> Function() retryFunction) async {
     final errorString = error.toString().toLowerCase();
-    print('UserStateService: Error occurred: $errorString');
+    // print('UserStateService: Error occurred: $errorString');
 
-    bool isNetworkError = errorString.contains('unavailable') || 
-                         errorString.contains('offline') ||
-                         errorString.contains('network') ||
-                         errorString.contains('timeout') ||
-                         errorString.contains('deadline-exceeded');
-      
+    bool isNetworkError = errorString.contains('unavailable') ||
+        errorString.contains('offline') ||
+        errorString.contains('network') ||
+        errorString.contains('timeout') ||
+        errorString.contains('deadline-exceeded');
+
     if (isNetworkError) {
       if (_retryCount < _maxRetries) {
         _retryCount++;
-        final waitSeconds = _retryCount * _retryCount; // Exponential: 1, 4, 9 seconds
-        print('UserStateService: Network error. Retrying in $waitSeconds seconds... attempt $_retryCount/$_maxRetries');
-        
+        final waitSeconds =
+            _retryCount * _retryCount; // Exponential: 1, 4, 9 seconds
+        // print('UserStateService: Network error. Retrying in $waitSeconds seconds... attempt $_retryCount/$_maxRetries');
+
         await Future.delayed(Duration(seconds: waitSeconds));
-        
+
         try {
           await retryFunction();
           return;
         } catch (retryError) {
           if (_retryCount >= _maxRetries) {
-            _error = 'Unable to connect to FarmKarts. Please check your internet connection and try again.';
+            _error =
+                'Unable to connect to FarmKarts. Please check your internet connection and try again.';
           }
           return;
         }
       } else {
-        _error = 'Connection persistent failure. Please check your network and tap Retry.';
+        _error =
+            'Connection persistent failure. Please check your network and tap Retry.';
       }
     } else if (errorString.contains('permission-denied')) {
-      _error = 'Access denied. Please contact support or check your account status.';
-    } else if (errorString.contains('not-found') || errorString.contains('not found')) {
-      _error = 'User profile could not be found. You may need to sign up again.';
+      _error =
+          'Access denied. Please contact support or check your account status.';
+    } else if (errorString.contains('not-found') ||
+        errorString.contains('not found')) {
+      _error =
+          'User profile could not be found. You may need to sign up again.';
     } else {
-      _error = 'An unexpected error occurred: ${error.toString().split(':').last.trim()}';
+      _error =
+          'An unexpected error occurred: ${error.toString().split(':').last.trim()}';
     }
-    
+
     _currentUser = null;
   }
 

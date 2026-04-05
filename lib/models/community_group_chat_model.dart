@@ -22,7 +22,8 @@ class CommunityGroupChatMessage {
     this.imageUrls,
   });
 
-  factory CommunityGroupChatMessage.fromMap(String id, Map<String, dynamic> map) {
+  factory CommunityGroupChatMessage.fromMap(
+      String id, Map<String, dynamic> map) {
     return CommunityGroupChatMessage(
       id: id,
       groupId: map['groupId'] ?? '',

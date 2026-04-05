@@ -37,7 +37,7 @@ class BaseLayoutWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktop = ResponsiveHelper.isDesktop(context);
-    
+
     if (isDesktop) {
       return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
@@ -75,7 +75,8 @@ class BaseLayoutWrapper extends StatelessWidget {
     return Scaffold(
       appBar: showAppBar ? _buildAppBar(context) : null,
       body: child,
-      bottomNavigationBar: showBottomNavBar ? _buildBottomNavigationBar(context) : null,
+      bottomNavigationBar:
+          showBottomNavBar ? _buildBottomNavigationBar(context) : null,
       drawer: showDrawer ? _buildDrawer(context) : null,
       floatingActionButton: floatingActionButton,
     );
@@ -145,8 +146,10 @@ class BaseLayoutWrapper extends StatelessWidget {
         final user = userState.currentUser;
         final userName = user?.fullName ?? 'User';
         final userEmail = user?.email ?? 'No email';
-        final userRole = user?.role == UserRole.farmer ? 'Farmer' : 'Vendor/Addat';
-        final roleIcon = user?.role == UserRole.farmer ? Icons.agriculture : Icons.store;
+        final userRole =
+            user?.role == UserRole.farmer ? 'Farmer' : 'Vendor/Addat';
+        final roleIcon =
+            user?.role == UserRole.farmer ? Icons.agriculture : Icons.store;
 
         return Drawer(
           child: Column(
@@ -171,7 +174,8 @@ class BaseLayoutWrapper extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -204,7 +208,9 @@ class BaseLayoutWrapper extends StatelessWidget {
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.only(bottom: 100), // Added padding to prevent overlap with bottom UI
+                  padding: const EdgeInsets.only(
+                      bottom:
+                          100), // Added padding to prevent overlap with bottom UI
                   children: [
                     _buildDrawerItem(
                       context,
@@ -248,9 +254,7 @@ class BaseLayoutWrapper extends StatelessWidget {
                       title: 'Profile',
                       onTap: () => _navigateToPage(context, 6),
                     ),
-                    
                     const Divider(),
-                    
                     _buildDrawerItem(
                       context,
                       icon: Icons.shopping_bag,
@@ -288,14 +292,13 @@ class BaseLayoutWrapper extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const EnhancedAIExpertChatPage(),
+                            builder: (context) =>
+                                const EnhancedAIExpertChatPage(),
                           ),
                         );
                       },
                     ),
-                    
                     const Divider(),
-                    
                     _buildDrawerItem(
                       context,
                       icon: Icons.settings,
@@ -304,7 +307,8 @@ class BaseLayoutWrapper extends StatelessWidget {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SettingsPage()),
+                          MaterialPageRoute(
+                              builder: (context) => const SettingsPage()),
                         );
                       },
                     ),
@@ -351,7 +355,7 @@ class BaseLayoutWrapper extends StatelessWidget {
   }) {
     return ListTile(
       leading: Icon(
-        icon, 
+        icon,
         color: AppTheme.primaryGreen,
         size: ResponsiveHelper.isMobile(context) ? 20 : 24,
       ),
@@ -381,7 +385,7 @@ class BaseLayoutWrapper extends StatelessWidget {
   void _navigateToPage(BuildContext context, int index) {
     // Close drawer first
     Navigator.pop(context);
-    
+
     // Navigate back to main app layout with the selected index
     Navigator.pushAndRemoveUntil(
       context,
@@ -414,7 +418,8 @@ class BaseLayoutWrapper extends StatelessWidget {
             SizedBox(height: 8),
             Text('Version: 1.0.0'),
             SizedBox(height: 8),
-            Text('Connecting farmers with buyers directly, eliminating middlemen and ensuring fair prices for everyone.'),
+            Text(
+                'Connecting farmers with buyers directly, eliminating middlemen and ensuring fair prices for everyone.'),
           ],
         ),
         actions: [
@@ -441,14 +446,20 @@ class BaseLayoutWrapper extends StatelessWidget {
                 children: [
                   Icon(
                     user.isLicenseVerified ? Icons.verified : Icons.pending,
-                    color: user.isLicenseVerified ? AppTheme.success : AppTheme.warning,
+                    color: user.isLicenseVerified
+                        ? AppTheme.success
+                        : AppTheme.warning,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    user.isLicenseVerified ? 'Verified' : 'Pending Verification',
+                    user.isLicenseVerified
+                        ? 'Verified'
+                        : 'Pending Verification',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: user.isLicenseVerified ? AppTheme.success : AppTheme.warning,
+                      color: user.isLicenseVerified
+                          ? AppTheme.success
+                          : AppTheme.warning,
                     ),
                   ),
                 ],
@@ -488,10 +499,12 @@ class BaseLayoutWrapper extends StatelessWidget {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              final userStateService = Provider.of<UserStateService>(context, listen: false);
+              final userStateService =
+                  Provider.of<UserStateService>(context, listen: false);
               await userStateService.clearUser();
               if (context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                Navigator.pushNamedAndRemoveUntil(
+                    context, '/login', (route) => false);
               }
             },
             child: const Text('Logout'),

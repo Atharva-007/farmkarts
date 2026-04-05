@@ -1,118 +1,132 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum InventoryType {
-  product,    // Marketplace products
-  good,       // Consumable goods like fertilizers, seeds, etc.
-  instrument, // Tools and machinery
-  other       // Anything else
-}
-
-enum ItemCondition {
-  new_item,
-  excellent,
-  good,
-  fair,
-  poor,
-  maintenance_required
-}
+enum InventoryType { seed, fertilizer, pesticide, tool, good, other }
 
 class InventoryItem {
   final String id;
+  final String userId;
   final String name;
   final String description;
-  final String category;
-  final InventoryType type;
   final double quantity;
   final String unit;
-  final double price; // Purchase price or valuation
+  final String category;
+  final InventoryType type;
+  final double price; // Price per unit
   final List<String> imageUrls;
-  final String ownerId;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
-  // Type specific fields
-  final ItemCondition? condition; // For instruments
-  final String? manufacturer;
-  final String? modelNumber;
-  final DateTime? purchaseDate;
-  final DateTime? expiryDate; // For goods
-  final bool isForSale; // If linked to a marketplace product
-  final String? marketplaceProductId;
+
+  // NEW ENHANCED FIELDS
+  final DateTime? expiryDate;
+  final String? supplier;
+  final double? totalValue; // Calculated total cost/value
+  final String? batchNumber;
+  final String stockStatus; // 'Optimal', 'Low', 'Critical'
 
   InventoryItem({
     required this.id,
+    required this.userId,
     required this.name,
     required this.description,
-    required this.category,
-    required this.type,
     required this.quantity,
     required this.unit,
+    required this.category,
+    required this.type,
     required this.price,
     required this.imageUrls,
-    required this.ownerId,
     required this.createdAt,
     required this.updatedAt,
-    this.condition,
-    this.manufacturer,
-    this.modelNumber,
-    this.purchaseDate,
     this.expiryDate,
-    this.isForSale = false,
-    this.marketplaceProductId,
+    this.supplier,
+    this.totalValue,
+    this.batchNumber,
+    this.stockStatus = 'Optimal',
   });
 
   factory InventoryItem.fromMap(String id, Map<String, dynamic> map) {
     return InventoryItem(
       id: id,
+      userId: map['userId'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
-      category: map['category'] ?? 'Other',
+      quantity: (map['quantity'] ?? 0).toDouble(),
+      unit: map['unit'] ?? '',
+      category: map['category'] ?? '',
       type: InventoryType.values.firstWhere(
-        (e) => e.toString() == 'InventoryType.${map['type']}',
+        (e) => e.toString().split('.').last == (map['type'] ?? 'other'),
         orElse: () => InventoryType.other,
       ),
-      quantity: (map['quantity'] ?? 0).toDouble(),
-      unit: map['unit'] ?? 'units',
       price: (map['price'] ?? 0).toDouble(),
       imageUrls: List<String>.from(map['imageUrls'] ?? []),
-      ownerId: map['ownerId'] ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (map['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      condition: map['condition'] != null 
-          ? ItemCondition.values.firstWhere(
-              (e) => e.toString() == 'ItemCondition.${map['condition']}',
-              orElse: () => ItemCondition.good,
-            ) 
-          : null,
-      manufacturer: map['manufacturer'],
-      modelNumber: map['modelNumber'],
-      purchaseDate: (map['purchaseDate'] as Timestamp?)?.toDate(),
       expiryDate: (map['expiryDate'] as Timestamp?)?.toDate(),
-      isForSale: map['isForSale'] ?? false,
-      marketplaceProductId: map['marketplaceProductId'],
+      supplier: map['supplier'],
+      totalValue: (map['totalValue'] ?? 0).toDouble(),
+      batchNumber: map['batchNumber'],
+      stockStatus: map['stockStatus'] ?? 'Optimal',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId,
       'name': name,
       'description': description,
-      'category': category,
-      'type': type.toString().split('.').last,
       'quantity': quantity,
       'unit': unit,
+      'category': category,
+      'type': type.toString().split('.').last,
       'price': price,
       'imageUrls': imageUrls,
-      'ownerId': ownerId,
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      'condition': condition?.toString().split('.').last,
-      'manufacturer': manufacturer,
-      'modelNumber': modelNumber,
-      'purchaseDate': purchaseDate != null ? Timestamp.fromDate(purchaseDate!) : null,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
       'expiryDate': expiryDate != null ? Timestamp.fromDate(expiryDate!) : null,
-      'isForSale': isForSale,
-      'marketplaceProductId': marketplaceProductId,
+      'supplier': supplier,
+      'totalValue': quantity * price, // Auto-calculated
+      'batchNumber': batchNumber,
+      'stockStatus':
+          quantity < 5 ? 'Critical' : (quantity < 15 ? 'Low' : 'Optimal'),
     };
+  }
+
+  InventoryItem copyWith({
+    String? id,
+    String? userId,
+    String? name,
+    String? description,
+    double? quantity,
+    String? unit,
+    String? category,
+    InventoryType? type,
+    double? price,
+    List<String>? imageUrls,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? expiryDate,
+    String? supplier,
+    double? totalValue,
+    String? batchNumber,
+    String? stockStatus,
+  }) {
+    return InventoryItem(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      category: category ?? this.category,
+      type: type ?? this.type,
+      price: price ?? this.price,
+      imageUrls: imageUrls ?? this.imageUrls,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      expiryDate: expiryDate ?? this.expiryDate,
+      supplier: supplier ?? this.supplier,
+      totalValue: totalValue ?? this.totalValue,
+      batchNumber: batchNumber ?? this.batchNumber,
+      stockStatus: stockStatus ?? this.stockStatus,
+    );
   }
 }

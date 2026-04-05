@@ -11,6 +11,10 @@ class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Caching
+  final Map<String, List<OrderModelFile.OrderModel>> _buyerOrdersCache = {};
+  final Map<String, List<OrderModelFile.OrderModel>> _sellerOrdersCache = {};
+
   // Create a new order
   Future<String> createOrder({
     required Product product,
@@ -34,14 +38,15 @@ class OrderService {
         productId: product.id,
         productName: product.name,
         productCategory: product.category,
-        productImageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
+        productImageUrl:
+            product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
         buyerId: user.uid,
         buyerName: user.displayName ?? user.email?.split('@')[0] ?? 'Buyer',
         buyerPhone: buyerPhone,
         buyerAddress: buyerAddress,
         sellerId: product.sellerId,
         sellerName: product.sellerName,
-        sellerPhone: '', // Will be fetched from seller profile
+        sellerPhone: '',
         unitPrice: product.price,
         quantity: quantity,
         unit: product.unit,
@@ -51,7 +56,7 @@ class OrderService {
         deliveryType: deliveryType,
         deliveryAddress: deliveryAddress,
         orderDate: DateTime.now(),
-        createdAt: DateTime.now(), // Add this required parameter
+        createdAt: DateTime.now(),
         notes: notes,
         paymentMethod: paymentMethod,
         statusUpdates: [
@@ -76,7 +81,7 @@ class OrderService {
 
       // Create order notifications for seller
       await _createOrderNotification(
-        sellerId: product.sellerId,
+        userId: product.sellerId,
         orderId: orderId,
         message: 'New order received for ${product.name}',
         type: 'new_order',
@@ -102,10 +107,10 @@ class OrderService {
       final orderDoc = await _firestore.collection('orders').doc(orderId).get();
       if (!orderDoc.exists) throw Exception('Order not found');
 
-      final order = OrderModelFile.OrderModel.fromMap(orderId, orderDoc.data()!);
-      
-      // Check permissions - only seller or admin can update
-      if (order.sellerId != user.uid) {
+      final order =
+          OrderModelFile.OrderModel.fromMap(orderId, orderDoc.data()!);
+
+      if (order.sellerId != user.uid && order.buyerId != user.uid) {
         throw Exception('Unauthorized to update this order');
       }
 
@@ -117,12 +122,15 @@ class OrderService {
         updatedBy: user.uid,
       );
 
-      final updatedStatusUpdates = List<OrderModelFile.OrderStatusUpdate>.from(order.statusUpdates)
-        ..add(statusUpdate);
+      final updatedStatusUpdates =
+          List<OrderModelFile.OrderStatusUpdate>.from(order.statusUpdates)
+            ..add(statusUpdate);
 
       final updateData = <String, dynamic>{
         'status': newStatus.toString().split('.').last,
-        'statusUpdates': updatedStatusUpdates.map((update) => update.toMap()).toList(),
+        'statusUpdates':
+            updatedStatusUpdates.map((update) => update.toMap()).toList(),
+        'updatedAt': now.millisecondsSinceEpoch,
       };
 
       // Add timestamp fields based on status
@@ -138,14 +146,14 @@ class OrderService {
           break;
         case OrderModelFile.OrderStatus.delivered:
           updateData['deliveredDate'] = now.millisecondsSinceEpoch;
-          updateData['paymentStatus'] = OrderModelFile.PaymentStatus.paid.toString().split('.').last;
+          updateData['paymentStatus'] =
+              OrderModelFile.PaymentStatus.paid.toString().split('.').last;
           break;
         case OrderModelFile.OrderStatus.cancelled:
           updateData['cancelledDate'] = now.millisecondsSinceEpoch;
           if (message != null) {
             updateData['cancellationReason'] = message;
           }
-          // Restore product quantity
           await _firestore.collection('products').doc(order.productId).update({
             'quantity': FieldValue.increment(order.quantity),
           });
@@ -156,11 +164,14 @@ class OrderService {
 
       await _firestore.collection('orders').doc(orderId).update(updateData);
 
-      // Create notification for buyer
+      // Notify the other party
+      final notifyId =
+          user.uid == order.buyerId ? order.sellerId : order.buyerId;
       await _createOrderNotification(
-        sellerId: order.buyerId,
+        userId: notifyId,
         orderId: orderId,
-        message: 'Your order has been ${newStatus.displayName.toLowerCase()}',
+        message:
+            'Order #${orderId.substring(0, 5)} has been ${newStatus.displayName.toLowerCase()}',
         type: 'order_update',
       );
     } catch (e) {
@@ -168,92 +179,42 @@ class OrderService {
     }
   }
 
-  // Get orders for buyer
-  Stream<List<OrderModelFile.OrderModel>> getBuyerOrders() {
+  // Reactive Stream for Buyer Orders (Real-time & High Performance)
+  Stream<List<OrderModelFile.OrderModel>> getBuyerOrdersStream() {
     final user = _auth.currentUser;
-    if (user == null) {
-      return Stream.value([]);
-    }
+    if (user == null) return Stream.value([]);
 
-    try {
-      return _firestore
-          .collection('orders')
-          .where('buyerId', isEqualTo: user.uid)
-          .orderBy('orderDate', descending: true)
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          try {
-            return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-          } catch (e) {
-            print('Error parsing order ${doc.id}: $e');
-            // Return a dummy order or skip? Let's skip invalid ones
-            return null;
-          }
-        }).whereType<OrderModelFile.OrderModel>().toList();
-      }).handleError((error) {
-        print('Firestore error in getBuyerOrders: $error');
-        // If index error, try without ordering as fallback
-        if (error.toString().contains('FAILED_PRECONDITION')) {
-           return _firestore
-            .collection('orders')
-            .where('buyerId', isEqualTo: user.uid)
-            .snapshots()
-            .map((snapshot) {
-              final list = snapshot.docs.map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data())).toList();
-              list.sort((a, b) => b.orderDate.compareTo(a.orderDate));
-              return list;
-            });
-        }
-        return Stream.value(<OrderModelFile.OrderModel>[]);
-      });
-    } catch (e) {
-      print('Exception in getBuyerOrders: $e');
-      return Stream.value([]);
-    }
+    return _firestore
+        .collection('orders')
+        .where('buyerId', isEqualTo: user.uid)
+        .orderBy('orderDate', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      final orders = snapshot.docs
+          .map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data()))
+          .toList();
+      _buyerOrdersCache[user.uid] = orders;
+      return orders;
+    });
   }
 
-  // Get orders for seller
-  Stream<List<OrderModelFile.OrderModel>> getSellerOrders() {
+  // Reactive Stream for Seller Orders
+  Stream<List<OrderModelFile.OrderModel>> getSellerOrdersStream() {
     final user = _auth.currentUser;
-    if (user == null) {
-      return Stream.value([]);
-    }
+    if (user == null) return Stream.value([]);
 
-    try {
-      return _firestore
-          .collection('orders')
-          .where('sellerId', isEqualTo: user.uid)
-          .orderBy('orderDate', descending: true)
-          .snapshots()
-          .map((snapshot) {
-        return snapshot.docs.map((doc) {
-          try {
-            return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-          } catch (e) {
-            print('Error parsing order ${doc.id}: $e');
-            return null;
-          }
-        }).whereType<OrderModelFile.OrderModel>().toList();
-      }).handleError((error) {
-        print('Firestore error in getSellerOrders: $error');
-        if (error.toString().contains('FAILED_PRECONDITION')) {
-           return _firestore
-            .collection('orders')
-            .where('sellerId', isEqualTo: user.uid)
-            .snapshots()
-            .map((snapshot) {
-              final list = snapshot.docs.map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data())).toList();
-              list.sort((a, b) => b.orderDate.compareTo(a.orderDate));
-              return list;
-            });
-        }
-        return Stream.value(<OrderModelFile.OrderModel>[]);
-      });
-    } catch (e) {
-      print('Exception in getSellerOrders: $e');
-      return Stream.value([]);
-    }
+    return _firestore
+        .collection('orders')
+        .where('sellerId', isEqualTo: user.uid)
+        .orderBy('orderDate', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      final orders = snapshot.docs
+          .map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data()))
+          .toList();
+      _sellerOrdersCache[user.uid] = orders;
+      return orders;
+    });
   }
 
   // Get order by ID
@@ -269,186 +230,112 @@ class OrderService {
     }
   }
 
-  // Get orders by status
-  Stream<List<OrderModelFile.OrderModel>> getOrdersByStatus(OrderModelFile.OrderStatus status, {bool forSeller = false}) {
+  // Statistics for Dashboard (Fast)
+  Future<Map<String, dynamic>> getBuyerStats() async {
     final user = _auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
+    if (user == null) return {};
 
-    final field = forSeller ? 'sellerId' : 'buyerId';
-    
-    return _firestore
-        .collection('orders')
-        .where(field, isEqualTo: user.uid)
-        .where('status', isEqualTo: status.toString().split('.').last)
-        .orderBy('orderDate', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-      }).toList();
-    });
+    final orders = _buyerOrdersCache[user.uid] ??
+        (await _firestore
+                .collection('orders')
+                .where('buyerId', isEqualTo: user.uid)
+                .get())
+            .docs
+            .map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data()))
+            .toList();
+
+    double totalSpent = 0;
+    int activeCount = 0;
+    for (var o in orders) {
+      if (o.status != OrderModelFile.OrderStatus.delivered &&
+          o.status != OrderModelFile.OrderStatus.cancelled) {
+        activeCount++;
+      }
+      if (o.status == OrderModelFile.OrderStatus.delivered) {
+        totalSpent += o.totalAmount;
+      }
+    }
+
+    return {
+      'totalOrders': orders.length,
+      'activeOrders': activeCount,
+      'totalSpent': totalSpent,
+    };
   }
 
-  // Cancel order
-  Future<void> cancelOrder(String orderId, String reason) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
+  // Search orders (from cache if possible for speed)
+  Future<List<OrderModelFile.OrderModel>> searchOrders(String query,
+      {bool forSeller = false}) async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
 
-      final orderDoc = await _firestore.collection('orders').doc(orderId).get();
-      if (!orderDoc.exists) throw Exception('Order not found');
+    List<OrderModelFile.OrderModel> source = (forSeller
+            ? _sellerOrdersCache[user.uid]
+            : _buyerOrdersCache[user.uid]) ??
+        [];
 
-      final order = OrderModelFile.OrderModel.fromMap(orderId, orderDoc.data()!);
-      
-      // Check if user can cancel (buyer or seller)
-      if (order.buyerId != user.uid && order.sellerId != user.uid) {
-        throw Exception('Unauthorized to cancel this order');
+    if (source.isEmpty) {
+      final field = forSeller ? 'sellerId' : 'buyerId';
+      final snapshot = await _firestore
+          .collection('orders')
+          .where(field, isEqualTo: user.uid)
+          .get();
+      source = snapshot.docs
+          .map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data()))
+          .toList();
+      if (forSeller) {
+        _sellerOrdersCache[user.uid] = source;
+      } else {
+        _buyerOrdersCache[user.uid] = source;
       }
+    }
 
-      // Check if order can be cancelled
-      if (order.status == OrderModelFile.OrderStatus.delivered || 
-          order.status == OrderModelFile.OrderStatus.cancelled) {
-        throw Exception('Order cannot be cancelled');
-      }
+    if (query.isEmpty) return source;
 
-      await updateOrderStatus(
+    return source
+        .where((o) =>
+            o.productName.toLowerCase().contains(query.toLowerCase()) ||
+            o.id.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+  }
+
+  Future<void> cancelOrder(String orderId, [String? reason]) async {
+    await updateOrderStatus(
         orderId: orderId,
         newStatus: OrderModelFile.OrderStatus.cancelled,
-        message: reason,
-      );
-    } catch (e) {
-      throw Exception('Failed to cancel order: $e');
-    }
+        message: reason);
   }
 
-  // Get order statistics for seller
-  Future<Map<String, dynamic>> getSellerOrderStats() async {
+  Future<void> addOrderNote(String orderId, String note) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final orders = await _firestore
-          .collection('orders')
-          .where('sellerId', isEqualTo: user.uid)
-          .get();
-
-      int totalOrders = orders.docs.length;
-      int pendingOrders = 0;
-      int completedOrders = 0;
-      int cancelledOrders = 0;
-      double totalRevenue = 0;
-      double pendingRevenue = 0;
-
-      for (final doc in orders.docs) {
-        final order = OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-        
-        switch (order.status) {
-          case OrderModelFile.OrderStatus.pending:
-          case OrderModelFile.OrderStatus.confirmed:
-          case OrderModelFile.OrderStatus.processing:
-          case OrderModelFile.OrderStatus.shipped:
-          case OrderModelFile.OrderStatus.outForDelivery:
-            pendingOrders++;
-            pendingRevenue += order.totalAmount;
-            break;
-          case OrderModelFile.OrderStatus.delivered:
-            completedOrders++;
-            totalRevenue += order.totalAmount;
-            break;
-          case OrderModelFile.OrderStatus.cancelled:
-          case OrderModelFile.OrderStatus.refunded:
-            cancelledOrders++;
-            break;
-        }
-      }
-
-      return {
-        'totalOrders': totalOrders,
-        'pendingOrders': pendingOrders,
-        'completedOrders': completedOrders,
-        'cancelledOrders': cancelledOrders,
-        'totalRevenue': totalRevenue,
-        'pendingRevenue': pendingRevenue,
-        'completionRate': totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0,
-      };
+      await _firestore.collection('orders').doc(orderId).update({
+        'notes': note,
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      });
     } catch (e) {
-      throw Exception('Failed to get order statistics: $e');
+      throw Exception('Failed to add order note: $e');
     }
   }
 
-  // Get order statistics for buyer
-  Future<Map<String, dynamic>> getBuyerOrderStats() async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final orders = await _firestore
-          .collection('orders')
-          .where('buyerId', isEqualTo: user.uid)
-          .get();
-
-      int totalOrders = orders.docs.length;
-      int activeOrders = 0;
-      int completedOrders = 0;
-      int cancelledOrders = 0;
-      double totalSpent = 0;
-
-      for (final doc in orders.docs) {
-        final order = OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-        
-        switch (order.status) {
-          case OrderModelFile.OrderStatus.pending:
-          case OrderModelFile.OrderStatus.confirmed:
-          case OrderModelFile.OrderStatus.processing:
-          case OrderModelFile.OrderStatus.shipped:
-          case OrderModelFile.OrderStatus.outForDelivery:
-            activeOrders++;
-            break;
-          case OrderModelFile.OrderStatus.delivered:
-            completedOrders++;
-            totalSpent += order.totalAmount;
-            break;
-          case OrderModelFile.OrderStatus.cancelled:
-          case OrderModelFile.OrderStatus.refunded:
-            cancelledOrders++;
-            break;
-        }
-      }
-
-      return {
-        'totalOrders': totalOrders,
-        'activeOrders': activeOrders,
-        'completedOrders': completedOrders,
-        'cancelledOrders': cancelledOrders,
-        'totalSpent': totalSpent,
-      };
-    } catch (e) {
-      throw Exception('Failed to get buyer statistics: $e');
-    }
-  }
-
-  // Create order notification
+  // Create notification
   Future<void> _createOrderNotification({
-    required String sellerId,
+    required String userId,
     required String orderId,
     required String message,
     required String type,
   }) async {
     try {
       await _firestore.collection('notifications').add({
-        'userId': sellerId,
+        'userId': userId,
         'orderId': orderId,
         'message': message,
         'type': type,
         'isRead': false,
         'timestamp': FieldValue.serverTimestamp(),
       });
-    } catch (e) {
-      // Silent fail for notifications
-    }
+    } catch (_) {}
   }
 
-  // Get default status message
   String _getDefaultStatusMessage(OrderModelFile.OrderStatus status) {
     switch (status) {
       case OrderModelFile.OrderStatus.pending:
@@ -467,82 +354,6 @@ class OrderService {
         return 'Order has been cancelled';
       case OrderModelFile.OrderStatus.refunded:
         return 'Order amount has been refunded';
-    }
-  }
-
-  // Search orders
-  Future<List<OrderModelFile.OrderModel>> searchOrders(String query, {bool forSeller = false}) async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) throw Exception('User not authenticated');
-
-      final field = forSeller ? 'sellerId' : 'buyerId';
-      
-      final orders = await _firestore
-          .collection('orders')
-          .where(field, isEqualTo: user.uid)
-          .get();
-
-      return orders.docs
-          .map((doc) => OrderModelFile.OrderModel.fromMap(doc.id, doc.data()))
-          .where((order) =>
-              order.productName.toLowerCase().contains(query.toLowerCase()) ||
-              order.id.toLowerCase().contains(query.toLowerCase()) ||
-              (forSeller ? order.buyerName : order.sellerName)
-                  .toLowerCase()
-                  .contains(query.toLowerCase()))
-          .toList();
-    } catch (e) {
-      throw Exception('Failed to search orders: $e');
-    }
-  }
-
-  // Update payment status
-  Future<void> updatePaymentStatus({
-    required String orderId,
-    required OrderModelFile.PaymentStatus paymentStatus,
-    String? transactionId,
-  }) async {
-    try {
-      final updateData = <String, dynamic>{
-        'paymentStatus': paymentStatus.toString().split('.').last,
-      };
-
-      if (transactionId != null) {
-        updateData['transactionId'] = transactionId;
-      }
-
-      await _firestore.collection('orders').doc(orderId).update(updateData);
-    } catch (e) {
-      throw Exception('Failed to update payment status: $e');
-    }
-  }
-
-  // Get orders by buyer ID 
-  Future<List<OrderModelFile.OrderModel>> getOrdersByBuyer(String buyerId) async {
-    try {
-      final orders = await _firestore
-          .collection('orders')
-          .where('buyerId', isEqualTo: buyerId)
-          .orderBy('orderDate', descending: true)
-          .get();
-
-      return orders.docs.map((doc) {
-        return OrderModelFile.OrderModel.fromMap(doc.id, doc.data());
-      }).toList();
-    } catch (e) {
-      throw Exception('Failed to get orders by buyer: $e');
-    }
-  }
-
-  // Add order note
-  Future<void> addOrderNote(String orderId, String note) async {
-    try {
-      await _firestore.collection('orders').doc(orderId).update({
-        'notes': note,
-      });
-    } catch (e) {
-      throw Exception('Failed to add order note: $e');
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'dart:math';
 
 /// Production-ready Security Service with comprehensive security features
 class SecurityService {
@@ -16,14 +17,14 @@ class SecurityService {
   // Track login attempts to prevent brute force
   final Map<String, int> _loginAttempts = {};
   final Map<String, DateTime> _lockoutUntil = {};
-  
+
   static const int maxLoginAttempts = 5;
   static const Duration lockoutDuration = Duration(minutes: 30);
 
   /// Check if account is currently locked
   bool isAccountLocked(String email) {
     if (!_lockoutUntil.containsKey(email)) return false;
-    
+
     final lockoutTime = _lockoutUntil[email]!;
     if (DateTime.now().isAfter(lockoutTime)) {
       _lockoutUntil.remove(email);
@@ -36,7 +37,7 @@ class SecurityService {
   /// Record failed login attempt
   void recordFailedLogin(String email) {
     _loginAttempts[email] = (_loginAttempts[email] ?? 0) + 1;
-    
+
     if (_loginAttempts[email]! >= maxLoginAttempts) {
       _lockoutUntil[email] = DateTime.now().add(lockoutDuration);
       _logSecurityEvent(
@@ -88,7 +89,7 @@ class SecurityService {
   }) async {
     try {
       final user = _auth.currentUser;
-      
+
       await _firestore.collection('security_logs').add({
         'eventType': eventType,
         'description': description,
@@ -116,7 +117,7 @@ class SecurityService {
 
       final userData = userDoc.data()!;
       final role = userData['role'] ?? 'user';
-      
+
       // Admin has all permissions
       if (role == 'admin') return true;
 
@@ -124,16 +125,19 @@ class SecurityService {
       switch (operation) {
         case 'edit_product':
         case 'delete_product':
-          final productDoc = await _firestore.collection('products').doc(resourceId).get();
+          final productDoc =
+              await _firestore.collection('products').doc(resourceId).get();
           if (!productDoc.exists) return false;
           return productDoc.data()!['sellerId'] == user.uid;
 
         case 'update_order':
         case 'cancel_order':
-          final orderDoc = await _firestore.collection('orders').doc(resourceId).get();
+          final orderDoc =
+              await _firestore.collection('orders').doc(resourceId).get();
           if (!orderDoc.exists) return false;
           final orderData = orderDoc.data()!;
-          return orderData['sellerId'] == user.uid || orderData['buyerId'] == user.uid;
+          return orderData['sellerId'] == user.uid ||
+              orderData['buyerId'] == user.uid;
 
         default:
           return false;
@@ -149,13 +153,15 @@ class SecurityService {
   }
 
   /// Detect suspicious activity
-  Future<void> detectSuspiciousActivity(String activityType, Map<String, dynamic> details) async {
+  Future<void> detectSuspiciousActivity(
+      String activityType, Map<String, dynamic> details) async {
     try {
       final user = _auth.currentUser;
-      
+
       // Check for rapid repeated actions
-      final suspiciousPatterns = await _checkSuspiciousPatterns(activityType, details);
-      
+      final suspiciousPatterns =
+          await _checkSuspiciousPatterns(activityType, details);
+
       if (suspiciousPatterns) {
         await _logSecurityEvent(
           'suspicious_activity',
@@ -164,7 +170,8 @@ class SecurityService {
         );
 
         // Optionally trigger additional security measures
-        await _triggerSecurityAlert(user?.uid ?? 'unknown', activityType, details);
+        await _triggerSecurityAlert(
+            user?.uid ?? 'unknown', activityType, details);
       }
     } catch (e) {
       debugPrint('Error detecting suspicious activity: $e');
@@ -172,7 +179,8 @@ class SecurityService {
   }
 
   /// Check for suspicious patterns
-  Future<bool> _checkSuspiciousPatterns(String activityType, Map<String, dynamic> details) async {
+  Future<bool> _checkSuspiciousPatterns(
+      String activityType, Map<String, dynamic> details) async {
     // Implement pattern detection logic
     // For example: too many requests in short time, unusual access patterns, etc.
     // This is a placeholder - implement based on specific needs
@@ -180,7 +188,8 @@ class SecurityService {
   }
 
   /// Trigger security alert
-  Future<void> _triggerSecurityAlert(String userId, String alertType, Map<String, dynamic> details) async {
+  Future<void> _triggerSecurityAlert(
+      String userId, String alertType, Map<String, dynamic> details) async {
     try {
       await _firestore.collection('security_alerts').add({
         'userId': userId,
@@ -195,7 +204,8 @@ class SecurityService {
       await _firestore.collection('notifications').add({
         'userId': userId,
         'title': 'Security Alert',
-        'message': 'Suspicious activity detected on your account. Please review.',
+        'message':
+            'Suspicious activity detected on your account. Please review.',
         'type': 'security',
         'timestamp': FieldValue.serverTimestamp(),
         'isRead': false,
@@ -233,11 +243,100 @@ class SecurityService {
     return input
         .replaceAll(RegExp(r'<script.*?>.*?</script>'), '')
         .replaceAll(RegExp(r'<.*?>'), '')
+        .replaceAll(
+            RegExp(r"\b(DROP|DELETE|UPDATE|INSERT|SELECT)\b",
+                caseSensitive: false),
+            '')
+        .replaceAll('--', '')
         .trim();
   }
 
+  /// Validate email format
+  bool isValidEmail(String email) {
+    return RegExp(
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(email);
+  }
+
+  /// Validate phone number format
+  bool isValidPhoneNumber(String phone) {
+    return RegExp(r'^\+?[0-9]{10,12}$').hasMatch(phone.replaceAll(' ', ''));
+  }
+
+  /// Validate URL format
+  bool isValidUrl(String url) {
+    return Uri.tryParse(url)?.hasAbsolutePath ?? false;
+  }
+
+  /// Check if password meets strength requirements
+  bool isStrongPassword(String password) {
+    if (password.length < 8) return false;
+    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
+    final hasLowercase = password.contains(RegExp(r'[a-z]'));
+    final hasDigits = password.contains(RegExp(r'[0-9]'));
+    final hasSpecialCharacters =
+        password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    return hasUppercase && hasLowercase && hasDigits && hasSpecialCharacters;
+  }
+
+  /// Hash password with a salt for security
+  String hashPassword(String password) {
+    // Generate a random salt
+    final salt = _generateRandomBytes(16);
+    final saltBase64 = base64Encode(salt);
+
+    // Combine salt + password and hash
+    final bytes = utf8.encode(saltBase64 + password);
+    final hash = sha256.convert(bytes);
+
+    // Return format: salt:hash
+    return '$saltBase64:${hash.toString()}';
+  }
+
+  /// Verify a password against its hash
+  bool verifyPassword(String password, String storedHash) {
+    try {
+      final parts = storedHash.split(':');
+      if (parts.length != 2) return false;
+
+      final saltBase64 = parts[0];
+      final originalHash = parts[1];
+
+      final bytes = utf8.encode(saltBase64 + password);
+      final hash = sha256.convert(bytes);
+
+      return _constantTimeCompare(
+          utf8.encode(originalHash), utf8.encode(hash.toString()));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Rate limiting storage
+  final Map<String, List<DateTime>> _requestHistory = {};
+
+  /// Check if an action is within rate limits
+  bool checkRateLimit(String identifier, int limit,
+      {Duration window = const Duration(minutes: 1)}) {
+    final now = DateTime.now();
+    final history = _requestHistory[identifier] ?? [];
+
+    // Remove old entries
+    final recentRequests =
+        history.where((dt) => now.difference(dt) < window).toList();
+
+    if (recentRequests.length >= limit) {
+      return false;
+    }
+
+    recentRequests.add(now);
+    _requestHistory[identifier] = recentRequests;
+    return true;
+  }
+
   /// Validate data integrity
-  bool validateDataIntegrity(Map<String, dynamic> data, List<String> requiredFields) {
+  bool validateDataIntegrity(
+      Map<String, dynamic> data, List<String> requiredFields) {
     for (final field in requiredFields) {
       if (!data.containsKey(field) || data[field] == null) {
         return false;
@@ -251,17 +350,17 @@ class SecurityService {
     try {
       // Ensure key is 32 bytes for AES-256
       final keyBytes = _deriveKey(key);
-      
+
       // Generate random IV (Initialization Vector)
       final iv = _generateRandomBytes(16);
-      
+
       // Combine IV + encrypted data for storage
       final encrypted = iv + utf8.encode(data);
-      
+
       // Use HMAC-SHA256 for authentication
       final hmacKey = Hmac(sha256, keyBytes);
       final hmac = hmacKey.convert(encrypted);
-      
+
       // Format: HMAC + IV + Data
       final result = hmac.bytes + encrypted;
       return base64Encode(result);
@@ -276,23 +375,23 @@ class SecurityService {
     try {
       final keyBytes = _deriveKey(key);
       final data = base64Decode(encryptedData);
-      
+
       // Extract HMAC (first 32 bytes)
       final storedHmac = data.sublist(0, 32);
       final payload = data.sublist(32);
-      
+
       // Verify HMAC
       final hmacKey = Hmac(sha256, keyBytes);
       final calculatedHmac = hmacKey.convert(payload);
-      
+
       if (!_constantTimeCompare(storedHmac, calculatedHmac.bytes)) {
         throw Exception('Data integrity check failed');
       }
-      
+
       // Extract IV and encrypted data
       final iv = payload.sublist(0, 16);
       final encryptedBytes = payload.sublist(16);
-      
+
       // Decrypt
       return utf8.decode(encryptedBytes);
     } catch (e) {
@@ -300,20 +399,20 @@ class SecurityService {
       return '';
     }
   }
-  
+
   /// Derive a consistent 32-byte key from input
   List<int> _deriveKey(String key) {
     final keyBytes = utf8.encode(key);
     final hash = sha256.convert(keyBytes);
     return hash.bytes;
   }
-  
+
   /// Generate cryptographically secure random bytes
   List<int> _generateRandomBytes(int length) {
     final random = Random.secure();
     return List<int>.generate(length, (_) => random.nextInt(256));
   }
-  
+
   /// Constant-time comparison to prevent timing attacks
   bool _constantTimeCompare(List<int> a, List<int> b) {
     if (a.length != b.length) return false;
@@ -332,7 +431,7 @@ class SecurityService {
 
       // Check for unusual login locations, devices, or patterns
       // This would require backend service to track IPs and locations
-      
+
       final recentLogins = await _firestore
           .collection('security_logs')
           .where('userId', isEqualTo: user.uid)
@@ -387,14 +486,15 @@ class SecurityService {
         final userData = userDoc.data()!;
         if (userData['phoneNumber'] != null) score += 10;
         if (userData['profilePicture'] != null) score += 10;
-        
+
         // Check for 2FA enabled (+30 points)
         if (userData['twoFactorEnabled'] == true) score += 30;
 
         // Check password age (+20 points if recent)
         final lastPasswordChange = userData['lastPasswordChange'] as Timestamp?;
         if (lastPasswordChange != null) {
-          final daysSinceChange = DateTime.now().difference(lastPasswordChange.toDate()).inDays;
+          final daysSinceChange =
+              DateTime.now().difference(lastPasswordChange.toDate()).inDays;
           if (daysSinceChange < 90) score += 20;
         }
       }
@@ -403,11 +503,12 @@ class SecurityService {
       final recentAlerts = await _firestore
           .collection('security_alerts')
           .where('userId', isEqualTo: user.uid)
-          .where('timestamp', isGreaterThan: Timestamp.fromDate(
-            DateTime.now().subtract(const Duration(days: 30)),
-          ))
+          .where('timestamp',
+              isGreaterThan: Timestamp.fromDate(
+                DateTime.now().subtract(const Duration(days: 30)),
+              ))
           .get();
-      
+
       score = (score - (recentAlerts.docs.length * 10)).clamp(0, 100);
 
       return score;
@@ -432,7 +533,7 @@ class SecurityService {
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
       if (userDoc.exists) {
         final userData = userDoc.data()!;
-        
+
         if (userData['twoFactorEnabled'] != true) {
           recommendations.add('Enable two-factor authentication');
         }
@@ -442,8 +543,9 @@ class SecurityService {
         }
 
         final lastPasswordChange = userData['lastPasswordChange'] as Timestamp?;
-        if (lastPasswordChange == null || 
-            DateTime.now().difference(lastPasswordChange.toDate()).inDays > 90) {
+        if (lastPasswordChange == null ||
+            DateTime.now().difference(lastPasswordChange.toDate()).inDays >
+                90) {
           recommendations.add('Update your password regularly (every 90 days)');
         }
 

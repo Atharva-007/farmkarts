@@ -6,38 +6,38 @@ import 'package:flutter/foundation.dart';
 class BatchProcessor {
   static const int maxBatchSize = 500;
   static const Duration batchDelay = Duration(milliseconds: 100);
-  
+
   final FirebaseFirestore _firestore;
   final List<_BatchOperation> _operations = [];
   Timer? _batchTimer;
-  
+
   BatchProcessor(this._firestore);
-  
+
   /// Add operation to batch
   Future<void> addOperation(_BatchOperation operation) async {
     _operations.add(operation);
-    
+
     if (_operations.length >= maxBatchSize) {
       await _processBatch();
     } else {
       _scheduleBatch();
     }
   }
-  
+
   void _scheduleBatch() {
     _batchTimer?.cancel();
     _batchTimer = Timer(batchDelay, _processBatch);
   }
-  
+
   Future<void> _processBatch() async {
     if (_operations.isEmpty) return;
-    
+
     _batchTimer?.cancel();
-    
+
     final batch = _firestore.batch();
     final operationsToProcess = List<_BatchOperation>.from(_operations);
     _operations.clear();
-    
+
     try {
       for (final operation in operationsToProcess) {
         switch (operation.type) {
@@ -52,7 +52,7 @@ class BatchProcessor {
             break;
         }
       }
-      
+
       await batch.commit();
       debugPrint('Batch processed: ${operationsToProcess.length} operations');
     } catch (e) {
@@ -62,12 +62,12 @@ class BatchProcessor {
       rethrow;
     }
   }
-  
+
   /// Flush all pending operations
   Future<void> flush() async {
     await _processBatch();
   }
-  
+
   void dispose() {
     _batchTimer?.cancel();
   }
@@ -79,10 +79,9 @@ class _BatchOperation {
   final DocumentReference reference;
   final _OperationType type;
   final Map<String, dynamic>? data;
-  
+
   _BatchOperation({
     required this.reference,
     required this.type,
-    this.data,
   });
 }

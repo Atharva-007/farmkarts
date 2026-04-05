@@ -5,13 +5,14 @@ import 'package:flutter/scheduler.dart';
 
 /// Performance optimization utility for the FarmKarts app
 class PerformanceOptimizer {
-  static final PerformanceOptimizer _instance = PerformanceOptimizer._internal();
+  static final PerformanceOptimizer _instance =
+      PerformanceOptimizer._internal();
   factory PerformanceOptimizer() => _instance;
   PerformanceOptimizer._internal();
 
   /// Debounce helper to prevent excessive function calls
   Timer? _debounceTimer;
-  
+
   void debounce(Duration duration, VoidCallback action) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(duration, action);
@@ -19,7 +20,7 @@ class PerformanceOptimizer {
 
   /// Throttle helper to limit function call frequency
   DateTime? _lastThrottle;
-  
+
   void throttle(Duration duration, VoidCallback action) {
     final now = DateTime.now();
     if (_lastThrottle == null || now.difference(_lastThrottle!) >= duration) {
@@ -29,7 +30,8 @@ class PerformanceOptimizer {
   }
 
   /// Run heavy computation in isolate to prevent UI blocking
-  static Future<T> runInBackground<T>(ComputeCallback<dynamic, T> callback, dynamic message) async {
+  static Future<T> runInBackground<T>(
+      ComputeCallback<dynamic, T> callback, dynamic message) async {
     return compute(callback, message);
   }
 
@@ -59,7 +61,9 @@ class PerformanceOptimizer {
       try {
         await precacheImage(NetworkImage(url), context);
       } catch (e) {
-        if (kDebugMode) print('Failed to preload image: $url');
+        if (kDebugMode) {
+          // print('Failed to preload image: $url');
+        }
       }
     }
   }
@@ -80,7 +84,7 @@ class LazyLoader<T> {
   Future<T> get value async {
     if (_value != null) return _value!;
     if (_loadingFuture != null) return _loadingFuture!;
-    
+
     _loadingFuture = _loader();
     _value = await _loadingFuture;
     _loadingFuture = null;
@@ -122,7 +126,7 @@ class MemoryManager {
     ImageOptimizer.clearCache();
     // Force garbage collection hint
     if (kDebugMode) {
-      print('Memory release requested');
+      // print('Memory release requested');
     }
   }
 }

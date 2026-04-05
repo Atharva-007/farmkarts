@@ -64,12 +64,14 @@ service cloud.firestore {
     
     // Inventory
     match /inventory/{itemId} {
-      allow read, write: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Orders
     match /orders/{orderId} {
-      allow read: if isAuthenticated() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
     }
@@ -78,6 +80,14 @@ service cloud.firestore {
     match /notifications/{notificationId} {
       allow read, update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated();
+    }
+    
+    // Price Alerts
+    match /price_alerts/{alertId} {
+      allow read, write: if isAuthenticated() && (
+        (request.method == 'create' && request.resource.data.userId == request.auth.uid) ||
+        (resource != null && resource.data.userId == request.auth.uid)
+      );
     }
     
     // AI Chat Sessions
@@ -97,7 +107,7 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
       
       match /messages/{messageId} {
-        allow read: if isAuthenticated(); // Should check parent but simplified for cost
+        allow read: if isAuthenticated(); 
         allow create: if isAuthenticated();
       }
     }
@@ -130,6 +140,12 @@ service cloud.firestore {
     match /buyer_interests/{interestId} {
       allow read: if isAuthenticated() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || isAdmin());
       allow write: if isAuthenticated() && (request.resource.data.buyerId == request.auth.uid || isAdmin());
+    }
+
+    // Trending Videos
+    match /trending_videos/{videoId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     // Testing - DISABLED for production safety

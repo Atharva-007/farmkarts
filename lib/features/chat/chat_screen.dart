@@ -5,7 +5,6 @@ import '../../models/conversation_model.dart';
 import '../../models/product_model.dart';
 import '../../services/chat_service.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_helper.dart';
 import '../marketplace/product_detail_page.dart';
 
 /// Individual chat screen for seller-buyer communication
@@ -31,7 +30,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final ChatService _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   bool _isLoading = false;
   Conversation? _conversation;
   String? _currentUserId;
@@ -63,7 +62,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -82,45 +81,39 @@ class _ChatScreenState extends State<ChatScreen> {
     return AppBar(
       backgroundColor: AppTheme.getAppBarColor(context),
       foregroundColor: AppTheme.getAppBarTextColor(context),
-      elevation: 1,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
       title: GestureDetector(
         onTap: _showUserProfile,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.white.withOpacity(0.2),
+              radius: 16,
+              backgroundColor:
+                  AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2),
               child: Text(
                 widget.otherUserName?.isNotEmpty == true
                     ? widget.otherUserName![0].toUpperCase()
                     : 'U',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppTheme.getPrimaryAccent(context),
                   fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.otherUserName ?? 'User',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.getAppBarTextColor(context),
-                    ),
-                  ),
-                  Text(
-                    'Tap for profile',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.getAppBarTextColor(context).withOpacity(0.7),
-                    ),
-                  ),
-                ],
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                widget.otherUserName ?? 'User',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -128,7 +121,8 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       actions: [
         PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, color: AppTheme.getAppBarTextColor(context)),
+          icon: Icon(Icons.more_vert,
+              color: AppTheme.getAppBarTextColor(context)),
           onSelected: _handleMenuAction,
           itemBuilder: (context) => [
             const PopupMenuItem(
@@ -183,15 +177,20 @@ class _ChatScreenState extends State<ChatScreen> {
                     errorWidget: (context, url, error) => Container(
                       width: 50,
                       height: 50,
-                      color: isDark ? AppTheme.darkHighlight : Colors.grey.shade200,
-                      child: Icon(Icons.image, color: AppTheme.getSecondaryTextColor(context)),
+                      color: isDark
+                          ? AppTheme.darkHighlight
+                          : Colors.grey.shade200,
+                      child: Icon(Icons.image,
+                          color: AppTheme.getSecondaryTextColor(context)),
                     ),
                   )
                 : Container(
                     width: 50,
                     height: 50,
-                    color: isDark ? AppTheme.darkHighlight : Colors.grey.shade200,
-                    child: Icon(Icons.image, color: AppTheme.getSecondaryTextColor(context)),
+                    color:
+                        isDark ? AppTheme.darkHighlight : Colors.grey.shade200,
+                    child: Icon(Icons.image,
+                        color: AppTheme.getSecondaryTextColor(context)),
                   ),
           ),
           const SizedBox(width: 12),
@@ -218,7 +217,8 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           TextButton(
             onPressed: _viewProduct,
-            child: Text('View', style: TextStyle(color: AppTheme.getPrimaryAccent(context))),
+            child: Text('View',
+                style: TextStyle(color: AppTheme.getPrimaryAccent(context))),
           ),
         ],
       ),
@@ -232,7 +232,8 @@ class _ChatScreenState extends State<ChatScreen> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
-            child: CircularProgressIndicator(color: AppTheme.getPrimaryAccent(context)),
+            child: CircularProgressIndicator(
+                color: AppTheme.getPrimaryAccent(context)),
           );
         }
 
@@ -241,7 +242,7 @@ class _ChatScreenState extends State<ChatScreen> {
         }
 
         final messages = snapshot.data!;
-        
+
         return ListView.builder(
           controller: _scrollController,
           reverse: true,
@@ -250,7 +251,7 @@ class _ChatScreenState extends State<ChatScreen> {
           itemBuilder: (context, index) {
             final message = messages[index];
             final isMe = message.senderId == _currentUserId;
-            
+
             return _buildMessageBubble(message, isMe);
           },
         );
@@ -267,7 +268,8 @@ class _ChatScreenState extends State<ChatScreen> {
           Icon(
             Icons.chat_bubble_outline,
             size: 64,
-            color: AppTheme.getSecondaryTextColor(context).withOpacity(0.3),
+            color:
+                AppTheme.getSecondaryTextColor(context).withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -282,7 +284,8 @@ class _ChatScreenState extends State<ChatScreen> {
           Text(
             'Send a message to begin chatting',
             style: TextStyle(
-              color: AppTheme.getSecondaryTextColor(context).withOpacity(0.7),
+              color: AppTheme.getSecondaryTextColor(context)
+                  .withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -293,7 +296,7 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Build message bubble
   Widget _buildMessageBubble(Message message, bool isMe) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -302,22 +305,27 @@ class _ChatScreenState extends State<ChatScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isMe ? AppTheme.getPrimaryAccent(context) : Theme.of(context).cardColor,
+                color: isMe
+                    ? AppTheme.getPrimaryAccent(context)
+                    : Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
                   bottomLeft: Radius.circular(isMe ? 16 : 4),
                   bottomRight: Radius.circular(isMe ? 4 : 16),
                 ),
-                border: !isMe && isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+                border: !isMe && isDark
+                    ? Border.all(color: AppTheme.getBorderColor(context))
+                    : null,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -450,7 +458,7 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Build image message
   Widget _buildImageMessage(Message message, bool isMe) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -471,7 +479,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 width: 200,
                 height: 150,
                 color: isDark ? AppTheme.darkHighlight : Colors.grey.shade200,
-                child: Icon(Icons.error, color: AppTheme.getSecondaryTextColor(context)),
+                child: Icon(Icons.error,
+                    color: AppTheme.getSecondaryTextColor(context)),
               ),
             ),
           ),
@@ -494,9 +503,10 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withOpacity(0.5),
+        color: Theme.of(context).cardColor.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.3)),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.3)),
       ),
       child: Text(
         message.content,
@@ -513,7 +523,7 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Build message input
   Widget _buildMessageInput() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -542,9 +552,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   style: TextStyle(color: AppTheme.getTextColor(context)),
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
-                    hintStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context).withOpacity(0.6)),
+                    hintStyle: TextStyle(
+                        color: AppTheme.getSecondaryTextColor(context)
+                            .withValues(alpha: 0.6)),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                   ),
                   textCapitalization: TextCapitalization.sentences,
                   onSubmitted: (value) => _sendMessage(),
@@ -595,7 +608,7 @@ class _ChatScreenState extends State<ChatScreen> {
         conversationId: widget.conversationId,
         content: message,
       );
-      
+
       // Scroll to bottom
       _scrollController.animateTo(
         0,
@@ -613,10 +626,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Show bid dialog
   void _showBidDialog() {
     if (widget.product == null) return;
-    
+
     // TODO: Implement bid dialog when BidDialog widget is available
     _showMessage('Bid feature coming soon!');
-    
+
     /* Commented out until BidDialog is implemented
     showModalBottomSheet(
       context: context,
@@ -646,10 +659,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Show user profile
   void _showUserProfile() {
     if (widget.otherUserId == null) return;
-    
+
     // TODO: Implement user profile when dialog and API are available
     _showMessage('User profile feature coming soon!');
-    
+
     /* Commented out until BuyerProfileDialog and rateUser are implemented
     showDialog(
       context: context,
@@ -688,7 +701,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _respondToBid(String messageId, String status) async {
     // TODO: Implement when respondToBid API is available
     _showMessage('Bid response feature coming soon!');
-    
+
     /* Commented out until respondToBid is implemented
     try {
       await _chatService.respondToBid(
@@ -731,7 +744,7 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
     );
-    
+
     /* Commented out until blockUser is implemented
     showDialog(
       context: context,

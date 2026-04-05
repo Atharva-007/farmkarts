@@ -20,7 +20,7 @@ class UniversalAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return SliverAppBar(
       expandedHeight: 120,
       floating: false,
@@ -29,7 +29,8 @@ class UniversalAppBar extends StatelessWidget {
       elevation: 0,
       leading: showBackButton
           ? IconButton(
-              icon: Icon(Icons.arrow_back, color: AppTheme.getAppBarTextColor(context)),
+              icon: Icon(Icons.arrow_back,
+                  color: AppTheme.getAppBarTextColor(context)),
               onPressed: onBackPressed ?? () => Navigator.pop(context),
               tooltip: 'Back',
               splashRadius: 24,
@@ -38,11 +39,14 @@ class UniversalAppBar extends StatelessWidget {
               builder: (context) => Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.25),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.menu, color: AppTheme.getAppBarTextColor(context), size: 26),
+                  icon: Icon(Icons.menu,
+                      color: AppTheme.getAppBarTextColor(context), size: 26),
                   onPressed: () {
                     Scaffold.of(context).openDrawer();
                   },
@@ -68,7 +72,7 @@ class UniversalAppBar extends StatelessWidget {
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16, right: 16),
         background: Container(
           decoration: BoxDecoration(
-            gradient: isDark 
+            gradient: isDark
                 ? LinearGradient(
                     colors: [AppTheme.darkSurface, AppTheme.darkBackground],
                     begin: Alignment.topLeft,
@@ -85,7 +89,9 @@ class UniversalAppBar extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkPrimaryGreen.withOpacity(0.15) : Colors.white.withOpacity(0.2),
+                      color: isDark
+                          ? AppTheme.darkPrimaryGreen.withValues(alpha: 0.15)
+                          : Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -135,13 +141,14 @@ class UniversalAppBar extends StatelessWidget {
 
   Widget buildNonSliver(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return AppBar(
       backgroundColor: AppTheme.getAppBarColor(context),
       elevation: 2,
       leading: showBackButton
           ? IconButton(
-              icon: Icon(Icons.arrow_back, color: AppTheme.getAppBarTextColor(context)),
+              icon: Icon(Icons.arrow_back,
+                  color: AppTheme.getAppBarTextColor(context)),
               onPressed: onBackPressed ?? () => Navigator.pop(context),
               tooltip: 'Back',
               splashRadius: 24,
@@ -150,11 +157,14 @@ class UniversalAppBar extends StatelessWidget {
               builder: (context) => Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.25),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: IconButton(
-                  icon: Icon(Icons.menu, color: AppTheme.getAppBarTextColor(context), size: 26),
+                  icon: Icon(Icons.menu,
+                      color: AppTheme.getAppBarTextColor(context), size: 26),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   tooltip: 'Menu',
                   splashRadius: 20,
@@ -167,7 +177,9 @@ class UniversalAppBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: isDark ? AppTheme.darkPrimaryGreen.withOpacity(0.15) : Colors.white.withOpacity(0.2),
+              color: isDark
+                  ? AppTheme.darkPrimaryGreen.withValues(alpha: 0.15)
+                  : Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -194,9 +206,7 @@ class UniversalAppBar extends StatelessWidget {
       actions: actions,
       flexibleSpace: Container(
         decoration: BoxDecoration(
-          gradient: isDark 
-              ? null
-              : AppTheme.primaryGradient,
+          gradient: isDark ? null : AppTheme.primaryGradient,
           color: isDark ? AppTheme.getAppBarColor(context) : null,
         ),
       ),

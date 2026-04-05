@@ -27,9 +27,9 @@ class AnalyticsSummary extends StatelessWidget {
                     'Farm Analytics',
                     context: context,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveHelper.getFontSize(context, 18),
-                    ),
+                          fontWeight: FontWeight.bold,
+                          fontSize: ResponsiveHelper.getFontSize(context, 18),
+                        ),
                     maxLines: 1,
                   ),
                 ),
@@ -47,7 +47,8 @@ class AnalyticsSummary extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+            SizedBox(
+                height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
             // Responsive layout - column on mobile, rows on larger screens
             if (ResponsiveHelper.isMobile(context)) ...[
               _buildMetricCard(
@@ -58,7 +59,8 @@ class AnalyticsSummary extends StatelessWidget {
                 AppTheme.success,
                 '+12.5%',
               ),
-              SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+              SizedBox(
+                  height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
               _buildMetricCard(
                 context,
                 'Expenses',
@@ -67,7 +69,8 @@ class AnalyticsSummary extends StatelessWidget {
                 AppTheme.warning,
                 '+5.2%',
               ),
-              SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+              SizedBox(
+                  height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
               _buildMetricCard(
                 context,
                 'Net Profit',
@@ -76,7 +79,8 @@ class AnalyticsSummary extends StatelessWidget {
                 AppTheme.primaryGreen,
                 '+25.8%',
               ),
-              SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+              SizedBox(
+                  height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
               _buildMetricCard(
                 context,
                 'Yield/Acre',
@@ -98,7 +102,9 @@ class AnalyticsSummary extends StatelessWidget {
                       '+12.5%',
                     ),
                   ),
-                  SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+                  SizedBox(
+                      width: ResponsiveHelper.getResponsiveSpacing(context) *
+                          0.75),
                   Expanded(
                     child: _buildMetricCard(
                       context,
@@ -111,7 +117,9 @@ class AnalyticsSummary extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+              SizedBox(
+                  height:
+                      ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
               Row(
                 children: [
                   Expanded(
@@ -124,7 +132,9 @@ class AnalyticsSummary extends StatelessWidget {
                       '+25.8%',
                     ),
                   ),
-                  SizedBox(width: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
+                  SizedBox(
+                      width: ResponsiveHelper.getResponsiveSpacing(context) *
+                          0.75),
                   Expanded(
                     child: _buildMetricCard(
                       context,
@@ -161,7 +171,8 @@ class AnalyticsSummary extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
+        borderRadius:
+            ResponsiveHelper.getResponsiveBorderRadius(context).copyWith(
           topLeft: const Radius.circular(8),
           topRight: const Radius.circular(8),
           bottomLeft: const Radius.circular(8),
@@ -175,40 +186,40 @@ class AnalyticsSummary extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                icon, 
-                color: color, 
-                size: ResponsiveHelper.isMobile(context) ? 18 : 20
-              ),
+              Icon(icon,
+                  color: color,
+                  size: ResponsiveHelper.isMobile(context) ? 18 : 20),
               ResponsiveHelper.autoSizeText(
                 change,
                 context: context,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.bold,
-                  fontSize: ResponsiveHelper.getFontSize(context, 12),
-                ),
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveHelper.getFontSize(context, 12),
+                    ),
               ),
             ],
           ),
-          SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
+          SizedBox(
+              height: ResponsiveHelper.getResponsiveSpacing(context) * 0.5),
           ResponsiveHelper.autoSizeText(
             value,
             context: context,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-              fontSize: ResponsiveHelper.getFontSize(context, ResponsiveHelper.isMobile(context) ? 16 : 18),
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                  fontSize: ResponsiveHelper.getFontSize(
+                      context, ResponsiveHelper.isMobile(context) ? 16 : 18),
+                ),
             maxLines: 1,
           ),
           ResponsiveHelper.autoSizeText(
             title,
             context: context,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.textGrey,
-              fontSize: ResponsiveHelper.getFontSize(context, 12),
-            ),
+                  color: AppTheme.textGrey,
+                  fontSize: ResponsiveHelper.getFontSize(context, 12),
+                ),
             maxLines: 1,
           ),
         ],
@@ -224,9 +235,9 @@ class AnalyticsSummary extends StatelessWidget {
           'Revenue Trend (Last 6 Months)',
           context: context,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: ResponsiveHelper.getFontSize(context, 16),
-          ),
+                fontWeight: FontWeight.bold,
+                fontSize: ResponsiveHelper.getFontSize(context, 16),
+              ),
         ),
         SizedBox(height: ResponsiveHelper.getResponsiveSpacing(context) * 0.75),
         SizedBox(
@@ -244,8 +255,9 @@ class AnalyticsSummary extends StatelessWidget {
                         '₹${(value / 1000).toInt()}K',
                         context: context,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: ResponsiveHelper.getFontSize(context, 10),
-                        ),
+                              fontSize:
+                                  ResponsiveHelper.getFontSize(context, 10),
+                            ),
                       );
                     },
                   ),
@@ -259,9 +271,13 @@ class AnalyticsSummary extends StatelessWidget {
                         return ResponsiveHelper.autoSizeText(
                           months[value.toInt()],
                           context: context,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: ResponsiveHelper.getFontSize(context, 10),
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                fontSize:
+                                    ResponsiveHelper.getFontSize(context, 10),
+                              ),
                         );
                       }
                       return const Text('');

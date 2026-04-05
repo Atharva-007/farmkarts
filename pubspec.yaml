@@ -100,6 +100,7 @@ dependencies:
   # Additional dependencies for enhanced contact seller functionality
   # fluttertoast: ^8.2.8  # Temporarily disabled due to Flutter embedding API incompatibility
 
+  image: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,10 +1,11 @@
-import r'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '../../models/ai_chat_model.dart';
 import '../../services/ai_chat_service.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/app_constants.dart';
+import '../../widgets/universal_header.dart';
+import '../../widgets/universal_drawer.dart';
 import 'enhanced_ai_expert_chat_page.dart';
+import '../../widgets/premium_fab.dart';
 
 class AIChatSessionsPage extends StatefulWidget {
   const AIChatSessionsPage({super.key});
@@ -16,7 +17,7 @@ class AIChatSessionsPage extends StatefulWidget {
 class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   final AIChatService _aiChatService = AIChatService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   String _searchQuery = '';
   bool _isSearching = false;
   Map<String, dynamic>? _stats;
@@ -36,7 +37,7 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   void _loadStatistics() async {
     try {
       final stats = await _aiChatService.getSessionStatistics();
-      setState(() => _stats = stats);
+      if (mounted) setState(() => _stats = stats);
     } catch (e) {
       // Handle error silently
     }
@@ -45,210 +46,159 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildHeader(),
-          if (_stats != null) _buildStatistics(),
-          Expanded(child: _buildSessionsList()),
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      drawer: const UniversalDrawer(currentPage: 'ai-chat'),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          UniversalHeader(
+            title: 'AI Expert',
+            subtitle: 'Get instant farming advice',
+            icon: Icons.psychology_rounded,
+            showBackButton: false,
+            showProfile: true,
+            actions: [
+              IconButton(
+                icon: Icon(
+                    _isSearching ? Icons.close_rounded : Icons.search_rounded,
+                    color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _isSearching = !_isSearching;
+                    if (!_isSearching) {
+                      _searchQuery = '';
+                      _searchController.clear();
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+          if (_isSearching)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: _buildSearchField(),
+              ),
+            ),
+          if (_stats != null && !_isSearching)
+            SliverToBoxAdapter(
+              child: _buildStatistics(),
+            ),
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 8),
+            sliver: _buildSessionsList(),
+          ),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'ai_chat_new_fab',
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: PremiumFAB(
         onPressed: _createNewChat,
-        backgroundColor: AppTheme.primaryGreen,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: Icons.add_rounded,
+        bottomPadding: 90, // Positioned slightly higher
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppTheme.primaryGreen,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      title: _isSearching ? _buildSearchField() : const Text('AI Expert Chat'),
-      actions: [
-        IconButton(
-          icon: Icon(_isSearching ? Icons.close : Icons.search),
-          onPressed: () {
-            setState(() {
-              _isSearching = !_isSearching;
-              if (!_isSearching) {
-                _searchQuery = '';
-                _searchController.clear();
-              }
-            });
-          },
-        ),
-        PopupMenuButton<String>(
-          onSelected: _handleMenuAction,
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'new_chat',
-              child: ListTile(
-                leading: Icon(Icons.add_comment),
-                title: Text('New Chat'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'refresh_stats',
-              child: ListTile(
-                leading: Icon(Icons.refresh),
-                title: Text('Refresh Stats'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
   Widget _buildSearchField() {
-    return TextField(
-      controller: _searchController,
-      autofocus: true,
-      decoration: const InputDecoration(
-        hintText: 'Search chats...',
-        border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white70),
-      ),
-      style: const TextStyle(color: Colors.white),
-      onChanged: (value) {
-        setState(() => _searchQuery = value);
-      },
-    );
-  }
-
-  Widget _buildHeader() {
     return Container(
-      padding: AppConstants.defaultPadding,
-      decoration: const BoxDecoration(
-        color: AppTheme.primaryGreen,
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.3)),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.psychology,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'AI Expert Assistant',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Get instant help with all your farming questions',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: TextField(
+        controller: _searchController,
+        autofocus: true,
+        style: TextStyle(color: AppTheme.getTextColor(context)),
+        decoration: InputDecoration(
+          hintText: 'Search your chats...',
+          hintStyle: TextStyle(
+              color: AppTheme.getSecondaryTextColor(context)
+                  .withValues(alpha: 0.5)),
+          prefixIcon: Icon(Icons.search_rounded,
+              color: AppTheme.getPrimaryAccent(context)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        ),
+        onChanged: (value) {
+          setState(() => _searchQuery = value);
+        },
       ),
     );
   }
 
   Widget _buildStatistics() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context).withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
           _buildStatCard(
-            'Chats',
+            'Total Sessions',
             _stats!['totalSessions'].toString(),
-            Icons.chat_bubble_outline,
-            AppTheme.primaryGreen,
+            Icons.chat_bubble_outline_rounded,
+            Colors.blue,
           ),
           const SizedBox(width: 8),
           _buildStatCard(
-            'Active',
+            'Active Now',
             _stats!['activeSessions'].toString(),
-            Icons.bolt,
-            AppTheme.success,
+            Icons.bolt_rounded,
+            Colors.orange,
           ),
           const SizedBox(width: 8),
           _buildStatCard(
             'Messages',
             _stats!['totalMessages'].toString(),
             Icons.message_outlined,
-            AppTheme.info,
+            Colors.green,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: color, size: 14),
-                const SizedBox(width: 4),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 10,
-                color: AppTheme.textGrey,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.getTextColor(context),
             ),
-          ],
-        ),
+          ),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 10,
+              color: AppTheme.getSecondaryTextColor(context),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -262,26 +212,33 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
       stream: _aiChatService.getUserChatSessions(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (snapshot.hasError) {
-          return _buildErrorState(snapshot.error.toString());
+          return SliverToBoxAdapter(
+              child: _buildErrorState(snapshot.error.toString()));
         }
 
         List<AIChatSession> sessions = snapshot.data ?? [];
 
         if (sessions.isEmpty) {
-          return _buildEmptyState();
+          return SliverToBoxAdapter(child: _buildEmptyState());
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: sessions.length,
-          itemBuilder: (context, index) {
-            final session = sessions[index];
-            return _buildSessionCard(session);
-          },
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final session = sessions[index];
+                return _buildSessionCard(session);
+              },
+              childCount: sessions.length,
+            ),
+          ),
         );
       },
     );
@@ -292,57 +249,84 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
       future: _aiChatService.searchChatSessions(_searchQuery),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (snapshot.hasError) {
-          return _buildErrorState('Search failed: ${snapshot.error}');
+          return SliverToBoxAdapter(
+              child: _buildErrorState('Search failed: ${snapshot.error}'));
         }
 
         final sessions = snapshot.data ?? [];
 
         if (sessions.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.search_off, size: 64, color: AppTheme.textGrey),
-                const SizedBox(height: 16),
-                Text(
-                  'No chats found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textGrey,
+          return SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off_rounded,
+                      size: 64,
+                      color: AppTheme.getSecondaryTextColor(context)
+                          .withValues(alpha: 0.3)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No chats found',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.getTextColor(context),
+                    ),
                   ),
-                ),
-                Text(
-                  'Try a different search term',
-                  style: TextStyle(color: AppTheme.textGrey),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: sessions.length,
-          itemBuilder: (context, index) {
-            final session = sessions[index];
-            return _buildSessionCard(session);
-          },
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final session = sessions[index];
+                return _buildSessionCard(session);
+              },
+              childCount: sessions.length,
+            ),
+          ),
         );
       },
     );
   }
 
   Widget _buildSessionCard(AIChatSession session) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final catColor = AIChatCategory.getCategoryColor(session.category);
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.getCardColor(context),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: AppTheme.getBorderColor(context)
+                .withValues(alpha: isDark ? 0.1 : 0.5)),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
       child: InkWell(
         onTap: () => _openChat(session),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -351,14 +335,14 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AIChatCategory.getCategoryColor(session.category).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: catColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       AIChatCategory.getCategoryIcon(session.category),
-                      color: AIChatCategory.getCategoryColor(session.category),
+                      color: catColor,
                       size: 20,
                     ),
                   ),
@@ -369,9 +353,10 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
                       children: [
                         Text(
                           session.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: AppTheme.getTextColor(context),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -380,55 +365,42 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
                           session.category,
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppTheme.textGrey,
+                            color: AppTheme.getSecondaryTextColor(context),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  PopupMenuButton<String>(
-                    onSelected: (action) => _handleSessionAction(action, session),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'rename',
-                        child: ListTile(
-                          leading: Icon(Icons.edit),
-                          title: Text('Rename'),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: ListTile(
-                          leading: Icon(Icons.delete, color: Colors.red),
-                          title: Text('Delete', style: TextStyle(color: Colors.red)),
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _buildSessionActions(session),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
                 session.lastMessage,
                 style: TextStyle(
-                  color: AppTheme.textGrey,
+                  color: AppTheme.getSecondaryTextColor(context)
+                      .withValues(alpha: 0.8),
                   fontSize: 14,
+                  height: 1.4,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.message, size: 14, color: AppTheme.textGrey),
+                  Icon(Icons.message_rounded,
+                      size: 14,
+                      color: AppTheme.getSecondaryTextColor(context)
+                          .withValues(alpha: 0.6)),
                   const SizedBox(width: 4),
                   Text(
                     '${session.messageCount} messages',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppTheme.textGrey,
+                      color: AppTheme.getSecondaryTextColor(context)
+                          .withValues(alpha: 0.6),
                     ),
                   ),
                   const Spacer(),
@@ -436,7 +408,9 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
                     _formatSessionTime(session.lastMessageTime),
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppTheme.textGrey,
+                      color: AppTheme.getSecondaryTextColor(context)
+                          .withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -448,145 +422,93 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: AppConstants.defaultPadding,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryGreen.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Icon(
-                Icons.psychology,
-                size: 64,
-                color: AppTheme.primaryGreen,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No AI Chats Yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start your first conversation with our AI farming expert. Ask about crops, weather, market prices, or any farming advice you need.',
-              style: TextStyle(
-                color: AppTheme.textGrey,
-                fontSize: 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: _createNewChat,
-              icon: const Icon(Icons.add_comment),
-              label: const Text('Start New Chat'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildQuickStartOptions(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStartOptions() {
-    return Column(
-      children: [
-        Text(
-          'Quick Start Options',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textGrey,
-            fontSize: 14,
+  Widget _buildSessionActions(AIChatSession session) {
+    return PopupMenuButton<String>(
+      onSelected: (action) => _handleSessionAction(action, session),
+      icon: Icon(Icons.more_vert_rounded,
+          color: AppTheme.getSecondaryTextColor(context)),
+      padding: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'rename',
+          child: ListTile(
+            leading: Icon(Icons.edit_rounded, size: 20),
+            title: Text('Rename'),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
           ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
-          children: [
-            _buildQuickStartButton('Crops', Icons.agriculture, AIChatCategory.crops),
-            _buildQuickStartButton('Weather', Icons.wb_sunny, AIChatCategory.weather),
-            _buildQuickStartButton('Market', Icons.storefront, AIChatCategory.market),
-            _buildQuickStartButton('Farming', Icons.grass, AIChatCategory.farming),
-          ],
+        const PopupMenuItem(
+          value: 'delete',
+          child: ListTile(
+            leading: Icon(Icons.delete_outline_rounded,
+                color: Colors.redAccent, size: 20),
+            title: Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildQuickStartButton(String title, IconData icon, String category) {
-    return GestureDetector(
-      onTap: () => _createNewChatWithCategory(category),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.borderGrey),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: AppTheme.primaryGreen),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: TextStyle(
-                color: AppTheme.primaryGreen,
-                fontWeight: FontWeight.w500,
-              ),
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.05),
+              shape: BoxShape.circle,
             ),
-          ],
-        ),
+            child: Icon(
+              Icons.psychology_outlined,
+              size: 80,
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.3),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'No AI Chats Yet',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.getTextColor(context),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Start your first conversation with our AI farming expert.',
+            style: TextStyle(
+              color: AppTheme.getSecondaryTextColor(context),
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildErrorState(String error) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error, size: 64, color: AppTheme.error),
-          const SizedBox(height: 16),
-          Text(
-            'Error Loading Chats',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            error,
-            style: TextStyle(color: AppTheme.textGrey),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => setState(() {}),
-            child: const Text('Retry'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline_rounded,
+                size: 48, color: AppTheme.getErrorColor(context)),
+            const SizedBox(height: 16),
+            Text(error, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            ElevatedButton(
+                onPressed: () => setState(() {}), child: const Text('Retry')),
+          ],
+        ),
       ),
     );
   }
@@ -609,26 +531,6 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
     );
   }
 
-  void _createNewChatWithCategory(String category) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EnhancedAIExpertChatPage(initialCategory: category),
-      ),
-    );
-  }
-
-  void _handleMenuAction(String action) {
-    switch (action) {
-      case 'new_chat':
-        _createNewChat();
-        break;
-      case 'refresh_stats':
-        _loadStatistics();
-        break;
-    }
-  }
-
   void _handleSessionAction(String action, AIChatSession session) {
     switch (action) {
       case 'rename':
@@ -642,37 +544,29 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
 
   void _showRenameDialog(AIChatSession session) {
     final controller = TextEditingController(text: session.title);
-    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.getCardColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Rename Chat'),
         content: TextField(
           controller: controller,
+          autofocus: true,
+          style: TextStyle(color: AppTheme.getTextColor(context)),
           decoration: const InputDecoration(
-            labelText: 'Chat Title',
-            border: OutlineInputBorder(),
-          ),
-          maxLength: 50,
+              labelText: 'Chat Title', border: OutlineInputBorder()),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               final newTitle = controller.text.trim();
               if (newTitle.isNotEmpty) {
-                try {
-                  await _aiChatService.updateSessionTitle(session.id, newTitle);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Chat renamed successfully')),
-                  );
-                } catch (e) {
-                  _showError('Failed to rename chat: $e');
-                }
+                await _aiChatService.updateSessionTitle(session.id, newTitle);
+                if (mounted) Navigator.pop(context);
               }
             },
             child: const Text('Save'),
@@ -686,39 +580,23 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.getCardColor(context),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Delete Chat'),
-        content: Text('Are you sure you want to delete "${session.title}"? This action cannot be undone.'),
+        content: Text('Are you sure you want to delete "${session.title}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              try {
-                await _aiChatService.deleteChatSession(session.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Chat deleted successfully')),
-                );
-                _loadStatistics(); // Refresh stats
-              } catch (e) {
-                _showError('Failed to delete chat: $e');
-              }
+              await _aiChatService.deleteChatSession(session.id);
+              if (mounted) Navigator.pop(context);
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child:
+                const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppTheme.error,
       ),
     );
   }
@@ -726,21 +604,9 @@ class _AIChatSessionsPageState extends State<AIChatSessionsPage> {
   String _formatSessionTime(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-
-    if (difference.inDays > 0) {
-      if (difference.inDays == 1) {
-        return 'Yesterday';
-      } else if (difference.inDays < 7) {
-        return '${difference.inDays} days ago';
-      } else {
-        return '${timestamp.day}/${timestamp.month}/${timestamp.year}';
-      }
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
+    if (difference.inDays > 0) return '${difference.inDays}d ago';
+    if (difference.inHours > 0) return '${difference.inHours}h ago';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m ago';
+    return 'Just now';
   }
 }

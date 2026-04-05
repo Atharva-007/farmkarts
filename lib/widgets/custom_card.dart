@@ -41,10 +41,16 @@ class CustomCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? Theme.of(context).cardColor,
         borderRadius: borderRadius ?? BorderRadius.circular(16),
-        boxShadow: boxShadow ?? (Theme.of(context).brightness == Brightness.dark ? [] : AppTheme.defaultShadow),
-        border: border ?? (Theme.of(context).brightness == Brightness.dark 
-            ? Border.all(color: AppTheme.getBorderColor(context).withOpacity(0.1)) 
-            : null),
+        boxShadow: boxShadow ??
+            (Theme.of(context).brightness == Brightness.dark
+                ? []
+                : AppTheme.defaultShadow),
+        border: border ??
+            (Theme.of(context).brightness == Brightness.dark
+                ? Border.all(
+                    color:
+                        AppTheme.getBorderColor(context).withValues(alpha: 0.1))
+                : null),
       ),
       child: child,
     );
@@ -147,10 +153,10 @@ class GlassMorphismCard extends StatelessWidget {
         borderRadius: borderRadius ?? BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(opacity),
+            color: Colors.white.withValues(alpha: opacity),
             borderRadius: borderRadius ?? BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
           ),
@@ -318,9 +324,8 @@ class _AnimatedCardState extends State<AnimatedCard>
               decoration: BoxDecoration(
                 color: widget.color ?? Colors.white,
                 borderRadius: widget.borderRadius ?? BorderRadius.circular(16),
-                boxShadow: _isPressed
-                    ? AppTheme.subtleShadow
-                    : AppTheme.defaultShadow,
+                boxShadow:
+                    _isPressed ? AppTheme.subtleShadow : AppTheme.defaultShadow,
               ),
               child: widget.child,
             ),

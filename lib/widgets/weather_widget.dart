@@ -25,9 +25,9 @@ class WeatherWidget extends StatelessWidget {
                 Text(
                   'Today\'s Weather',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 Icon(
                   Icons.wb_sunny,
@@ -40,16 +40,16 @@ class WeatherWidget extends StatelessWidget {
             Text(
               '28°C',
               style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 32,
-              ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
             ),
             Text(
               'Sunny, Perfect for farming',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-              ),
+                    color: Colors.white70,
+                  ),
             ),
             const SizedBox(height: 12),
             LayoutBuilder(
@@ -59,7 +59,8 @@ class WeatherWidget extends StatelessWidget {
                   children: [
                     _buildWeatherDetail(Icons.water_drop, '65%', 'Humidity'),
                     _buildWeatherDetail(Icons.air, '12 km/h', 'Wind'),
-                    _buildWeatherDetail(Icons.visibility, '10 km', 'Visibility'),
+                    _buildWeatherDetail(
+                        Icons.visibility, '10 km', 'Visibility'),
                   ],
                 );
               },

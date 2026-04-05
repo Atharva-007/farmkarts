@@ -10,6 +10,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../theme/app_theme.dart';
 // import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Temporarily disabled
 
 class MandiPricesPage extends StatefulWidget {
@@ -138,8 +139,10 @@ class _MandiPricesPageState extends State<MandiPricesPage>
           mandiDataGrouped = grouped;
           isLoading = false;
           allItems = filtered;
-          commodities = ['All'] + uniqueCommodities.toList()..sort();
-          markets = ['All'] + uniqueMarkets.toList()..sort();
+          commodities = ['All'] + uniqueCommodities.toList()
+            ..sort();
+          markets = ['All'] + uniqueMarkets.toList()
+            ..sort();
 
           _animationController.forward(from: 0);
 
@@ -153,8 +156,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
               final nextPrice = int.tryParse(next['modal_price'] ?? '0') ?? 0;
               return (currPrice > nextPrice) ? curr : next;
             });
-            showNotification(
-                "Top Commodity Today",
+            showNotification("Top Commodity Today",
                 "${topItem['commodity']} at ₹${topItem['modal_price']} in ${topItem['market']}");
           }
         });
@@ -202,8 +204,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
           position: latLng,
           infoWindow: InfoWindow(
             title: item['commodity'],
-            snippet:
-            '${item['market']}, ₹${item['modal_price'] ?? 'N/A'}',
+            snippet: '${item['market']}, ₹${item['modal_price'] ?? 'N/A'}',
           ),
         ),
       );
@@ -264,48 +265,45 @@ class _MandiPricesPageState extends State<MandiPricesPage>
         build: (context) => [
           pw.Header(level: 0, child: pw.Text('Mandi Prices Report - $now')),
           ...mandiDataGrouped.entries.map((stateEntry) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(stateEntry.key,
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              ...stateEntry.value.entries.map((districtEntry) => pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('  ${districtEntry.key}',
+                  pw.Text(stateEntry.key,
                       style: pw.TextStyle(
-                          fontSize: 16,
-                          fontWeight: pw.FontWeight.bold)),
-                  ...districtEntry.value
-                      .where((item) {
-                    final commodity = item['commodity'] ?? '';
-                    final market = item['market'] ?? '';
-                    if (selectedCommodity != 'All' &&
-                        commodity != selectedCommodity) {
-                      return false;
-                    }
-                    if (selectedMarket != 'All' &&
-                        market != selectedMarket) {
-                      return false;
-                    }
-                    if (searchQuery.isNotEmpty &&
-                        !(item['state'] ?? '')
-                            .toString()
-                            .toLowerCase()
-                            .contains(searchQuery.toLowerCase())) {
-                      return false;
-                    }
-                    return true;
-                  })
-                      .map((item) => pw.Bullet(
-                      text:
-                      '${item['commodity']} - ₹${item['modal_price']} at ${item['market']}'))
-                      .toList(),
+                          fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  ...stateEntry.value.entries.map((districtEntry) => pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('  ${districtEntry.key}',
+                              style: pw.TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: pw.FontWeight.bold)),
+                          ...districtEntry.value.where((item) {
+                            final commodity = item['commodity'] ?? '';
+                            final market = item['market'] ?? '';
+                            if (selectedCommodity != 'All' &&
+                                commodity != selectedCommodity) {
+                              return false;
+                            }
+                            if (selectedMarket != 'All' &&
+                                market != selectedMarket) {
+                              return false;
+                            }
+                            if (searchQuery.isNotEmpty &&
+                                !(item['state'] ?? '')
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains(searchQuery.toLowerCase())) {
+                              return false;
+                            }
+                            return true;
+                          }).map((item) => pw.Bullet(
+                              text:
+                                  '${item['commodity']} - ₹${item['modal_price']} at ${item['market']}')),
+                        ],
+                      )),
+                  pw.SizedBox(height: 10),
                 ],
-              )),
-              pw.SizedBox(height: 10),
-            ],
-          ))
+              ))
         ],
       ),
     );
@@ -319,8 +317,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
       await file.writeAsBytes(await pdf.save());
       final xFile = XFile(file.path);
       Share.shareXFiles([xFile], text: 'Mandi Prices PDF Report');
-    } else {
-    }
+    } else {}
   }
 
   @override
@@ -332,7 +329,7 @@ class _MandiPricesPageState extends State<MandiPricesPage>
     // Apply filters to all items for top/low grossing and map
     final filteredItems = _applyFilters(allItems);
     updateMapMarkers(filteredItems);
-    
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -352,202 +349,190 @@ class _MandiPricesPageState extends State<MandiPricesPage>
       ),
       body: isLoading
           ? Shimmer.fromColors(
-        baseColor: isDark ? AppTheme.darkHighlight : Colors.grey.shade300,
-        highlightColor: isDark ? AppTheme.darkSurface : Colors.grey.shade100,
-        child: ListView.builder(
-          itemCount: 6,
-          itemBuilder: (_, __) => Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Container(
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-      )
-          : error.isNotEmpty
-          ? Center(child: Text(error, style: TextStyle(color: AppTheme.getSecondaryTextColor(context))))
-          : RefreshIndicator(
-        onRefresh: fetchMandiPrices,
-        color: AppTheme.getPrimaryAccent(context),
-        child: ListView(
-          padding: const EdgeInsets.only(top: 12, bottom: 80),
-          children: [
-            // Existing Top and Low grossing chips
-            buildGrossingChips('Top Grossing', Icons.trending_up,
-                getTopGrossing(5)),
-            buildGrossingChips('Low Grossing', Icons.trending_down,
-                getLowGrossing(5)),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Filters',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.getPrimaryAccent(context))),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'Commodity',
-                            labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
-                            filled: true,
-                            fillColor: Theme.of(context).cardColor,
-                          ),
-                          dropdownColor: Theme.of(context).cardColor,
-                          value: selectedCommodity,
-                          items: commodities
-                              .map((c) => DropdownMenuItem(
-                            value: c,
-                            child: Text(c, style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14)),
-                          ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedCommodity = value ?? 'All';
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            labelText: 'Market',
-                            labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
-                            filled: true,
-                            fillColor: Theme.of(context).cardColor,
-                          ),
-                          dropdownColor: Theme.of(context).cardColor,
-                          value: selectedMarket,
-                          items: markets
-                              .map((m) => DropdownMenuItem(
-                            value: m,
-                            child: Text(m, style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14)),
-                          ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedMarket = value ?? 'All';
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Search by State',
-                      labelStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                      prefixIcon: Icon(Icons.search, color: AppTheme.getSecondaryTextColor(context)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      filled: true,
-                      fillColor: Theme.of(context).cardColor,
+              baseColor: isDark ? AppTheme.darkHighlight : Colors.grey.shade300,
+              highlightColor:
+                  isDark ? AppTheme.darkSurface : Colors.grey.shade100,
+              child: ListView.builder(
+                itemCount: 6,
+                itemBuilder: (_, __) => Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    style: TextStyle(color: AppTheme.getTextColor(context)),
-                    onChanged: (val) {
-                      setState(() {
-                        searchQuery = val.trim();
-                      });
-                    },
                   ),
-                ],
-              ),
-            ),
-
-            // Map Section
-            Container(
-              height: 250,
-              margin:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.getPrimaryAccent(context).withOpacity(0.5)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: GoogleMap(
-                  onMapCreated: (controller) {
-                    mapController = controller;
-                  },
-                  initialCameraPosition: const CameraPosition(
-                    target: LatLng(20.5937, 78.9629), // Center of India
-                    zoom: 4.5,
-                  ),
-                  markers: mapMarkers,
-                  myLocationButtonEnabled: false,
                 ),
               ),
-            ),
+            )
+          : error.isNotEmpty
+              ? Center(
+                  child: Text(error,
+                      style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context))))
+              : RefreshIndicator(
+                  onRefresh: fetchMandiPrices,
+                  color: AppTheme.getPrimaryAccent(context),
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 12, bottom: 80),
+                    children: [
+                      // Existing Top and Low grossing chips
+                      buildGrossingChips(
+                          'Top Grossing', Icons.trending_up, getTopGrossing(5)),
+                      buildGrossingChips('Low Grossing', Icons.trending_down,
+                          getLowGrossing(5)),
 
-            // List of states and markets as before with animation
-            ...filteredStates.map((stateEntry) {
-              final filteredDistricts = stateEntry.value.entries
-                  .where((districtEntry) {
-                final anyMatch = districtEntry.value.any((item) {
-                  final commodity = item['commodity'] ?? '';
-                  final market = item['market'] ?? '';
-                  if (selectedCommodity != 'All' &&
-                      commodity != selectedCommodity) {
-                    return false;
-                  }
-                  if (selectedMarket != 'All' &&
-                      market != selectedMarket) {
-                    return false;
-                  }
-                  if (searchQuery.isNotEmpty &&
-                      !(item['state'] ?? '')
-                          .toString()
-                          .toLowerCase()
-                          .contains(searchQuery.toLowerCase())) {
-                    return false;
-                  }
-                  return true;
-                });
-                return anyMatch;
-              });
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Filters',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.getPrimaryAccent(context))),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    decoration: InputDecoration(
+                                      labelText: 'Commodity',
+                                      labelStyle: TextStyle(
+                                          color: AppTheme.getSecondaryTextColor(
+                                              context)),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 4),
+                                      filled: true,
+                                      fillColor: Theme.of(context).cardColor,
+                                    ),
+                                    dropdownColor: Theme.of(context).cardColor,
+                                    value: selectedCommodity,
+                                    items: commodities
+                                        .map((c) => DropdownMenuItem(
+                                              value: c,
+                                              child: Text(c,
+                                                  style: TextStyle(
+                                                      color:
+                                                          AppTheme.getTextColor(
+                                                              context),
+                                                      fontSize: 14)),
+                                            ))
+                                        .toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedCommodity = value ?? 'All';
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    decoration: InputDecoration(
+                                      labelText: 'Market',
+                                      labelStyle: TextStyle(
+                                          color: AppTheme.getSecondaryTextColor(
+                                              context)),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 4),
+                                      filled: true,
+                                      fillColor: Theme.of(context).cardColor,
+                                    ),
+                                    dropdownColor: Theme.of(context).cardColor,
+                                    value: selectedMarket,
+                                    items: markets
+                                        .map((m) => DropdownMenuItem(
+                                              value: m,
+                                              child: Text(m,
+                                                  style: TextStyle(
+                                                      color:
+                                                          AppTheme.getTextColor(
+                                                              context),
+                                                      fontSize: 14)),
+                                            ))
+                                        .toList(),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        selectedMarket = value ?? 'All';
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              decoration: InputDecoration(
+                                labelText: 'Search by State',
+                                labelStyle: TextStyle(
+                                    color: AppTheme.getSecondaryTextColor(
+                                        context)),
+                                prefixIcon: Icon(Icons.search,
+                                    color: AppTheme.getSecondaryTextColor(
+                                        context)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                filled: true,
+                                fillColor: Theme.of(context).cardColor,
+                              ),
+                              style: TextStyle(
+                                  color: AppTheme.getTextColor(context)),
+                              onChanged: (val) {
+                                setState(() {
+                                  searchQuery = val.trim();
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
 
-              if (filteredDistricts.isEmpty) return const SizedBox.shrink();
+                      // Map Section
+                      Container(
+                        height: 250,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: AppTheme.getPrimaryAccent(context)
+                                  .withValues(alpha: 0.5)),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: GoogleMap(
+                            onMapCreated: (controller) {
+                              mapController = controller;
+                            },
+                            initialCameraPosition: const CameraPosition(
+                              target:
+                                  LatLng(20.5937, 78.9629), // Center of India
+                              zoom: 4.5,
+                            ),
+                            markers: mapMarkers,
+                            myLocationButtonEnabled: false,
+                          ),
+                        ),
+                      ),
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(stateEntry.key,
-                        style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.getPrimaryAccent(context))),
-                    const SizedBox(height: 8),
-                    ...filteredDistricts.map((districtEntry) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        child: ExpansionTile(
-                          title: Text(districtEntry.key,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600)),
-                          children: districtEntry.value
-                              .where((item) {
+                      // List of states and markets as before with animation
+                      ...filteredStates.map((stateEntry) {
+                        final filteredDistricts =
+                            stateEntry.value.entries.where((districtEntry) {
+                          final anyMatch = districtEntry.value.any((item) {
                             final commodity = item['commodity'] ?? '';
                             final market = item['market'] ?? '';
                             if (selectedCommodity != 'All' &&
@@ -566,35 +551,89 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                               return false;
                             }
                             return true;
-                          })
-                              .map((item) => ListTile(
-                            title: Text(item['commodity']),
-                            subtitle: Text(
-                                'Market: ${item['market']}',
-                                style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
-                            trailing: Text(
-                              '₹${item['modal_price']}',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.getPrimaryAccent(context)),
-                            ),
-                          ))
-                              .toList(),
-                        ),
-                      );
-                    }).toList(),
-                  ],
+                          });
+                          return anyMatch;
+                        });
+
+                        if (filteredDistricts.isEmpty)
+                          return const SizedBox.shrink();
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(stateEntry.key,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color:
+                                          AppTheme.getPrimaryAccent(context))),
+                              const SizedBox(height: 8),
+                              ...filteredDistricts.map((districtEntry) {
+                                return Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 6),
+                                  child: ExpansionTile(
+                                    title: Text(districtEntry.key,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600)),
+                                    children: districtEntry.value
+                                        .where((item) {
+                                          final commodity =
+                                              item['commodity'] ?? '';
+                                          final market = item['market'] ?? '';
+                                          if (selectedCommodity != 'All' &&
+                                              commodity != selectedCommodity) {
+                                            return false;
+                                          }
+                                          if (selectedMarket != 'All' &&
+                                              market != selectedMarket) {
+                                            return false;
+                                          }
+                                          if (searchQuery.isNotEmpty &&
+                                              !(item['state'] ?? '')
+                                                  .toString()
+                                                  .toLowerCase()
+                                                  .contains(searchQuery
+                                                      .toLowerCase())) {
+                                            return false;
+                                          }
+                                          return true;
+                                        })
+                                        .map((item) => ListTile(
+                                              title: Text(item['commodity']),
+                                              subtitle: Text(
+                                                  'Market: ${item['market']}',
+                                                  style: TextStyle(
+                                                      color: AppTheme
+                                                          .getSecondaryTextColor(
+                                                              context))),
+                                              trailing: Text(
+                                                '₹${item['modal_price']}',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppTheme
+                                                        .getPrimaryAccent(
+                                                            context)),
+                                              ),
+                                            ))
+                                        .toList(),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              );
-            }).toList(),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget buildGrossingChips(
-      String label, IconData icon, List<dynamic> items) {
+  Widget buildGrossingChips(String label, IconData icon, List<dynamic> items) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
@@ -621,9 +660,11 @@ class _MandiPricesPageState extends State<MandiPricesPage>
                     '${item['commodity']} ₹${item['modal_price']}',
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                   side: BorderSide.none,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 );
               },
             ),
@@ -633,4 +674,3 @@ class _MandiPricesPageState extends State<MandiPricesPage>
     );
   }
 }
-

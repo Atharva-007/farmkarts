@@ -31,7 +31,8 @@ class ThemeManager extends ChangeNotifier {
   Future<void> loadThemeMode() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final themeModeIndex = prefs.getInt(_themeModeKey) ?? 2; // Default: system
+      final themeModeIndex =
+          prefs.getInt(_themeModeKey) ?? 2; // Default: system
       if (themeModeIndex >= 0 && themeModeIndex < AppThemeMode.values.length) {
         _themeMode = AppThemeMode.values[themeModeIndex];
       }
@@ -44,7 +45,7 @@ class ThemeManager extends ChangeNotifier {
   /// Set and persist new theme mode
   Future<void> setThemeMode(AppThemeMode mode) async {
     if (_themeMode == mode) return;
-    
+
     try {
       _themeMode = mode;
       final prefs = await SharedPreferences.getInstance();

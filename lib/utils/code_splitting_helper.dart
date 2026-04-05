@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Code Splitting Helper
@@ -70,10 +68,10 @@ class CodeSplittingHelper {
       return result;
     } catch (e) {
       debugPrint('CodeSplitting: Error loading module $moduleName - $e');
-      
+
       if (showLoading && context != null && context.mounted) {
         Navigator.of(context).pop(); // Close loading dialog
-        
+
         // Show error dialog
         showDialog(
           context: context,
@@ -89,7 +87,7 @@ class CodeSplittingHelper {
           ),
         );
       }
-      
+
       return null;
     }
   }
@@ -152,7 +150,7 @@ class CodeSplittingHelper {
   /// Get module loading statistics
   Map<String, dynamic> getStatistics() {
     final now = DateTime.now();
-    
+
     return {
       'total_modules': _loadedModules.length,
       'loaded_modules': _loadedModules.values.where((v) => v).length,
@@ -162,9 +160,8 @@ class CodeSplittingHelper {
           'name': entry.key,
           'loaded': entry.value,
           'load_time': loadTime?.toIso8601String(),
-          'loaded_ago': loadTime != null
-              ? now.difference(loadTime).inMinutes
-              : null,
+          'loaded_ago':
+              loadTime != null ? now.difference(loadTime).inMinutes : null,
         };
       }).toList(),
     };
@@ -215,7 +212,8 @@ class DeferredRoute<T> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const Icon(Icons.error_outline,
+                        size: 64, color: Colors.red),
                     const SizedBox(height: 16),
                     Text('Error loading page: ${snapshot.error}'),
                     const SizedBox(height: 16),
@@ -237,11 +235,12 @@ class DeferredRoute<T> {
 
   Future<Widget> _loadAndBuild(BuildContext context) async {
     return await CodeSplittingHelper().loadModule(
-      loader: builder,
-      moduleName: moduleName,
-      context: context,
-      showLoading: false,
-    ) ?? const SizedBox();
+          loader: builder,
+          moduleName: moduleName,
+          context: context,
+          showLoading: false,
+        ) ??
+        const SizedBox();
   }
 }
 
@@ -275,11 +274,12 @@ class _LazyWidgetState extends State<LazyWidget> {
 
   Future<Widget> _loadWidget() async {
     return await CodeSplittingHelper().loadModule(
-      loader: widget.builder,
-      moduleName: widget.moduleName,
-      context: context,
-      showLoading: false,
-    ) ?? const SizedBox();
+          loader: widget.builder,
+          moduleName: widget.moduleName,
+          context: context,
+          showLoading: false,
+        ) ??
+        const SizedBox();
   }
 
   @override

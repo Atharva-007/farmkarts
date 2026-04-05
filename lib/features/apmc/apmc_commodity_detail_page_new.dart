@@ -3,7 +3,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_helper.dart';
 import '../../services/apmc_api_service.dart';
 import '../../utils/toast_helper.dart';
 
@@ -16,18 +15,19 @@ class APMCCommodityDetailPage extends StatefulWidget {
   });
 
   @override
-  State<APMCCommodityDetailPage> createState() => _APMCCommodityDetailPageState();
+  State<APMCCommodityDetailPage> createState() =>
+      _APMCCommodityDetailPageState();
 }
 
 class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
   final APMCApiService _apiService = APMCApiService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   String? _selectedState;
   String? _selectedCity;
   bool _isLoading = true;
   bool _isTracking = false;
-  
+
   List<String> _states = [];
   List<String> _cities = [];
   List<MarketRate> _commodityData = [];
@@ -62,7 +62,7 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error auto-saving history: $e');
+      // print('Error auto-saving history: $e');
     }
   }
 
@@ -77,14 +77,14 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
           .collection('tracked_commodities')
           .doc(widget.commodity.productName.toLowerCase())
           .get();
-      
+
       if (mounted) {
         setState(() {
           _isTracking = doc.exists;
         });
       }
     } catch (e) {
-      print('Error checking tracking status: $e');
+      // print('Error checking tracking status: $e');
     }
   }
 
@@ -112,39 +112,44 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
           'lastPrice': widget.commodity.modalPrice,
           'unit': widget.commodity.unit,
           // Save a snapshot of history for predictions
-          'priceHistory': _commodityData.take(10).map((e) => e.toJson()).toList(),
+          'priceHistory':
+              _commodityData.take(10).map((e) => e.toJson()).toList(),
         });
-        if (mounted) ToastHelper.showSuccess(context, 'Now tracking ${widget.commodity.productName}');
+        if (mounted)
+          ToastHelper.showSuccess(
+              context, 'Now tracking ${widget.commodity.productName}');
       } else {
         await docRef.delete();
-        if (mounted) ToastHelper.showInfo(context, 'Stopped tracking ${widget.commodity.productName}');
+        if (mounted)
+          ToastHelper.showInfo(
+              context, 'Stopped tracking ${widget.commodity.productName}');
       }
     } catch (e) {
       setState(() => _isTracking = !_isTracking);
-      if (mounted) ToastHelper.showError(context, 'Failed to update tracking: $e');
+      if (mounted)
+        ToastHelper.showError(context, 'Failed to update tracking: $e');
     }
   }
 
   Future<void> _loadCommodityDetails() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Fetch all data for this commodity
       final allData = await _apiService.fetchMarketRates();
-      
-      _commodityData = allData.where((rate) => 
-        rate.productName.toLowerCase() == widget.commodity.productName.toLowerCase()
-      ).toList();
-      
+
+      _commodityData = allData
+          .where((rate) =>
+              rate.productName.toLowerCase() ==
+              widget.commodity.productName.toLowerCase())
+          .toList();
+
       // Extract unique states and cities
-      _states = _commodityData
-          .map((rate) => rate.state)
-          .toSet()
-          .toList()
+      _states = _commodityData.map((rate) => rate.state).toSet().toList()
         ..sort();
-      
+
       _filteredData = _commodityData;
-      
+
       setState(() => _isLoading = false);
     } catch (e) {
       setState(() => _isLoading = false);
@@ -157,7 +162,8 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
   void _filterData() {
     setState(() {
       _filteredData = _commodityData.where((rate) {
-        final stateMatch = _selectedState == null || rate.state == _selectedState;
+        final stateMatch =
+            _selectedState == null || rate.state == _selectedState;
         final cityMatch = _selectedCity == null || rate.market == _selectedCity;
         return stateMatch && cityMatch;
       }).toList();
@@ -168,7 +174,7 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
     setState(() {
       _selectedState = state;
       _selectedCity = null;
-      
+
       if (state != null) {
         _cities = _commodityData
             .where((rate) => rate.state == state)
@@ -179,7 +185,7 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
       } else {
         _cities = [];
       }
-      
+
       _filterData();
     });
   }
@@ -187,7 +193,7 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
@@ -223,7 +229,8 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           widget.commodity.productName,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         background: Container(
           decoration: BoxDecoration(
@@ -233,7 +240,8 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
       ),
       actions: [
         IconButton(
-          icon: Icon(_isTracking ? Icons.bookmark : Icons.bookmark_border, color: Colors.white),
+          icon: Icon(_isTracking ? Icons.bookmark : Icons.bookmark_border,
+              color: Colors.white),
           onPressed: _toggleTracking,
           tooltip: 'Track this Commodity',
         ),
@@ -253,9 +261,10 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.getPrimaryAccent(context).withOpacity(0.1),
+          color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.getPrimaryAccent(context).withOpacity(0.2)),
+          border: Border.all(
+              color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -302,7 +311,9 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+          border: isDark
+              ? Border.all(color: AppTheme.getBorderColor(context))
+              : null,
         ),
         child: Row(
           children: [
@@ -349,12 +360,12 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        color: enabled 
-            ? (isDark ? AppTheme.darkHighlight : Colors.grey.shade50) 
+        color: enabled
+            ? (isDark ? AppTheme.darkHighlight : Colors.grey.shade50)
             : (isDark ? Colors.black26 : Colors.grey.shade200),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: AppTheme.getPrimaryAccent(context).withOpacity(0.2),
+          color: AppTheme.getPrimaryAccent(context).withValues(alpha: 0.2),
         ),
       ),
       child: DropdownButtonHideUnderline(
@@ -363,9 +374,13 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
           dropdownColor: Theme.of(context).cardColor,
           hint: Row(
             children: [
-              Icon(icon, size: 14, color: AppTheme.getSecondaryTextColor(context)),
+              Icon(icon,
+                  size: 14, color: AppTheme.getSecondaryTextColor(context)),
               const SizedBox(width: 6),
-              Text(hint, style: TextStyle(fontSize: 12, color: AppTheme.getSecondaryTextColor(context))),
+              Text(hint,
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.getSecondaryTextColor(context))),
             ],
           ),
           isExpanded: true,
@@ -375,13 +390,13 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
               child: Text('All $hint', style: const TextStyle(fontSize: 12)),
             ),
             ...items.map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(
-                item,
-                style: const TextStyle(fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            )),
+                  value: item,
+                  child: Text(
+                    item,
+                    style: const TextStyle(fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )),
           ],
           onChanged: enabled ? onChanged : null,
           icon: Icon(
@@ -395,22 +410,30 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
   }
 
   Widget _buildSummaryCards() {
-    if (_filteredData.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_filteredData.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-    final avgPrice = _filteredData.map((r) => r.modalPrice).reduce((a, b) => a + b) / _filteredData.length;
-    final maxPrice = _filteredData.map((r) => r.maxPrice).reduce((a, b) => a > b ? a : b);
-    final minPrice = _filteredData.map((r) => r.minPrice).reduce((a, b) => a < b ? a : b);
+    final avgPrice =
+        _filteredData.map((r) => r.modalPrice).reduce((a, b) => a + b) /
+            _filteredData.length;
+    final maxPrice =
+        _filteredData.map((r) => r.maxPrice).reduce((a, b) => a > b ? a : b);
+    final minPrice =
+        _filteredData.map((r) => r.minPrice).reduce((a, b) => a < b ? a : b);
 
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.all(16),
         child: Row(
           children: [
-            _buildStatBox('Avg Price', '₹${avgPrice.toStringAsFixed(0)}', AppTheme.getPrimaryAccent(context)),
+            _buildStatBox('Avg Price', '₹${avgPrice.toStringAsFixed(0)}',
+                AppTheme.getPrimaryAccent(context)),
             const SizedBox(width: 10),
-            _buildStatBox('High', '₹${maxPrice.toStringAsFixed(0)}', AppTheme.success),
+            _buildStatBox(
+                'High', '₹${maxPrice.toStringAsFixed(0)}', AppTheme.success),
             const SizedBox(width: 10),
-            _buildStatBox('Low', '₹${minPrice.toStringAsFixed(0)}', AppTheme.error),
+            _buildStatBox(
+                'Low', '₹${minPrice.toStringAsFixed(0)}', AppTheme.error),
           ],
         ),
       ),
@@ -422,15 +445,21 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 10, color: color.withOpacity(0.8), fontWeight: FontWeight.w600)),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 10,
+                    color: color.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -439,20 +468,24 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
 
   Widget _buildPriceHistoryDropdown() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+          border: isDark
+              ? Border.all(color: AppTheme.getBorderColor(context))
+              : null,
         ),
         child: ExpansionTile(
           shape: const RoundedRectangleBorder(side: BorderSide.none),
           collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
-          title: const Text('Price History & Trends', style: TextStyle(fontWeight: FontWeight.bold)),
-          leading: Icon(Icons.show_chart, color: AppTheme.getPrimaryAccent(context)),
+          title: const Text('Price History & Trends',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          leading:
+              Icon(Icons.show_chart, color: AppTheme.getPrimaryAccent(context)),
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -476,10 +509,11 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
   Widget _buildChart() {
     final priceHistory = <DateTime, double>{};
     for (var rate in _filteredData) {
-      final date = DateTime(rate.priceDate.year, rate.priceDate.month, rate.priceDate.day);
+      final date = DateTime(
+          rate.priceDate.year, rate.priceDate.month, rate.priceDate.day);
       priceHistory[date] = (priceHistory[date] ?? 0) + rate.modalPrice;
     }
-    
+
     final sortedDates = priceHistory.keys.toList()..sort();
     final spots = <FlSpot>[];
     for (var i = 0; i < sortedDates.length; i++) {
@@ -499,7 +533,10 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
             isCurved: true,
             color: AppTheme.getPrimaryAccent(context),
             barWidth: 3,
-            belowBarData: BarAreaData(show: true, color: AppTheme.getPrimaryAccent(context).withOpacity(0.1)),
+            belowBarData: BarAreaData(
+                show: true,
+                color:
+                    AppTheme.getPrimaryAccent(context).withValues(alpha: 0.1)),
           ),
         ],
       ),
@@ -508,34 +545,42 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
 
   Widget _buildHistoryTable() {
     return Column(
-      children: _filteredData.take(5).map((e) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(_formatDate(e.priceDate), style: const TextStyle(fontSize: 12)),
-            Text('₹${e.modalPrice.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-      )).toList(),
+      children: _filteredData
+          .take(5)
+          .map((e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_formatDate(e.priceDate),
+                        style: const TextStyle(fontSize: 12)),
+                    Text('₹${e.modalPrice.toStringAsFixed(0)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ))
+          .toList(),
     );
   }
 
   Widget _buildProductQualityDropdown() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: isDark ? Border.all(color: AppTheme.getBorderColor(context)) : null,
+          border: isDark
+              ? Border.all(color: AppTheme.getBorderColor(context))
+              : null,
         ),
         child: ExpansionTile(
           shape: const RoundedRectangleBorder(side: BorderSide.none),
           collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
-          title: const Text('Product Quality Parameters', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('Product Quality Parameters',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           leading: Icon(Icons.verified_user, color: AppTheme.success),
           children: [
             Padding(
@@ -551,14 +596,20 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
+                      color: Colors.amber.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, color: Colors.amber, size: 16),
+                        const Icon(Icons.info_outline,
+                            color: Colors.amber, size: 16),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('Quality parameters may vary by market and arrival date.', style: TextStyle(fontSize: 11, color: Colors.amber.shade900))),
+                        Expanded(
+                            child: Text(
+                                'Quality parameters may vary by market and arrival date.',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.amber.shade900))),
                       ],
                     ),
                   ),
@@ -577,17 +628,24 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 13)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(label,
+              style: TextStyle(
+                  color: AppTheme.getSecondaryTextColor(context),
+                  fontSize: 13)),
+          Text(value,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),
     );
   }
 
   Widget _buildMarketInsights() {
-    if (_filteredData.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_filteredData.isEmpty)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
-    final totalArrivals = _filteredData.fold<int>(0, (sum, rate) => sum + rate.arrivals);
+    final totalArrivals =
+        _filteredData.fold<int>(0, (sum, rate) => sum + rate.arrivals);
     final uniqueStates = _filteredData.map((r) => r.state).toSet().length;
 
     return SliverToBoxAdapter(
@@ -597,18 +655,27 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Market Insights', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
+            Text('Market Insights',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextColor(context))),
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildInsightTile('Arrivals', '${totalArrivals} Q', Icons.local_shipping, Colors.blue),
+                _buildInsightTile('Arrivals', '$totalArrivals Q',
+                    Icons.local_shipping, Colors.blue),
                 const SizedBox(width: 16),
-                _buildInsightTile('States', '$uniqueStates active', Icons.map, Colors.orange),
+                _buildInsightTile(
+                    'States', '$uniqueStates active', Icons.map, Colors.orange),
               ],
             ),
           ],
@@ -617,18 +684,25 @@ class _APMCCommodityDetailPageState extends State<APMCCommodityDetailPage> {
     );
   }
 
-  Widget _buildInsightTile(String label, String value, IconData icon, Color color) {
+  Widget _buildInsightTile(
+      String label, String value, IconData icon, Color color) {
     return Expanded(
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          Text(label, style: TextStyle(fontSize: 12, color: AppTheme.getSecondaryTextColor(context))),
+          Text(value,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.getSecondaryTextColor(context))),
         ],
       ),
     );
